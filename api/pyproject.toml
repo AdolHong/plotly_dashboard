@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "dashboard-api"
+version = "0.1.0"
+description = "Backend API for dashboard"
+authors = ["Your Name <your.email@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pandas = "^2.1.1"
+fastapi = "^0.110.0"
+uvicorn = "^0.27.0"
+duckdb = "^0.10.0"
+plotly = "^5.18.0"
+pydantic = "^2.6.1"
+python-multipart = "^0.0.9"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.4.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

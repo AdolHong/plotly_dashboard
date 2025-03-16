@@ -1,0 +1,7 @@
+.devbox/
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+*.lock
+*.duckdb

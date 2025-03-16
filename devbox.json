@@ -1,0 +1,22 @@
+{
+  "packages": [
+    "nodejs_20",
+    "yarn",
+    "python312",
+    "pipx",
+    "poetry"
+  ],
+  "shell": {
+    "init_hook": [
+      "pipx ensurepath",
+      "cd api && poetry install --no-root && cd -",
+      "cd web && yarn install --ignore-engines && cd -"
+    ]
+  },
+  "scripts": {
+    "start-frontend": "cd web && yarn start",
+    "start-backend": "cd api && poetry run uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+    "init-db": "cd api && poetry run python -c 'from src.database.db import init_db; init_db()'",
+    "install-deps": "cd api && poetry install --no-root && cd ../web && yarn install"
+  }
+} 
