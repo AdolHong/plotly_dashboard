@@ -7,6 +7,9 @@ import json
 from typing import Dict, Any, List, Optional, Union, Tuple
 import traceback
 import inspect
+import io
+import sys
+from contextlib import redirect_stdout
 
 from ..database.db import execute_query
 
@@ -18,13 +21,20 @@ def execute_sql_query(sql: str) -> pd.DataFrame:
         error_msg = f"SQL查询执行错误: {str(e)}"
         raise Exception(error_msg)
 
-def process_data_with_python(df: pd.DataFrame, code: str) -> Tuple[Any, str]:
-    """使用Python代码处理数据，返回结果和结果类型"""
+def process_data_with_python(df: pd.DataFrame, code: str) -> Tuple[Any, str, str]:
+    """使用Python代码处理数据，返回结果、结果类型和print输出"""
     if not code:
-        return df, "dataframe"
+        return df, "dataframe", ""
+    
+    # 捕获print输出
+    stdout_buffer = io.StringIO()
+    print_output = ""
+    result = None
+    result_type = "dataframe"
+    error_msg = ""
     
     try:
-        # 创建一个安全的局部命名空间，包含常用库
+        # 创建一个安全的局部命名空间，包含常用库和print函数
         local_vars = {
             "df": df.copy(), 
             "pd": pd,
@@ -34,8 +44,13 @@ def process_data_with_python(df: pd.DataFrame, code: str) -> Tuple[Any, str]:
             "print": print
         }
         
-        # 执行Python代码
-        exec(code, {"__builtins__": {"print": print}}, local_vars)
+        # 重定向标准输出以捕获print
+        with redirect_stdout(stdout_buffer):
+            # 执行Python代码
+            exec(code, {"__builtins__": __builtins__}, local_vars)
+        
+        # 获取print输出
+        print_output = stdout_buffer.getvalue()
         
         # 获取处理后的结果
         if "result" in local_vars:
@@ -43,17 +58,25 @@ def process_data_with_python(df: pd.DataFrame, code: str) -> Tuple[Any, str]:
             
             # 判断结果类型
             if isinstance(result, pd.DataFrame):
-                return result, "dataframe"
+                result_type = "dataframe"
             elif 'plotly.graph_objs' in str(type(result)):
                 # 如果是Plotly图表对象
-                return json.loads(result.to_json()), "figure"
+                result = json.loads(result.to_json())
+                result_type = "figure"
             else:
-                raise ValueError("Python代码的result变量必须是DataFrame或Plotly图表对象")
+                error_msg = "Python代码的result变量必须是DataFrame或Plotly图表对象"
+                raise ValueError(error_msg)
         else:
-            raise ValueError("Python代码必须将结果存储在名为'result'的变量中")
+            error_msg = "Python代码必须将结果存储在名为'result'的变量中"
+            raise ValueError(error_msg)
+            
     except Exception as e:
+        # 即使发生错误，也要获取print输出
+        print_output = stdout_buffer.getvalue()
         error_msg = f"Python代码执行错误: {str(e)}\n{traceback.format_exc()}"
-        raise Exception(error_msg)
+        raise Exception(f"{error_msg}\nPrint输出: {print_output}")
+    
+    return result, result_type, print_output
 
 def create_plotly_figure(
     df: pd.DataFrame, 
@@ -112,7 +135,9 @@ def process_visualization_request(
         
         # 使用Python代码处理数据（如果提供）
         if python_code:
-            df = process_data_with_python(df, python_code)[0]
+            df, _, print_output = process_data_with_python(df, python_code)
+        else:
+            print_output = ""
         
         # 创建Plotly图表
         plot_data = create_plotly_figure(
@@ -130,7 +155,8 @@ def process_visualization_request(
         
         return {
             "data": df_json,
-            "plot_data": plot_data
+            "plot_data": plot_data,
+            "print_output": print_output
         }
     except Exception as e:
         raise Exception(str(e))
@@ -140,13 +166,43 @@ def process_analysis_request(
     python_code: Optional[str]
 ) -> Dict[str, Any]:
     """处理分析请求，自动判断结果类型"""
+    # 捕获print输出
+    stdout_buffer = io.StringIO()
+    print_output = ""
+    
     try:
         # 执行SQL查询
         df = execute_sql_query(sql_query)
         
         # 使用Python代码处理数据（如果提供）
         if python_code:
-            result, result_type = process_data_with_python(df, python_code)
+            try:
+                # 重定向标准输出以捕获可能的print输出
+                with redirect_stdout(stdout_buffer):
+                    result, result_type, code_print_output = process_data_with_python(df, python_code)
+                
+                # 合并两处捕获的print输出
+                print_output = stdout_buffer.getvalue() + code_print_output
+            except Exception as e:
+                # 获取print输出
+                print_output = stdout_buffer.getvalue()
+                
+                # 从错误消息中提取print输出
+                error_str = str(e)
+                if "Print输出:" in error_str:
+                    parts = error_str.split("Print输出:", 1)
+                    error_msg = parts[0].strip()
+                    additional_print = parts[1].strip()
+                    print_output = print_output + "\n" + additional_print if print_output else additional_print
+                
+                # 即使处理失败，也返回错误信息和print输出
+                return {
+                    "result_type": "error",
+                    "data": [],
+                    "plot_data": None,
+                    "print_output": print_output,
+                    "error_message": error_str
+                }
         else:
             result = df
             result_type = "dataframe"
@@ -158,16 +214,33 @@ def process_analysis_request(
             return {
                 "result_type": "dataframe",
                 "data": data,
-                "plot_data": None
+                "plot_data": None,
+                "print_output": print_output
             }
         elif result_type == "figure":
             # 返回图表数据
             return {
                 "result_type": "figure",
                 "data": [],
-                "plot_data": result
+                "plot_data": result,
+                "print_output": print_output
             }
         else:
             raise ValueError(f"不支持的结果类型: {result_type}")
     except Exception as e:
-        raise Exception(str(e)) 
+        # 获取print输出（即使发生错误）
+        if 'stdout_buffer' in locals():
+            print_output = stdout_buffer.getvalue()
+        
+        # 从错误消息中提取print输出
+        error_str = str(e)
+        if "Print输出:" in error_str:
+            parts = error_str.split("Print输出:", 1)
+            error_msg = parts[0].strip()
+            additional_print = parts[1].strip()
+            print_output = print_output + "\n" + additional_print if print_output else additional_print
+            
+            # 重新构建错误消息，不包含print输出部分
+            error_str = error_msg
+        
+        raise Exception(f"{error_str}") 
