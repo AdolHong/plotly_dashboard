@@ -1,44 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-sql';
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/theme-github';
-import { Button, Tabs, Select, Space, Typography, Divider, Modal, Tooltip, message } from 'antd';
+import { Button, Tabs, Space, Typography, Modal, Tooltip, message } from 'antd';
 import axios from 'axios';
 
 const { TabPane } = Tabs;
-const { Option } = Select;
 const { Title, Text } = Typography;
 
 const SQLEditor = ({ onDataReceived, onPlotDataReceived, onError, onPrintOutputReceived }) => {
   const [sqlQuery, setSqlQuery] = useState('SELECT * FROM sales LIMIT 10');
   const [pythonCode, setPythonCode] = useState('# 处理数据示例\n# 返回DataFrame显示表格\n# result = df.groupby("category").sum().reset_index()\n\n# 或返回Plotly图表\n# import plotly.express as px\n# result = px.bar(df.groupby("category").sum().reset_index(), x="category", y="price")');
-  const [tables, setTables] = useState([]);
-  const [selectedTable, setSelectedTable] = useState('');
   const [loading, setLoading] = useState(false);
   const [printOutput, setPrintOutput] = useState('');
   const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
   const [hasPrintOutput, setHasPrintOutput] = useState(false);
-
-  // 获取所有表名
-  useEffect(() => {
-    const fetchTables = async () => {
-      try {
-        const response = await axios.get('http://localhost:8000/api/tables');
-        if (response.data.status === 'success') {
-          setTables(response.data.data);
-          if (response.data.data.length > 0) {
-            setSelectedTable(response.data.data[0]);
-          }
-        }
-      } catch (error) {
-        console.error('获取表名失败:', error);
-        message.error('获取表名失败: ' + (error.response?.data?.detail?.message || error.message));
-      }
-    };
-
-    fetchTables();
-  }, []);
 
   // 执行查询和分析
   const handleExecuteQuery = async () => {
@@ -160,12 +137,6 @@ const SQLEditor = ({ onDataReceived, onPlotDataReceived, onError, onPrintOutputR
     }
   };
 
-  // 表选择变化时更新SQL
-  const handleTableChange = (value) => {
-    setSelectedTable(value);
-    setSqlQuery(`SELECT * FROM ${value} LIMIT 10`);
-  };
-
   // 显示print输出对话框
   const showPrintModal = () => {
     setIsPrintModalVisible(true);
@@ -179,21 +150,6 @@ const SQLEditor = ({ onDataReceived, onPlotDataReceived, onError, onPrintOutputR
   return (
     <div style={{ padding: '20px', backgroundColor: '#f5f5f5', borderRadius: '5px' }}>
       <Title level={4}>SQL + Python 数据可视化</Title>
-      
-      <div style={{ marginBottom: '20px' }}>
-        <Space>
-          <span>选择表:</span>
-          <Select 
-            value={selectedTable} 
-            onChange={handleTableChange}
-            style={{ width: 200 }}
-          >
-            {tables.map(table => (
-              <Option key={table} value={table}>{table}</Option>
-            ))}
-          </Select>
-        </Space>
-      </div>
 
       <Tabs defaultActiveKey="sql">
         <TabPane tab="SQL 查询" key="sql">
@@ -299,4 +255,4 @@ const SQLEditor = ({ onDataReceived, onPlotDataReceived, onError, onPrintOutputR
   );
 };
 
-export default SQLEditor; 
+export default SQLEditor;
