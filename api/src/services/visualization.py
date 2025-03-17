@@ -6,9 +6,7 @@ import plotly.graph_objects as go
 import json
 from typing import Dict, Any, List, Optional, Union, Tuple
 import traceback
-import inspect
 import io
-import sys
 from contextlib import redirect_stdout
 
 from ..database.db import execute_query
@@ -40,14 +38,14 @@ def process_data_with_python(df: pd.DataFrame, code: str) -> Tuple[Any, str, str
             "pd": pd,
             "np": np,
             "px": px,
-            "go": go,
-            "print": print
+            "go": go
         }
         
         # 重定向标准输出以捕获print
         with redirect_stdout(stdout_buffer):
             # 执行Python代码
-            exec(code, {"__builtins__": __builtins__}, local_vars)
+            # exec(code, {"__builtins__": __builtins__}, local_vars)
+            exec(code, {"print": print}, local_vars)
         
         # 获取print输出
         print_output = stdout_buffer.getvalue()
@@ -77,89 +75,6 @@ def process_data_with_python(df: pd.DataFrame, code: str) -> Tuple[Any, str, str
         raise Exception(f"{error_msg}\nPrint输出: {print_output}")
     
     return result, result_type, print_output
-
-def create_plotly_figure(
-    df: pd.DataFrame, 
-    plot_type: str, 
-    x: str, 
-    y: Union[str, List[str]], 
-    color: Optional[str] = None,
-    title: Optional[str] = None,
-    layout: Optional[Dict[str, Any]] = None
-) -> Dict[str, Any]:
-    """创建Plotly图表"""
-    try:
-        fig = None
-        
-        # 根据图表类型创建相应的图表
-        if plot_type == "bar":
-            fig = px.bar(df, x=x, y=y, color=color, title=title)
-        elif plot_type == "line":
-            fig = px.line(df, x=x, y=y, color=color, title=title)
-        elif plot_type == "scatter":
-            fig = px.scatter(df, x=x, y=y, color=color, title=title)
-        elif plot_type == "pie":
-            fig = px.pie(df, names=x, values=y, title=title)
-        elif plot_type == "histogram":
-            fig = px.histogram(df, x=x, y=y, color=color, title=title)
-        elif plot_type == "box":
-            fig = px.box(df, x=x, y=y, color=color, title=title)
-        elif plot_type == "violin":
-            fig = px.violin(df, x=x, y=y, color=color, title=title)
-        elif plot_type == "heatmap":
-            # 对于热图，需要将数据透视为矩阵形式
-            pivot_df = df.pivot(index=x, columns=color if color else None, values=y)
-            fig = px.imshow(pivot_df, title=title)
-        else:
-            raise ValueError(f"不支持的图表类型: {plot_type}")
-        
-        # 应用自定义布局
-        if layout:
-            fig.update_layout(**layout)
-        
-        # 将图表转换为JSON
-        return json.loads(fig.to_json())
-    except Exception as e:
-        error_msg = f"图表创建错误: {str(e)}\n{traceback.format_exc()}"
-        raise Exception(error_msg)
-
-def process_visualization_request(
-    sql_query: str,
-    python_code: Optional[str],
-    plot_config: Dict[str, Any]
-) -> Dict[str, Any]:
-    """处理数据可视化请求"""
-    try:
-        # 执行SQL查询
-        df = execute_sql_query(sql_query)
-        
-        # 使用Python代码处理数据（如果提供）
-        if python_code:
-            df, _, print_output = process_data_with_python(df, python_code)
-        else:
-            print_output = ""
-        
-        # 创建Plotly图表
-        plot_data = create_plotly_figure(
-            df=df,
-            plot_type=plot_config["plot_type"],
-            x=plot_config["x"],
-            y=plot_config["y"],
-            color=plot_config.get("color"),
-            title=plot_config.get("title"),
-            layout=plot_config.get("layout")
-        )
-        
-        # 将DataFrame转换为JSON格式
-        df_json = df.to_dict(orient="records")
-        
-        return {
-            "data": df_json,
-            "plot_data": plot_data,
-            "print_output": print_output
-        }
-    except Exception as e:
-        raise Exception(str(e))
 
 def process_analysis_request(
     sql_query: str,

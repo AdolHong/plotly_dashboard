@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout, Typography, Divider } from 'antd';
+import { v4 as uuidv4 } from 'uuid';
 import 'antd/dist/reset.css';
 import SQLEditor from './components/SQLEditor';
 import DataTable from './components/DataTable';
@@ -13,6 +14,7 @@ function App() {
   const [plotData, setPlotData] = useState(null);
   const [error, setError] = useState(null);
   const [printOutput, setPrintOutput] = useState('');
+  const [sessionId, setSessionId] = useState('');
 
   // 处理数据接收
   const handleDataReceived = (newData) => {
@@ -28,6 +30,18 @@ function App() {
   const handlePrintOutputReceived = (output) => {
     setPrintOutput(output);
   };
+
+  useEffect(() => {
+    // Get existing sessionId from localStorage or create new one
+    const existingSessionId = sessionStorage.getItem('sessionId');
+    if (existingSessionId) {
+      setSessionId(existingSessionId);
+    } else {
+      const newSessionId = uuidv4();
+      setSessionId(newSessionId);
+      sessionStorage.setItem('sessionId', newSessionId);
+    }
+  }, []);
 
   // 处理错误 - 保留此函数但不在UI中显示错误
   const handleError = (errorMessage) => {
@@ -76,10 +90,10 @@ function App() {
         </div>
       </Content>
       <Footer style={{ textAlign: 'center' }}>
-        SQL + Python 数据可视化平台 ©{new Date().getFullYear()} 由 Devbox 提供支持
+        当前会话 ID: {sessionId}
       </Footer>
     </Layout>
   );
 }
 
-export default App; 
+export default App;
