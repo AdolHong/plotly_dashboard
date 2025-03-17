@@ -78,7 +78,8 @@ def process_data_with_python(df: pd.DataFrame, code: str) -> Tuple[Any, str, str
 
 def process_analysis_request(
     sql_query: str,
-    python_code: Optional[str]
+    python_code: Optional[str],
+    df: Optional[pd.DataFrame] = None
 ) -> Dict[str, Any]:
     """处理分析请求，自动判断结果类型"""
     # 捕获print输出
@@ -86,8 +87,9 @@ def process_analysis_request(
     print_output = ""
     
     try:
-        # 执行SQL查询
-        df = execute_sql_query(sql_query)
+        # 如果没有提供DataFrame，执行SQL查询获取
+        if df is None:
+            df = execute_sql_query(sql_query)
         
         # 使用Python代码处理数据（如果提供）
         if python_code:
@@ -158,4 +160,4 @@ def process_analysis_request(
             # 重新构建错误消息，不包含print输出部分
             error_str = error_msg
         
-        raise Exception(f"{error_str}") 
+        raise Exception(f"{error_str}")

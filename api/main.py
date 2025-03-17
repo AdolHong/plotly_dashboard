@@ -3,14 +3,19 @@ from fastapi.middleware.cors import CORSMiddleware
 import traceback
 import io
 from contextlib import redirect_stdout
+import pandas as pd
 
 from src.models.schemas import (
     SQLQueryRequest, 
     ErrorResponse, 
     SuccessResponse
 )
-from src.services.visualization import  process_analysis_request
+from src.services.visualization import process_analysis_request
+from src.services.session_manager import SessionManager
 from src.database.db import execute_query, init_db
+
+# Initialize session manager
+session_manager = SessionManager()
 
 # 初始化数据库
 init_db()
@@ -30,36 +35,82 @@ app.add_middleware(
 async def root():
     return {"message": "数据可视化API已启动!"}
 
-@app.post("/api/analyze")
-async def analyze_data(request: dict):
-    """分析数据，自动判断结果类型"""
-    # 捕获print输出
+@app.post("/api/query")
+async def execute_sql_query(request: dict):
+    """Execute SQL query and cache the results"""
+    try:
+        sql_query = request.get("sql_query", "")
+        session_id = request.get("session_id", "")
+        
+        if not sql_query or not session_id:
+            raise HTTPException(status_code=400, detail="SQL query and session ID are required")
+        
+        # Execute query and get DataFrame
+        df = execute_query(sql_query)
+        
+        # Convert DataFrame to dict for caching
+        result = {
+            "data": df.to_json(orient='records')
+        }
+        
+        # Cache the result and get query hash
+        query_hash = session_manager.save_query_result(session_id, sql_query, result)
+
+        return {
+            "status": "success",
+            "message": "Query executed successfully",
+            "query_hash": query_hash
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
+@app.post("/api/visualize")
+async def visualize_data(request: dict):
+    """Process Python visualization code using cached query results"""
     stdout_buffer = io.StringIO()
     print_output = ""
     
     try:
-        # 使用重定向捕获可能的print输出
+        session_id = request.get("session_id", "")
+        query_hash = request.get("query_hash", "")
+        python_code = request.get("python_code")
+        
+        if not session_id or not query_hash:
+            raise HTTPException(status_code=400, detail="Session ID and query hash are required")
+        
+        # Get cached query result
+        cached_result = session_manager.get_query_result(session_id, query_hash)
+        if not cached_result:
+            raise HTTPException(status_code=404, detail="Query result not found")
+        
+        # Convert cached data back to DataFrame
+
+        import json
+        df = pd.DataFrame(json.loads(cached_result["data"]))
+        
+        # Process visualization
         with redirect_stdout(stdout_buffer):
-            # 处理分析请求
             result = process_analysis_request(
-                sql_query=request.get("sql_query", ""),
-                python_code=request.get("python_code")
+                sql_query="",  # Not needed as we already have the DataFrame
+                python_code=python_code,
+                df=df
             )
         
-        # 获取print输出 - 合并两处可能的print输出
+        # Get print output
         api_print_output = stdout_buffer.getvalue()
         result_print_output = result.get("print_output", "")
         print_output = api_print_output + result_print_output
         
-        # 如果是错误结果，返回错误信息和print输出
         if result.get("result_type") == "error":
             return {
                 "status": "error",
-                "message": result.get("error_message", "未知错误"),
+                "message": result.get("error_message", "Unknown error"),
                 "print_output": print_output
             }
         
-        # 正常返回结果
         return {
             "status": "success",
             "result_type": result["result_type"],
@@ -103,20 +154,3 @@ async def analyze_data(request: dict):
             "print_output": print_output,
             "error_detail": error_detail
         }
-
-@app.get("/api/tables")
-async def get_tables():
-    """获取所有表名"""
-    try:
-        df = execute_query("SELECT name FROM sqlite_master WHERE type='table'")
-        tables = df['name'].tolist()
-        return SuccessResponse(data=tables)
-    except Exception as e:
-        error_detail = traceback.format_exc()
-        raise HTTPException(
-            status_code=400, 
-            detail=ErrorResponse(
-                message=f"获取表名失败: {str(e)}", 
-                details=error_detail
-            ).dict()
-        )

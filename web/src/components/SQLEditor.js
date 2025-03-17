@@ -16,22 +16,41 @@ const SQLEditor = ({ onDataReceived, onPlotDataReceived, onError, onPrintOutputR
   const [printOutput, setPrintOutput] = useState('');
   const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
   const [hasPrintOutput, setHasPrintOutput] = useState(false);
+  const [sessionId] = useState(() => Math.random().toString(36).substring(7));
+  const [queryHash, setQueryHash] = useState('');
 
-  // 执行查询和分析
+  // 执行SQL查询
   const handleExecuteQuery = async () => {
     setLoading(true);
     setPrintOutput('');
     setHasPrintOutput(false);
     
     try {
-      const response = await axios.post('http://localhost:8000/api/analyze', {
+      // Step 1: Execute SQL query and cache results
+      const queryResponse = await axios.post('http://localhost:8000/api/query', {
         sql_query: sqlQuery,
+        session_id: sessionId
+      });
+
+      if (queryResponse.data.status === 'error') {
+        message.error('SQL查询失败: ' + queryResponse.data.message);
+        return;
+      }
+      
+      // Save query hash for visualization step
+      setQueryHash(queryResponse.data.query_hash);
+      message.success('SQL查询成功');
+      
+      // Step 2: Process visualization
+      const visualizeResponse = await axios.post('http://localhost:8000/api/visualize', {
+        session_id: sessionId,
+        query_hash: queryResponse.data.query_hash,
         python_code: pythonCode || null
       });
       
       // 保存print输出（无论成功还是失败）
-      if (response.data.print_output) {
-        const output = response.data.print_output;
+      if (visualizeResponse.data.print_output) {
+        const output = visualizeResponse.data.print_output;
         setPrintOutput(output);
         setHasPrintOutput(true);
         
@@ -41,29 +60,29 @@ const SQLEditor = ({ onDataReceived, onPlotDataReceived, onError, onPrintOutputR
         }
         
         // 自动显示print输出对话框
-        if (response.data.status === 'error') {
+        if (visualizeResponse.data.status === 'error') {
           setIsPrintModalVisible(true);
         }
       }
       
-      if (response.data.status === 'success') {
+      if (visualizeResponse.data.status === 'success') {
         // 清除之前的错误
         if (onError) onError(null);
         
-        if (response.data.result_type === 'dataframe') {
+        if (visualizeResponse.data.result_type === 'dataframe') {
           // 如果结果是DataFrame，显示表格
-          onDataReceived(response.data.data);
+          onDataReceived(visualizeResponse.data.data);
           onPlotDataReceived(null);
           message.success('查询执行成功');
-        } else if (response.data.result_type === 'figure') {
+        } else if (visualizeResponse.data.result_type === 'figure') {
           // 如果结果是Plotly图表，显示图表
           onDataReceived([]);
-          onPlotDataReceived(response.data.plot_data);
+          onPlotDataReceived(visualizeResponse.data.plot_data);
           message.success('可视化生成成功');
         }
-      } else if (response.data.status === 'error') {
+      } else if (visualizeResponse.data.status === 'error') {
         // 处理错误情况，但仍然保留print输出
-        message.error('执行失败: ' + response.data.message);
+        message.error('执行失败: ' + visualizeResponse.data.message);
         // 清除之前的数据
         onDataReceived([]);
         onPlotDataReceived(null);
