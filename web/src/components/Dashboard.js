@@ -12,7 +12,8 @@ const Dashboard = () => {
   
   // 处理SQL查询成功
   const handleQuerySuccess = (hash) => {
-    setQueryHash(hash);
+    // 每次查询成功时，添加时间戳使queryHash变化，强制触发可视化区域更新
+    setQueryHash(`${hash}_${new Date().getTime()}`);
   };
   
   // 添加新的可视化区域
@@ -47,7 +48,6 @@ const Dashboard = () => {
         <Button 
           type="dashed" 
           onClick={handleAddVisualizer}
-          disabled={!queryHash}
         >
           添加可视化区域
         </Button>

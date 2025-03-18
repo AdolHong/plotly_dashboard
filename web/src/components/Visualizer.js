@@ -52,6 +52,7 @@ const Visualizer = ({ sessionId, queryHash, index }) => {
         python_code: pythonCode || null
       });
       
+      message.success(queryHash);
       // 保存print输出（无论成功还是失败）
       if (visualizeResponse.data.print_output) {
         const output = visualizeResponse.data.print_output;

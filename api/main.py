@@ -5,11 +5,6 @@ import io
 from contextlib import redirect_stdout
 import pandas as pd
 
-from src.models.schemas import (
-    SQLQueryRequest, 
-    ErrorResponse, 
-    SuccessResponse
-)
 from src.services.visualization import process_analysis_request
 from src.services.session_manager import SessionManager
 from src.database.db import execute_query, init_db
@@ -56,6 +51,8 @@ async def execute_sql_query(request: dict):
         # Cache the result and get query hash
         query_hash = session_manager.save_query_result(session_id, sql_query, result)
 
+        print("query_hash: ", query_hash)
+
         return {
             "status": "success",
             "message": "Query executed successfully",
@@ -82,6 +79,7 @@ async def visualize_data(request: dict):
             raise HTTPException(status_code=400, detail="Session ID and query hash are required")
         
         # Get cached query result
+        print("query_hash received: ", query_hash)
         cached_result = session_manager.get_query_result(session_id, query_hash)
         if not cached_result:
             raise HTTPException(status_code=404, detail="Query result not found")
