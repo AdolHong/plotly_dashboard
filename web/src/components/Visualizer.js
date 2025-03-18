@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/theme-github';
@@ -25,6 +25,13 @@ const Visualizer = ({ sessionId, queryHash, index }) => {
   const [visualizationData, setVisualizationData] = useState(null);
   const [resultType, setResultType] = useState(null); // 'dataframe' 或 'figure'
   const [tableData, setTableData] = useState([]);
+  
+  // 当queryHash变化时自动执行可视化
+  useEffect(() => {
+    if (queryHash) {
+      handleExecuteVisualization();
+    }
+  }, [queryHash]);
 
   // 执行Python可视化
   const handleExecuteVisualization = async () => {
@@ -219,14 +226,6 @@ const Visualizer = ({ sessionId, queryHash, index }) => {
       style={{ marginBottom: '20px' }}
       extra={
         <Space>
-          <Button 
-            type="primary" 
-            onClick={handleExecuteVisualization} 
-            loading={loading}
-            disabled={!queryHash}
-          >
-            执行可视化
-          </Button>
           <Tooltip title={hasPrintOutput ? "查看Python代码的print输出" : "没有print输出"}>
             <Button 
               type="default" 
