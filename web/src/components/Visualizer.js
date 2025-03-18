@@ -6,7 +6,7 @@ import { Button, Card, Typography, Modal, Tooltip, message, Space } from 'antd';
 import Plot from 'react-plotly.js';
 import axios from 'axios';
 
-const { Title, Text } = Typography;
+const Text = Typography;
 
 const Visualizer = ({ sessionId, queryHash, index }) => {
   const [pythonCode, setPythonCode] = useState(
