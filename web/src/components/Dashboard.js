@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Button, Divider, Typography, Space } from 'antd';
+import { Button, Divider, Typography, Space } from 'antd';
 import SQLEditor from './SQLEditor';
 import Visualizer from './Visualizer';
 
