@@ -18,20 +18,24 @@ const Visualizer = ({ sessionId, queryHash, index }) => {
 # import plotly.express as px
 # result = px.bar(df.groupby("category").sum().reset_index(), x="category", y="price")`
   );
-  const [loading, setLoading] = useState(false);
   const [printOutput, setPrintOutput] = useState('');
   const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
   const [hasPrintOutput, setHasPrintOutput] = useState(false);
   const [visualizationData, setVisualizationData] = useState(null);
   const [resultType, setResultType] = useState(null); // 'dataframe' 或 'figure'
   const [tableData, setTableData] = useState([]);
+  const [processedQueryHash, setProcessedQueryHash] = useState('');
   
   // 当queryHash变化时自动执行可视化
   useEffect(() => {
-    if (queryHash) {
+    // 只有当queryHash存在且与上次处理的不同时才执行可视化
+    // 这样可以避免新增的可视化区域立即执行现有的queryHash
+    if (queryHash && queryHash !== processedQueryHash) {
       handleExecuteVisualization();
+      // 记录已处理的queryHash
+      setProcessedQueryHash(queryHash);
     }
-  }, [queryHash]);
+  }, [queryHash, processedQueryHash]);
 
   // 执行Python可视化
   const handleExecuteVisualization = async () => {
@@ -45,7 +49,6 @@ const Visualizer = ({ sessionId, queryHash, index }) => {
       return;
     }
 
-    setLoading(true);
     setPrintOutput('');
     setHasPrintOutput(false);
     
@@ -136,7 +139,6 @@ const Visualizer = ({ sessionId, queryHash, index }) => {
       setVisualizationData(null);
       setResultType(null);
     } finally {
-      setLoading(false);
       
       // 如果有print输出但hasPrintOutput没有设置为true，强制设置为true
       if (printOutput && !hasPrintOutput) {
