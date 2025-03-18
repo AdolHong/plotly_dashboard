@@ -4,6 +4,8 @@ import traceback
 import io
 from contextlib import redirect_stdout
 import pandas as pd
+import json
+from pathlib import Path
 
 from src.services.visualization import process_analysis_request
 from src.services.session_manager import SessionManager
@@ -29,6 +31,55 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"message": "数据可视化API已启动!"}
+
+@app.get("/api/config")
+async def get_dashboard_config():
+    """获取仪表盘配置"""
+    try:
+        config_path = Path(__file__).parent / "data" / "dashboard_config.json"
+        
+        if not config_path.exists():
+            return {
+                "status": "error",
+                "message": "配置文件不存在"
+            }
+        
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+        
+        return {
+            "status": "success",
+            "config": config
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
+@app.post("/api/config")
+async def save_dashboard_config(request: dict):
+    """保存仪表盘配置"""
+    try:
+        config = request.get("config", {})
+        
+        if not config:
+            raise HTTPException(status_code=400, detail="配置内容不能为空")
+        
+        config_path = Path(__file__).parent / "data" / "dashboard_config.json"
+        
+        with open(config_path, 'w', encoding='utf-8') as f:
+            json.dump(config, f, ensure_ascii=False, indent=4)
+        
+        return {
+            "status": "success",
+            "message": "配置保存成功"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
 
 @app.post("/api/query")
 async def execute_sql_query(request: dict):

@@ -8,7 +8,7 @@ import axios from 'axios';
 
 const Text = Typography;
 
-const Visualizer = ({ sessionId, queryHash, index }) => {
+const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoaded }) => {
   const [pythonCode, setPythonCode] = useState(
     `# 处理数据示例 - 可视化区域 ${index}
 # 返回DataFrame显示表格
@@ -18,6 +18,13 @@ const Visualizer = ({ sessionId, queryHash, index }) => {
 # import plotly.express as px
 # result = px.bar(df.groupby("category").sum().reset_index(), x="category", y="price")`
   );
+  
+  // 当配置加载完成后，设置初始Python代码
+  useEffect(() => {
+    if (configLoaded && initialPythonCode) {
+      setPythonCode(initialPythonCode);
+    }
+  }, [configLoaded, initialPythonCode]);
   const [printOutput, setPrintOutput] = useState('');
   const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
   const [hasPrintOutput, setHasPrintOutput] = useState(false);

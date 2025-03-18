@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-sql';
 import 'ace-builds/src-noconflict/theme-github';
@@ -7,9 +7,16 @@ import axios from 'axios';
 
 const { Title } = Typography;
 
-const SQLEditor = ({ sessionId, onQuerySuccess }) => {
+const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) => {
   const [sqlQuery, setSqlQuery] = useState('SELECT * FROM sales LIMIT 10');
   const [loading, setLoading] = useState(false);
+  
+  // 当配置加载完成后，设置初始SQL代码
+  useEffect(() => {
+    if (configLoaded && initialSqlCode) {
+      setSqlQuery(initialSqlCode);
+    }
+  }, [configLoaded, initialSqlCode]);
 
   // 执行SQL查询
   const handleExecuteQuery = async () => {
