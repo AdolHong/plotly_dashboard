@@ -16,6 +16,12 @@ const SQLEditor = ({ sessionId, onQuerySuccess }) => {
     setLoading(true);
     
     try {
+      // 检查会话ID是否有效
+      if (!sessionId) {
+        message.error('无效的会话ID，请刷新页面');
+        return;
+      }
+      
       // 执行SQL查询并缓存结果
       const queryResponse = await axios.post('http://localhost:8000/api/query', {
         sql_query: sqlQuery,
@@ -29,6 +35,11 @@ const SQLEditor = ({ sessionId, onQuerySuccess }) => {
       
       // 保存查询哈希值并通知父组件查询成功
       const queryHash = queryResponse.data.query_hash;
+      if (!queryHash) {
+        message.error('服务器未返回有效的查询哈希值');
+        return;
+      }
+      
       message.success('SQL查询成功');
       
       // 通知父组件查询成功，传递查询哈希值

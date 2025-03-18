@@ -35,7 +35,12 @@ const Visualizer = ({ sessionId, queryHash, index }) => {
 
   // 执行Python可视化
   const handleExecuteVisualization = async () => {
-    if (!sessionId || !queryHash) {
+    if (!sessionId) {
+      message.error('无效的会话ID，请刷新页面');
+      return;
+    }
+    
+    if (!queryHash) {
       message.error('请先执行SQL查询');
       return;
     }
@@ -48,11 +53,9 @@ const Visualizer = ({ sessionId, queryHash, index }) => {
       // 发送Python代码处理请求
       const visualizeResponse = await axios.post('http://localhost:8000/api/visualize', {
         session_id: sessionId,
-        query_hash: queryHash,
+        query_hash: queryHash.split('_')[0], // 移除时间戳部分，只使用原始查询哈希值
         python_code: pythonCode || null
       });
-      
-      message.success(queryHash);
       // 保存print输出（无论成功还是失败）
       if (visualizeResponse.data.print_output) {
         const output = visualizeResponse.data.print_output;
