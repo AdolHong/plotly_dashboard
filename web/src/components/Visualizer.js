@@ -8,7 +8,7 @@ import axios from 'axios';
 
 const { Title, Text } = Typography;
 
-const PythonVisualizer = ({ sessionId, queryHash, index }) => {
+const Visualizer = ({ sessionId, queryHash, index }) => {
   const [pythonCode, setPythonCode] = useState(
     `# 处理数据示例 - 可视化区域 ${index}
 # 返回DataFrame显示表格
@@ -297,4 +297,4 @@ const PythonVisualizer = ({ sessionId, queryHash, index }) => {
   );
 };
 
-export default PythonVisualizer;
+export default Visualizer;

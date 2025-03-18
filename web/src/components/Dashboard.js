@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Card, Button, Divider, Typography, Space } from 'antd';
-import SQLQueryEditor from './SQLQueryEditor';
-import PythonVisualizer from './PythonVisualizer';
+import SQLEditor from './SQLEditor';
+import Visualizer from './Visualizer';
 
 const { Title } = Typography;
 
-const SQLPythonDashboard = ({ onDataReceived, onPlotDataReceived, onError, onPrintOutputReceived }) => {
+const Dashboard = () => {
   const [sessionId] = useState(() => Math.random().toString(36).substring(7));
   const [queryHash, setQueryHash] = useState('');
   const [visualizerCount, setVisualizerCount] = useState(1);
@@ -25,7 +25,7 @@ const SQLPythonDashboard = ({ onDataReceived, onPlotDataReceived, onError, onPri
       <Title level={4}>SQL + Python 数据可视化</Title>
       
       {/* SQL查询区域 */}
-      <SQLQueryEditor 
+      <SQLEditor 
         sessionId={sessionId} 
         onQuerySuccess={handleQuerySuccess} 
       />
@@ -34,7 +34,7 @@ const SQLPythonDashboard = ({ onDataReceived, onPlotDataReceived, onError, onPri
       
       {/* 可视化区域列表 */}
       {Array.from({ length: visualizerCount }).map((_, index) => (
-        <PythonVisualizer 
+        <Visualizer 
           key={index}
           index={index + 1}
           sessionId={sessionId}
@@ -56,4 +56,4 @@ const SQLPythonDashboard = ({ onDataReceived, onPlotDataReceived, onError, onPri
   );
 };
 
-export default SQLPythonDashboard;
+export default Dashboard;
