@@ -2,22 +2,15 @@ import React, { useState, useEffect } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/theme-github';
-import { Button, Card, Typography, Modal, Tooltip, message, Space } from 'antd';
+import { Button, Card, Typography, Tooltip, message, Space } from 'antd';
+import OutputModal from './OutputModal';
 import Plot from 'react-plotly.js';
 import axios from 'axios';
 
 const Text = Typography;
 
 const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoaded }) => {
-  const [pythonCode, setPythonCode] = useState(
-    `# 处理数据示例 - 可视化区域 ${index}
-# 返回DataFrame显示表格
-# result = df.groupby("category").sum().reset_index()
-
-# 或返回Plotly图表
-# import plotly.express as px
-# result = px.bar(df.groupby("category").sum().reset_index(), x="category", y="price")`
-  );
+  const [pythonCode, setPythonCode] = useState("");
   
   // 当配置加载完成后，设置初始Python代码
   useEffect(() => {
@@ -280,31 +273,12 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
       </div>
       
       {/* Print输出对话框 */}
-      <Modal
+      <OutputModal
         title="Python 输出"
-        open={isPrintModalVisible}
-        onCancel={handlePrintModalClose}
-        footer={[
-          <Button key="close" onClick={handlePrintModalClose}>
-            关闭
-          </Button>
-        ]}
-        width={700}
-      >
-        <div 
-          style={{ 
-            backgroundColor: '#f5f5f5', 
-            padding: '10px', 
-            borderRadius: '5px',
-            maxHeight: '400px',
-            overflowY: 'auto',
-            whiteSpace: 'pre-wrap',
-            fontFamily: 'monospace'
-          }}
-        >
-          {printOutput || '没有输出'}
-        </div>
-      </Modal>
+        isVisible={isPrintModalVisible}
+        onClose={handlePrintModalClose}
+        output={printOutput}
+      />
     </Card>
   );
 };
