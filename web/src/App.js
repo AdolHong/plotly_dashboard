@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Layout, Typography, Divider } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
 import 'antd/dist/reset.css';
-import SQLEditor from './components/SQLEditor';
+import SQLPythonDashboard from './components/SQLPythonDashboard';
 import DataTable from './components/DataTable';
 import Visualization from './components/Visualization';
 
@@ -77,16 +77,12 @@ function App() {
       </Header>
       <Content style={{ padding: '0 50px', marginTop: '20px' }}>
         <div style={{ background: '#fff', padding: '24px', minHeight: '280px' }}>
-          <SQLEditor 
+          <SQLPythonDashboard 
             onDataReceived={handleDataReceived} 
             onPlotDataReceived={handlePlotDataReceived}
             onPrintOutputReceived={handlePrintOutputReceived}
             onError={handleError}
           />
-          
-          <Divider />
-          
-          {renderResult()}
         </div>
       </Content>
       <Footer style={{ textAlign: 'center' }}>
