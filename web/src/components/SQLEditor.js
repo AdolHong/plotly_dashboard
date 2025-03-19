@@ -116,7 +116,7 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
         return;
       }
       
-      message.info(JSON.stringify(paramValues, null, 2));
+      // message.info(JSON.stringify(paramValues, null, 2));
 
       // 执行SQL查询并缓存结果
       const queryResponse = await axios.post('http://localhost:8000/api/query', {
@@ -263,6 +263,31 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
       
       {/* 参数控件 */}
       {renderParameterControls()}
+
+      <div style={{ marginTop: '20px',marginBottom: '20px', display: 'flex', gap: '10px' }}>
+        <Button 
+          type="primary" 
+          onClick={handleExecuteQuery} 
+          loading={loading}
+        >
+          执行SQL查询
+        </Button>
+        <Button 
+          onClick={() => setShowSqlModal(true)}
+          disabled={!processedSql}
+        >
+          查看解析后的SQL
+        </Button>
+        
+        {/* 显示解析后的SQL的模态框 */}
+        <PrintModal
+          title="解析后的SQL代码"
+          isVisible={showSqlModal}
+          onClose={() => setShowSqlModal(false)}
+          output={processedSql}
+        />
+      </div>
+
       
       <AceEditor
         mode="sql"
@@ -291,29 +316,7 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
         }}
       />
       
-      <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-        <Button 
-          type="primary" 
-          onClick={handleExecuteQuery} 
-          loading={loading}
-        >
-          执行SQL查询
-        </Button>
-        <Button 
-          onClick={() => setShowSqlModal(true)}
-          disabled={!processedSql}
-        >
-          查看解析后的SQL
-        </Button>
-        
-        {/* 显示解析后的SQL的模态框 */}
-        <PrintModal
-          title="解析后的SQL代码"
-          isVisible={showSqlModal}
-          onClose={() => setShowSqlModal(false)}
-          output={processedSql}
-        />
-      </div>
+
     </div>
   );
 };

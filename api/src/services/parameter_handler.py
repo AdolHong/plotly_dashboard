@@ -93,6 +93,29 @@ def process_parameter_value(param: Dict[str, Any], value: Any) -> Any:
     return value
 
 
+def _parse_date_parameter(pattern: str) -> str:
+    """解析日期参数格式并计算结果"""
+    import re
+    from datetime import datetime, timedelta
+
+    # 匹配日期格式和偏移量
+    match = re.match(r'\$\{([yMd-]+)([+-]\d+[d])?\}', pattern)
+    if not match:
+        return pattern
+
+    date_format, offset = match.groups()
+    current_date = datetime.now()
+
+    # 处理日期偏移
+    if offset:
+        days = int(offset[:-1])  # 去掉'd'后转为整数
+        current_date += timedelta(days=days)
+
+    # 转换Java日期格式为Python日期格式
+    py_format = date_format.replace('yyyy', '%Y').replace('MM', '%m').replace('dd', '%d')
+    
+    return current_date.strftime(py_format)
+
 def replace_parameters_in_sql(sql: str, param_values: Dict[str, Any]) -> str:
     """替换SQL中的参数占位符"""
     if not sql or not param_values:
@@ -114,5 +137,12 @@ def replace_parameters_in_sql(sql: str, param_values: Dict[str, Any]) -> str:
         # 替换SQL中的参数占位符 ${param_name}
         placeholder = f"${{{param_name}}}"
         sql = sql.replace(placeholder, str(processed_value))
+    
+    # 处理日期格式参数
+    import re
+    date_patterns = re.finditer(r'\$\{[yMd-]+[+-]?\d*[d]?\}', sql)
+    for match in date_patterns:
+        pattern = match.group()
+        sql = sql.replace(pattern, _parse_date_parameter(pattern))
     
     return sql
