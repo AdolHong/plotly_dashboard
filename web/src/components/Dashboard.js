@@ -85,7 +85,6 @@ const Dashboard = () => {
         onQuerySuccess={handleQuerySuccess}
         initialSqlCode={initialSqlCode}
         configLoaded={configLoaded}
-        dashboardConfig={dashboardConfig}
       />
       
       <Divider orientation="left">Python 可视化区域</Divider>

@@ -9,7 +9,6 @@ from pathlib import Path
 
 from src.services.visualization import process_analysis_request
 from src.services.session_manager import SessionManager
-from src.services.parameter_parser import ParameterParser
 from src.database.db import execute_query, init_db
 
 # Initialize session manager
@@ -70,20 +69,12 @@ async def execute_sql_query(request: dict):
         if not sql_query or not session_id:
             raise HTTPException(status_code=400, detail="SQL query and session ID are required")
         
-        # 获取仪表盘配置
-        config_path = Path(__file__).parent / "data" / "dashboard_config.json"
-        if config_path.exists():
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-                
-            # 处理参数替换
-            if "parameters" in config and param_values:
-                parser = ParameterParser(config["parameters"])
-                parser.set_param_values(param_values)
-                sql_query = parser.replace_sql_params(sql_query)
+        # 替换SQL查询中的参数占位符
+        from src.services.parameter_handler import replace_parameters_in_sql
+        processed_sql = replace_parameters_in_sql(sql_query, param_values)
         
         # Execute query and get DataFrame
-        df = execute_query(sql_query)
+        df = execute_query(processed_sql)
         
         # Convert DataFrame to dict for caching
         result = {

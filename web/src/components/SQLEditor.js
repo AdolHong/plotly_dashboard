@@ -2,37 +2,44 @@ import React, { useState, useEffect } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-sql';
 import 'ace-builds/src-noconflict/theme-github';
-import { Button, Typography, message, Form, Select, Input, DatePicker, Space, Card, Divider } from 'antd';
+import { Button, Typography, message, Form, Select, Input, DatePicker, Space, Card, Divider, Row, Col } from 'antd';
 import axios from 'axios';
 import moment from 'moment';
 
-const { Title } = Typography;
-
+const { Title, Text } = Typography;
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 
-const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, dashboardConfig }) => {
+const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) => {
   const [sqlQuery, setSqlQuery] = useState('SELECT * FROM sales LIMIT 10');
   const [loading, setLoading] = useState(false);
+  const [parameters, setParameters] = useState([]);
   const [paramValues, setParamValues] = useState({});
   const [form] = Form.useForm();
   
-  // 当配置加载完成后，设置初始SQL代码和参数默认值
+  // 当配置加载完成后，设置初始SQL代码并加载参数
   useEffect(() => {
     if (configLoaded && initialSqlCode) {
       setSqlQuery(initialSqlCode);
+      fetchParameters();
+    }
+  }, [configLoaded, initialSqlCode]);
+  
+  // 获取参数配置
+  const fetchParameters = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/config');
       
-      // 初始化参数默认值
-      if (dashboardConfig && dashboardConfig.parameters) {
-        const defaultValues = {};
+      if (response.data.status === 'success' && response.data.config.parameters) {
+        const params = response.data.config.parameters;
+        setParameters(params);
         
-        dashboardConfig.parameters.forEach(param => {
+
+        // 设置默认参数值
+        const defaultValues = {};
+        params.forEach(param => {
           if (param.default !== undefined) {
-            // 处理日期类型的默认值
-            if (param.param_type === 'date_picker' && param.default) {
+            if (param.type === 'date_picker' && param.default) {
               defaultValues[param.name] = moment(param.default);
-            } else if (param.param_type === 'date_range' && Array.isArray(param.default) && param.default.length === 2) {
-              defaultValues[param.name] = [moment(param.default[0]), moment(param.default[1])];
             } else {
               defaultValues[param.name] = param.default;
             }
@@ -42,11 +49,20 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, da
         setParamValues(defaultValues);
         form.setFieldsValue(defaultValues);
       }
+    } catch (error) {
+      console.error('获取参数配置失败:', error);
+      message.error('获取参数配置失败');
     }
-  }, [configLoaded, initialSqlCode, dashboardConfig, form]);
+  };
   
-  // 处理参数值变更
+  // 处理参数值变化
   const handleParamChange = (name, value) => {
+    // 特殊处理日期类型，避免时区问题
+    if (value && value._isAMomentObject) {
+      // 使用YYYY-MM-DD格式，避免时区转换问题
+      value = value.format('YYYY-MM-DD');
+    }
+    
     setParamValues(prev => ({
       ...prev,
       [name]: value
@@ -65,6 +81,7 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, da
       }
       
       message.info(JSON.stringify(paramValues, null, 2));
+
       // 执行SQL查询并缓存结果
       const queryResponse = await axios.post('http://localhost:8000/api/query', {
         sql_query: sqlQuery,
@@ -99,127 +116,101 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, da
   };
 
   // 渲染参数控件
-  const renderParamControls = () => {
-    if (!dashboardConfig || !dashboardConfig.parameters || dashboardConfig.parameters.length === 0) {
+  const renderParameterControls = () => {
+    if (!parameters || parameters.length === 0) {
       return null;
     }
-    
+
     return (
       <Card title="查询参数" style={{ marginBottom: '20px' }}>
         <Form
           form={form}
-          layout="vertical"
+          layout="horizontal"
           initialValues={paramValues}
-          onValuesChange={(changedValues) => {
-            const name = Object.keys(changedValues)[0];
-            handleParamChange(name, changedValues[name]);
-          }}
         >
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
-            {dashboardConfig.parameters.map(param => {
-              const { name, param_type, label, choices, placeholder } = param;
-              const displayLabel = label || name;
-              
-              switch (param_type) {
-                case 'single_select':
-                  return (
-                    <Form.Item 
-                      key={name} 
-                      name={name} 
-                      label={displayLabel}
-                      style={{ minWidth: '200px' }}
+          <Row gutter={16}>
+          {parameters.map(param => {
+            const { name, type, choices, default: defaultValue } = param;
+            
+            switch (type) {
+              case 'single_select':
+                return (
+                  <Col span={8} key={name}>
+                    <Form.Item label={name} name={name}>
+                    <Select 
+                      placeholder={`请选择${name}`}
+                      style={{ width: '100%' }}
+                      onChange={(value) => handleParamChange(name, value)}
                     >
-                      <Select placeholder={placeholder || `请选择${displayLabel}`}>
-                        {(choices || []).map(choice => (
-                          <Option key={choice} value={choice}>{choice}</Option>
-                        ))}
-                      </Select>
+                      {choices && choices.map(choice => (
+                        <Option key={choice} value={choice}>{choice}</Option>
+                      ))}
+                    </Select>
                     </Form.Item>
-                  );
-                  
-                case 'multi_select':
-                  return (
-                    <Form.Item 
-                      key={name} 
-                      name={name} 
-                      label={displayLabel}
-                      style={{ minWidth: '200px' }}
+                  </Col>
+                );
+                
+              case 'multi_select':
+                return (
+                  <Col span={8} key={name}>
+                    <Form.Item label={name} name={name}>
+                    <Select 
+                      mode="multiple"
+                      placeholder={`请选择${name}`}
+                      style={{ width: '100%' }}
+                      onChange={(value) => handleParamChange(name, value)}
                     >
-                      <Select 
-                        mode="multiple" 
-                        placeholder={placeholder || `请选择${displayLabel}`}
-                      >
-                        {(choices || []).map(choice => (
-                          <Option key={choice} value={choice}>{choice}</Option>
-                        ))}
-                      </Select>
+                      {choices && choices.map(choice => (
+                        <Option key={choice} value={choice}>{choice}</Option>
+                      ))}
+                    </Select>
                     </Form.Item>
-                  );
-                  
-                case 'date_picker':
-                  return (
-                    <Form.Item 
-                      key={name} 
-                      name={name} 
-                      label={displayLabel}
-                      style={{ minWidth: '200px' }}
-                    >
-                      <DatePicker 
-                        style={{ width: '100%' }}
-                        placeholder={placeholder || `请选择${displayLabel}`}
-                        format="YYYY-MM-DD"
-                      />
+                  </Col>
+                );
+                
+              case 'date_picker':
+                return (
+                  <Col span={8} key={name}>
+                    <Form.Item label={name} name={name}>
+                    <DatePicker 
+                      style={{ width: '100%' }}
+                      onChange={(date) => handleParamChange(name, date)}
+                    />
                     </Form.Item>
-                  );
-                  
-                case 'date_range':
-                  return (
-                    <Form.Item 
-                      key={name} 
-                      name={name} 
-                      label={displayLabel}
-                      style={{ minWidth: '300px' }}
-                    >
-                      <RangePicker 
-                        style={{ width: '100%' }}
-                        placeholder={[`开始${displayLabel}`, `结束${displayLabel}`]}
-                        format="YYYY-MM-DD"
-                      />
+                  </Col>
+                );
+                
+              case 'single_input':
+                return (
+                  <Col span={8} key={name}>
+                    <Form.Item label={name} name={name}>
+                    <Input 
+                      placeholder={`请输入${name}`}
+                      onChange={(e) => handleParamChange(name, e.target.value)}
+                    />
                     </Form.Item>
-                  );
-                  
-                case 'single_input':
-                  return (
-                    <Form.Item 
-                      key={name} 
-                      name={name} 
-                      label={displayLabel}
-                      style={{ minWidth: '200px' }}
-                    >
-                      <Input placeholder={placeholder || `请输入${displayLabel}`} />
+                  </Col>
+                );
+                
+              case 'multi_input':
+                return (
+                  <Col span={8} key={name}>
+                    <Form.Item label={name} name={name}>
+                    <Select
+                      mode="tags"
+                      style={{ width: '100%' }}
+                      placeholder={`请输入${name}，回车分隔多个值`}
+                      onChange={(values) => handleParamChange(name, values)}
+                    />
                     </Form.Item>
-                  );
-                  
-                case 'multi_input':
-                  return (
-                    <Form.Item 
-                      key={name} 
-                      name={name} 
-                      label={displayLabel}
-                      style={{ minWidth: '200px' }}
-                    >
-                      <Select 
-                        mode="tags" 
-                        placeholder={placeholder || `请输入${displayLabel}，回车分隔`}
-                      />
-                    </Form.Item>
-                  );
-                  
-                default:
-                  return null;
-              }
-            })}
-          </div>
+                  </Col>
+                );
+                
+              default:
+                return null;
+            }
+          })}
+          </Row>
         </Form>
       </Card>
     );
@@ -229,7 +220,8 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, da
     <div style={{ padding: '20px', backgroundColor: '#f5f5f5', borderRadius: '5px' }}>
       <Title level={4}>SQL 查询</Title>
       
-      {renderParamControls()}
+      {/* 参数控件 */}
+      {renderParameterControls()}
       
       <AceEditor
         mode="sql"

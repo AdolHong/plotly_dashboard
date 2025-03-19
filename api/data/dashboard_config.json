@@ -1,56 +1,39 @@
 {
     "query": {
         "type": "SQL",
-        "code": "SELECT * FROM sales WHERE region = '${region}' AND category IN (${categories}) AND price >= ${min_price} AND sale_date ${date_range} LIMIT 10"
+        "code": "SELECT * FROM sales WHERE region = '${region}' AND category IN (${categories}) AND price >= ${min_price} AND product_id IN (${product_ids}) AND order_date >= '${order_date}' LIMIT 10"
     },
     "parameters":[
         {
             "name": "region",
-            "label": "销售区域",
-            "value_type": "string",
-            "param_type": "single_select",
+            "type": "single_select",
             "choices": ["华东","华南","华北","西北","西南"],
             "default": "华东"
         },
         {
             "name": "categories",
-            "label": "产品类别",
-            "value_type": "string",
-            "param_type": "multi_select",
-            "choices": ["电子产品","配件","办公设备","网络设备","存储设备"],
+            "type": "multi_select",
+            "choices": ["电子产品","服装","食品","家居","图书"],
             "default": ["电子产品"],
             "sep": ",",
             "wrapper": "'"
         },
         {
+            "name": "order_date",
+            "type": "date_picker",
+            "format": "yyyy-MM-dd",
+            "default": "2023-01-01"
+        },
+        {
             "name": "min_price",
-            "label": "最低价格",
-            "value_type": "number",
-            "param_type": "single_input",
-            "default": 100
+            "type": "single_input",
+            "default": "100"
         },
         {
-            "name": "date_range",
-            "label": "销售日期范围",
-            "value_type": "string",
-            "param_type": "date_range",
-            "default": ["2023-01-01", "2023-12-31"],
-            "format": "yyyy-MM-dd"
-        },
-        {
-            "name": "keywords",
-            "label": "关键词",
-            "value_type": "string",
-            "param_type": "multi_input",
+            "name": "product_ids",
+            "type": "multi_input",
             "sep": ",",
             "wrapper": "'"
-        },
-        {
-            "name": "specific_date",
-            "label": "指定日期",
-            "value_type": "string",
-            "param_type": "date_picker",
-            "format": "yyyy-MM-dd"
         }
     ],
     "visualization": [
@@ -60,7 +43,7 @@
         },
         {
             "type": "python",
-            "code": "# 返回图\nimport plotly.express as px\nresult = px.bar(df.groupby(\"category\").sum().reset_index(), x=\"category\", y=\"price\")"
+            "code": "# 返回图\nimport plotly.express as px\nresult = px.bar(df.groupby(\"region\").sum().reset_index(), x=\"region\", y=\"quantity\")"
         }
     ]
 }
