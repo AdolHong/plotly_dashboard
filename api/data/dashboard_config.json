@@ -6,8 +6,7 @@
     "parameters":[
         {
             "name": "region",
-            "value_type": "string",
-            "param_type": "single_select",
+            "type": "single_select",
             "choices": ["华东","华南","华北","西北","西南"],
             "default": "华东"
         }
