@@ -30,12 +30,12 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
   useEffect(() => {
     if (configLoaded && initialSqlCode) {
       setSqlQuery(initialSqlCode);
-      fetchParameters();
+      fetchParameters(initialSqlCode);
     }
   }, [configLoaded, initialSqlCode]);
   
   // 获取参数配置
-  const fetchParameters = async () => {
+  const fetchParameters = async (sql) => {
     try {
       const response = await axios.get('http://localhost:8000/api/config');
       
@@ -43,21 +43,28 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
         const params = response.data.config.parameters;
         setParameters(params);
         
-
         // 设置默认参数值
         const defaultValues = {};
         params.forEach(param => {
-          if (param.default !== undefined) {
-            if (param.type === 'date_picker' && param.default) {
-              defaultValues[param.name] = dayjs(param.default);
-            } else {
-              defaultValues[param.name] = param.default;
-            }
+          // 为所有参数设置默认值，确保即使前端未填写也有值
+          if (param.type === 'single_select' || param.type === 'single_input') {
+            // 单选类型默认为空字符串
+            defaultValues[param.name] = param.default !== undefined ? param.default : '';
+          } else if (param.type === 'multi_select' || param.type === 'multi_input') {
+            // 多选类型默认为空数组
+            defaultValues[param.name] = param.default !== undefined ? param.default : [];
+          } else if (param.type === 'date_picker') {
+            // 日期类型特殊处理
+            defaultValues[param.name] = param.default ? dayjs(param.default) : null;
           }
         });
         
         setParamValues(defaultValues);
         form.setFieldsValue(defaultValues);
+        
+        // 自动获取解析后的SQL          
+        fetchParsedSQL(sql, defaultValues);
+        
       }
     } catch (error) {
       console.error('获取参数配置失败:', error);
@@ -67,8 +74,7 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
   
   // 处理参数值变化
   const handleParamChange = (name, value) => {
-    message.info(`${name}: ${JSON.stringify(value)}`);
-    // 特殊处理日期类型，避免时区问题
+    // message.info(`${name}: ${JSON.stringify(value)}`);
     const newParamValues = {
       ...paramValues,
       [name]: value
