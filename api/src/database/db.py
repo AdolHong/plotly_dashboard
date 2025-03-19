@@ -65,35 +65,6 @@ def init_db():
                 (14, '平板电脑', '电子产品', 3499.99, 10, '2023-05-10', '西南'),
                 (15, '键盘', '配件', 249.99, 25, '2023-05-20', '西北')
             """)
-            
-            # 创建示例用户数据表
-            conn.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY,
-                username VARCHAR,
-                age INTEGER,
-                gender VARCHAR,
-                registration_date DATE,
-                last_login DATE,
-                active BOOLEAN
-            )
-            """)
-            
-            conn.execute("""
-            INSERT INTO users (id, username, age, gender, registration_date, last_login, active)
-            VALUES
-                (1, '张三', 28, '男', '2023-01-05', '2023-06-01', true),
-                (2, '李四', 35, '男', '2023-01-10', '2023-06-02', true),
-                (3, '王五', 22, '女', '2023-01-15', '2023-06-01', true),
-                (4, '赵六', 45, '男', '2023-02-01', '2023-05-20', false),
-                (5, '钱七', 31, '女', '2023-02-10', '2023-06-03', true),
-                (6, '孙八', 27, '男', '2023-02-20', '2023-05-15', false),
-                (7, '周九', 39, '女', '2023-03-05', '2023-06-02', true),
-                (8, '吴十', 42, '男', '2023-03-15', '2023-06-01', true),
-                (9, '郑十一', 25, '女', '2023-04-01', '2023-05-10', false),
-                (10, '王十二', 33, '男', '2023-04-15', '2023-06-03', true)
-            """)
-            
         print("数据库初始化完成")
     except Exception as e:
         print(f"数据库初始化错误: {e}")
