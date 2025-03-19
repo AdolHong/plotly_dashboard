@@ -112,7 +112,6 @@ async def visualize_data(request: dict):
             raise HTTPException(status_code=400, detail="Session ID and query hash are required")
         
         # Get cached query result
-        print("query_hash received: ", query_hash)
         cached_result = session_manager.get_query_result(session_id, query_hash)
         if not cached_result:
             raise HTTPException(status_code=404, detail="Query result not found")

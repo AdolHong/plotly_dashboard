@@ -17,7 +17,7 @@ const { Title } = Typography;
 const { Option } = Select;
 
 const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) => {
-  const [sqlQuery, setSqlQuery] = useState('SELECT * FROM sales LIMIT 10');
+  const [sqlQuery, setSqlQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [parameters, setParameters] = useState([]);
   const [paramValues, setParamValues] = useState({});
