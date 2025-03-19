@@ -10,6 +10,7 @@ from pathlib import Path
 from src.services.visualization import process_analysis_request
 from src.services.session_manager import SessionManager
 from src.database.db import execute_query, init_db
+from src.services.parameter_handler import replace_parameters_in_sql
 
 # Initialize session manager
 session_manager = SessionManager()
@@ -57,6 +58,30 @@ async def get_dashboard_config():
             "message": str(e)
         }
 
+@app.post("/api/parse_sql")
+async def parse_sql_query(request: dict):
+    """解析SQL查询中的参数，但不执行查询"""
+    try:
+        sql_query = request.get("sql_query", "")
+        param_values = request.get("param_values", {})
+        
+        if not sql_query:
+            raise HTTPException(status_code=400, detail="SQL query is required")
+        
+        # 替换SQL查询中的参数占位符
+        processed_sql = replace_parameters_in_sql(sql_query, param_values)
+        
+        return {
+            "status": "success",
+            "message": "SQL解析成功",
+            "processed_sql": processed_sql
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
 
 @app.post("/api/query")
 async def execute_sql_query(request: dict):
@@ -70,7 +95,6 @@ async def execute_sql_query(request: dict):
             raise HTTPException(status_code=400, detail="SQL query and session ID are required")
         
         # 替换SQL查询中的参数占位符
-        from src.services.parameter_handler import replace_parameters_in_sql
         processed_sql = replace_parameters_in_sql(sql_query, param_values)
         
         # Execute query and get DataFrame
@@ -89,7 +113,8 @@ async def execute_sql_query(request: dict):
         return {
             "status": "success",
             "message": "Query executed successfully",
-            "query_hash": query_hash
+            "query_hash": query_hash,
+            "processed_sql": processed_sql
         }
     except Exception as e:
         return {

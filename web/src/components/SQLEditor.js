@@ -7,6 +7,7 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import PrintModal from './PrintModal';
 
 
 // Important: extend dayjs with the plugins
@@ -22,6 +23,8 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
   const [parameters, setParameters] = useState([]);
   const [paramValues, setParamValues] = useState({});
   const [form] = Form.useForm();
+  const [processedSql, setProcessedSql] = useState('');
+  const [showSqlModal, setShowSqlModal] = useState(false);
   
   // 当配置加载完成后，设置初始SQL代码并加载参数
   useEffect(() => {
@@ -66,10 +69,34 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
   const handleParamChange = (name, value) => {
     message.info(`${name}: ${JSON.stringify(value)}`);
     // 特殊处理日期类型，避免时区问题
-    setParamValues(prev => ({
-      ...prev,
+    const newParamValues = {
+      ...paramValues,
       [name]: value
-    }));
+    };
+    setParamValues(newParamValues);
+    
+    // 参数变更时自动获取解析后的SQL
+    if (sqlQuery) {
+      fetchParsedSQL(sqlQuery, newParamValues);
+    }
+  };
+  
+  // 获取解析后的SQL
+  const fetchParsedSQL = async (sql, params) => {
+    try {
+      const response = await axios.post('http://localhost:8000/api/parse_sql', {
+        sql_query: sql,
+        param_values: params
+      });
+      
+      if (response.data.status === 'success' && response.data.processed_sql) {
+        setProcessedSql(response.data.processed_sql);
+      } else if (response.data.status === 'error') {
+        console.error('SQL解析失败:', response.data.message);
+      }
+    } catch (error) {
+      console.error('获取解析后的SQL失败:', error);
+    }
   };
 
   // 执行SQL查询
@@ -102,6 +129,11 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
       if (!queryHash) {
         message.error('服务器未返回有效的查询哈希值');
         return;
+      }
+      
+      // 保存解析后的SQL代码
+      if (queryResponse.data.processed_sql) {
+        setProcessedSql(queryResponse.data.processed_sql);
       }
       
       message.success('SQL查询成功');
@@ -235,7 +267,13 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
         theme="github"
         name="sql-editor"
         value={sqlQuery}
-        onChange={setSqlQuery}
+        onChange={(newSql) => {
+          setSqlQuery(newSql);
+          // 当SQL变更且有参数值时，自动获取解析后的SQL
+          if (Object.keys(paramValues).length > 0) {
+            fetchParsedSQL(newSql, paramValues);
+          }
+        }}
         fontSize={14}
         width="100%"
         height="200px"
@@ -251,7 +289,7 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
         }}
       />
       
-      <div style={{ marginTop: '20px' }}>
+      <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
         <Button 
           type="primary" 
           onClick={handleExecuteQuery} 
@@ -259,6 +297,20 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
         >
           执行SQL查询
         </Button>
+        <Button 
+          onClick={() => setShowSqlModal(true)}
+          disabled={!processedSql}
+        >
+          查看解析后的SQL
+        </Button>
+        
+        {/* 显示解析后的SQL的模态框 */}
+        <PrintModal
+          title="解析后的SQL代码"
+          isVisible={showSqlModal}
+          onClose={() => setShowSqlModal(false)}
+          output={processedSql}
+        />
       </div>
     </div>
   );

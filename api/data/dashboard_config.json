@@ -6,9 +6,11 @@
     "parameters":[
         {
             "name": "region",
-            "type": "single_select",
+            "type": "multi_select",
             "choices": ["华东","华南","华北","西北","西南"],
-            "default": "华东"
+            "default": ["华东"],
+            "sep": ",",
+            "wrapper": "'"
         },
         {
             "name": "categories",
