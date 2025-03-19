@@ -55,6 +55,11 @@ def process_parameter_value(param: Dict[str, Any], value: Any) -> Any:
     elif param_type == "date_picker":
         # 日期选择器，根据format参数格式化日期
         if not value:
+            # 如果没有值，检查是否有默认值
+            default_value = param.get("default", "")
+            # 如果默认值是动态日期表达式，解析它
+            if default_value and isinstance(default_value, str) and default_value.startswith("${") and default_value.endswith("}"):
+                return _parse_date_parameter(default_value)
             return ""
         
         date_format = param.get("format", "yyyy-MM-dd")
@@ -94,11 +99,18 @@ def process_parameter_value(param: Dict[str, Any], value: Any) -> Any:
 
 
 def _parse_date_parameter(pattern: str) -> str:
-    """解析日期参数格式并计算结果"""
+    """解析日期参数格式并计算结果
+    
+    支持的格式：
+    - ${yyyy-MM-dd} - 当前日期
+    - ${yyyyMMdd+1d} - 明天
+    - ${yyyy-MM-dd-1d} - 昨天
+    - 其他类似格式
+    """
     import re
     from datetime import datetime, timedelta
 
-    # 匹配日期格式和偏移量
+    # 匹配日期格式和偏移量，支持更灵活的格式
     match = re.match(r'\$\{([yMd-]+)([+-]\d+[d])?\}', pattern)
     if not match:
         return pattern
@@ -111,7 +123,7 @@ def _parse_date_parameter(pattern: str) -> str:
         days = int(offset[:-1])  # 去掉'd'后转为整数
         current_date += timedelta(days=days)
 
-    # 转换Java日期格式为Python日期格式
+    # 转换Java风格的日期格式为Python风格
     py_format = date_format.replace('yyyy', '%Y').replace('MM', '%m').replace('dd', '%d')
     
     return current_date.strftime(py_format)
@@ -146,3 +158,59 @@ def replace_parameters_in_sql(sql: str, param_values: Dict[str, Any]) -> str:
         sql = sql.replace(pattern, _parse_date_parameter(pattern))
     
     return sql
+
+# 初次加载config，预处理
+def preprocess_of_config(config: Dict[str, Any]) ->  Dict[str, Any]:
+    """
+    预处理config，处理参数中的动态日期值。
+    """
+    _parse_dynamic_date = lambda v: _parse_date_parameter(v)  if isinstance(v, str) and v.startswith("${")\
+                        and v.endswith("}") else v
+
+    try:
+        if "parameters" in config:
+            # 确保default在choices中
+            for idx, param in enumerate(config["parameters"]):
+                if param.get("type") in ["single_select", "multi_select"]:
+                    # 确保choices存在且为列表
+                    if "choices" not in param or not isinstance(param["choices"], list):
+                        param["choices"] = []
+                    
+                    # 确保default在choices中
+                    if "default" in param:
+                        if isinstance(param["default"], str) and param["default"] not in param["choices"]:
+                            param["choices"].append(param["default"])
+                        elif isinstance(param["default"], list):
+                            # 处理多选的default值列表
+                            for i, value in enumerate(param["default"]):
+                                # 如果值不在choices中，添加到choices列表末尾
+                                if value not in param["choices"]:
+                                    param["choices"].append(value)
+                    config["parameters"][idx] = param
+                    
+
+            # 处理参数中的动态日期值
+            for idx, param in enumerate(config["parameters"]):
+                param_type = param.get("type")
+                # default值为动态日期
+                if  "default" in param:
+                    if isinstance(param["default"], str):
+                        # 处理单选的default值
+                        param["default"] = _parse_dynamic_date(param["default"])
+                    elif isinstance(param["default"], list):
+                        # 处理多选的default值列表
+                        for i, value in enumerate(param["default"]):
+                            value = _parse_dynamic_date(value)
+                            param["default"][i] = value
+
+                # single_select和multi_select类型的choices中包含的动态日期
+                elif param_type in ["single_select", "multi_select"]:                    
+                    # 处理choices中的动态日期参数
+                    for i, choice in enumerate(param["choices"]):
+                        param["choices"][i] = _parse_dynamic_date(choice)
+
+                config["parameters"][idx] = param
+    except Exception as e:
+        print(f"预处理config失败: {str(e)}")
+    return config
+                    
