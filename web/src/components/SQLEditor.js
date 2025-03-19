@@ -4,7 +4,17 @@ import 'ace-builds/src-noconflict/mode-sql';
 import 'ace-builds/src-noconflict/theme-github';
 import { Button, Typography, message, Form, Select, Input, DatePicker, Space, Card, Divider, Row, Col } from 'antd';
 import axios from 'axios';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import locale from 'antd/es/date-picker/locale/zh_CN';
+
+// 扩展dayjs功能
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+// 设置dayjs全局语言为中文
+dayjs.locale('zh-cn');
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -39,7 +49,7 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
         params.forEach(param => {
           if (param.default !== undefined) {
             if (param.type === 'date_picker' && param.default) {
-              defaultValues[param.name] = moment(param.default);
+              defaultValues[param.name] = dayjs(param.default);
             } else {
               defaultValues[param.name] = param.default;
             }
@@ -57,16 +67,24 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
   
   // 处理参数值变化
   const handleParamChange = (name, value) => {
+
+    message.info(`${name}: ${JSON.stringify(value)}`);
     // 特殊处理日期类型，避免时区问题
     if (value && value._isAMomentObject) {
-      // 使用YYYY-MM-DD格式，避免时区转换问题
-      value = value.format('YYYY-MM-DD');
+      // 将moment对象转换为dayjs，然后格式化
+      const formattedDate = dayjs(value.valueOf()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+      message.info(`${name}: ${JSON.stringify(value)}`);
+      
+      setParamValues(prev => ({
+        ...prev,
+        [name]: formattedDate
+      }));
+    } else {
+      setParamValues(prev => ({
+        ...prev,
+        [name]: value
+      }));
     }
-    
-    setParamValues(prev => ({
-      ...prev,
-      [name]: value
-    }));
   };
 
   // 执行SQL查询
@@ -175,6 +193,10 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
                     <DatePicker 
                       style={{ width: '100%' }}
                       onChange={(date) => handleParamChange(name, date)}
+                      format="YYYY-MM-DD"
+                      showTime={false}
+                      showToday
+                      locale={locale}
                     />
                     </Form.Item>
                   </Col>

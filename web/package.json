@@ -3,18 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4",
-    "moment": "^2.29.4",
-    "plotly.js": "^2.27.1",
-    "react-plotly.js": "^2.6.0",
-    "axios": "^1.6.2",
-    "react-ace": "^10.1.0",
+    "@tanstack/react-table": "^8.10.7",
     "ace-builds": "^1.32.2",
     "antd": "^5.12.2",
-    "@tanstack/react-table": "^8.10.7"
+    "axios": "^1.6.2",
+    "dayjs": "^1.11.13",
+    "moment": "^2.29.4",
+    "plotly.js": "^2.27.1",
+    "react": "^18.2.0",
+    "react-ace": "^10.1.0",
+    "react-dom": "^18.2.0",
+    "react-plotly.js": "^2.6.0",
+    "react-scripts": "5.0.1",
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -40,4 +41,4 @@
       "last 1 safari version"
     ]
   }
-} 
+}
