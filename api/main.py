@@ -57,29 +57,6 @@ async def get_dashboard_config():
             "message": str(e)
         }
 
-@app.post("/api/config")
-async def save_dashboard_config(request: dict):
-    """保存仪表盘配置"""
-    try:
-        config = request.get("config", {})
-        
-        if not config:
-            raise HTTPException(status_code=400, detail="配置内容不能为空")
-        
-        config_path = Path(__file__).parent / "data" / "dashboard_config.json"
-        
-        with open(config_path, 'w', encoding='utf-8') as f:
-            json.dump(config, f, ensure_ascii=False, indent=4)
-        
-        return {
-            "status": "success",
-            "message": "配置保存成功"
-        }
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": str(e)
-        }
 
 @app.post("/api/query")
 async def execute_sql_query(request: dict):

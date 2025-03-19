@@ -3,7 +3,7 @@ import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/theme-github';
 import { Button, Card, Typography, Tooltip, message, Space } from 'antd';
-import OutputModal from './OutputModal';
+import PrintModal from './PrintModal';
 import Plot from 'react-plotly.js';
 import axios from 'axios';
 
@@ -273,7 +273,7 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
       </div>
       
       {/* Print输出对话框 */}
-      <OutputModal
+      <PrintModal
         title="Python 输出"
         isVisible={isPrintModalVisible}
         onClose={handlePrintModalClose}

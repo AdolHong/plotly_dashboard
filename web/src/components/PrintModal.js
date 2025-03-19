@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Modal } from 'antd';
 
-const OutputModal = ({ title, isVisible, onClose, output }) => {
+const PrintModal = ({ title, isVisible, onClose, output }) => {
   return (
     <Modal
       title={title}
@@ -31,4 +31,4 @@ const OutputModal = ({ title, isVisible, onClose, output }) => {
   );
 };
 
-export default OutputModal;
+export default PrintModal;
