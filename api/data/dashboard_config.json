@@ -22,7 +22,7 @@
             "name": "order_date",
             "type": "date_picker",
             "format": "yyyy-MM-dd",
-            "default": "2023-01-01"
+            "default": "2023-01-02"
         },
         {
             "name": "min_price",
