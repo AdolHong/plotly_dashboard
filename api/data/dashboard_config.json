@@ -1,8 +1,17 @@
 {
     "query": {
         "type": "SQL",
-        "code": "SELECT * FROM sales LIMIT 10"
+        "code": "SELECT * FROM sales  where region = '${region}' LIMIT 10"
     },
+    "parameters":[
+        {
+            "name": "region",
+            "value_type": "string",
+            "param_type": "single_select",
+            "choices": ["华东","华南","华北","西北","西南"],
+            "default": "华东"
+        }
+    ],
     "visualization": [
         {
             "type": "python",
