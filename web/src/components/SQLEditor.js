@@ -166,18 +166,18 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
       <Card title="查询参数" style={{ marginBottom: '20px' }}>
         <Form
           form={form}
-          layout="horizontal"
+          layout="vertical"
           initialValues={paramValues}
         >
-          <Row gutter={16}>
+          <Row gutter={12}>
           {parameters.map(param => {
             const { name, type, choices, default: defaultValue } = param;
             
             switch (type) {
               case 'single_select':
                 return (
-                  <Col span={8} key={name}>
-                    <Form.Item label={name} name={name}>
+                  <Col span={4} key={name} style={{ marginBottom: '8px' }}>
+                    <Form.Item label={name} name={name} style={{ marginBottom: '8px' }}>
                     <Select 
                       placeholder={`请选择${name}`}
                       style={{ width: '100%' }}
@@ -193,8 +193,8 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
                 
               case 'multi_select':
                 return (
-                  <Col span={8} key={name}>
-                    <Form.Item label={name} name={name}>
+                  <Col span={4} key={name} style={{ marginBottom: '8px' }}>
+                    <Form.Item label={name} name={name} style={{ marginBottom: '8px' }}>
                     <Select 
                       mode="multiple"
                       placeholder={`请选择${name}`}
@@ -211,15 +211,11 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
                 
               case 'date_picker':
                 return (
-                  <Col span={8} key={name}>
-                    <Form.Item label={name} name={name}>
+                  <Col span={4} key={name} style={{ marginBottom: '8px' }}>
+                    <Form.Item label={name} name={name} style={{ marginBottom: '8px' }}>
                     <DatePicker 
                       style={{ width: '100%' }}
-                      // 自动转换成北京时区
-                      onChange={(date) => handleParamChange(name, dayjs(date).tz('Asia/Shanghai').format())}
-                      format="YYYY-MM-DD"
-                      showTime={false}
-                      showToday                      
+                      onChange={(value) => handleParamChange(name, value)}
                     />
                     </Form.Item>
                   </Col>
@@ -227,8 +223,8 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
                 
               case 'single_input':
                 return (
-                  <Col span={8} key={name}>
-                    <Form.Item label={name} name={name}>
+                  <Col span={4} key={name} style={{ marginBottom: '8px' }}>
+                    <Form.Item label={name} name={name} style={{ marginBottom: '8px' }}>
                     <Input 
                       placeholder={`请输入${name}`}
                       onChange={(e) => handleParamChange(name, e.target.value)}
@@ -239,8 +235,8 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
                 
               case 'multi_input':
                 return (
-                  <Col span={8} key={name}>
-                    <Form.Item label={name} name={name}>
+                  <Col span={4} key={name} style={{ marginBottom: '8px' }}>
+                    <Form.Item label={name} name={name} style={{ marginBottom: '8px' }}>
                     <Select
                       mode="tags"
                       style={{ width: '100%' }}
