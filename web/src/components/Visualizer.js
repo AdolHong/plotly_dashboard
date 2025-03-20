@@ -443,9 +443,9 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
       }
     >
       {description && (
-        <div style={{ marginBottom: '16px' }}>
-          <Text type="secondary">{description}</Text>
-        </div>
+        <Text type="secondary" style={{ display: 'block', marginTop: '-12px', marginBottom: '16px', fontSize: '13px' }}>
+          {description}
+        </Text>
       )}
       
       {/* 选项区域 */}

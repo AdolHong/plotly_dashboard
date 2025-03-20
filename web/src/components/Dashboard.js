@@ -78,10 +78,6 @@ const Dashboard = () => {
     setQueryHash(`${hash}_${new Date().getTime()}`);
   };
   
-  // 添加新的可视化区域
-  const handleAddVisualizer = () => {
-    setVisualizerCount(prev => prev + 1);
-  };
   
   return (
     <div>
@@ -109,16 +105,6 @@ const Dashboard = () => {
           inferredOptions={inferredOptions}
         />
       ))}
-      
-      {/* 添加可视化区域按钮 */}
-      <div style={{ marginTop: '20px', textAlign: 'center' }}>
-        <Button 
-          type="dashed" 
-          onClick={handleAddVisualizer}
-        >
-          添加可视化区域
-        </Button>
-      </div>
     </div>
   );
 };

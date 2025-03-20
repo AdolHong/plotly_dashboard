@@ -66,7 +66,7 @@
                 }
             ],
             "description": "按区域统计销量并以柱状图展示2",
-            "code": "# 返回图\nimport plotly.express as px\nresult = px.bar(df.groupby(\"category\").sum().reset_index(), x=\"category\", y=\"quantity\")"
+            "code": "# 返回图\nimport plotly.express as px\nresult = px.bar(df.query(f\"region == '{region}'\").groupby(\"category\").sum().reset_index(), x=\"category\", y=\"quantity\")"
         }
     ]
 }
