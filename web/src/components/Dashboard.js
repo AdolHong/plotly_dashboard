@@ -44,6 +44,9 @@ const Dashboard = () => {
             const pythonCodes = config.visualization.map(item => item.code || '');
             setInitialPythonCodes(pythonCodes);
             setVisualizerCount(pythonCodes.length || 1);
+            
+            // 保存完整的可视化配置，以便传递title和description
+            window.visualizationConfig = config.visualization;
           }
           
           setConfigLoaded(true);

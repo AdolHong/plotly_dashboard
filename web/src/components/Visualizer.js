@@ -11,13 +11,22 @@ const Text = Typography;
 
 const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoaded }) => {
   const [pythonCode, setPythonCode] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   
-  // 当配置加载完成后，设置初始Python代码
+  // 当配置加载完成后，设置初始Python代码和标题、描述
   useEffect(() => {
     if (configLoaded && initialPythonCode) {
       setPythonCode(initialPythonCode);
+      
+      // 从全局配置中获取标题和描述
+      if (window.visualizationConfig && window.visualizationConfig[index - 1]) {
+        const config = window.visualizationConfig[index - 1];
+        setTitle(config.title || "");
+        setDescription(config.description || "");
+      }
     }
-  }, [configLoaded, initialPythonCode]);
+  }, [configLoaded, initialPythonCode, index]);
   const [printOutput, setPrintOutput] = useState('');
   const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
   const [hasPrintOutput, setHasPrintOutput] = useState(false);
@@ -228,7 +237,7 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
 
   return (
     <Card 
-      title={`可视化区域 ${index}`} 
+      title={title ? `${title}` : `可视化区域 ${index}`} 
       style={{ marginBottom: '20px' }}
       extra={
         <Space>
@@ -245,6 +254,11 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
         </Space>
       }
     >
+      {description && (
+        <div style={{ marginBottom: '16px' }}>
+          <Text type="secondary">{description}</Text>
+        </div>
+      )}
       <div style={{ marginBottom: '16px' }}>
         <AceEditor
           mode="python"

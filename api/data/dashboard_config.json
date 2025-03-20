@@ -41,10 +41,14 @@
     "visualization": [
         {
             "type": "python",
+            "title": "数据表格1",
+            "description": "显示查询结果的原始数据表格1",
             "code": "# 返回表格\nresult = df"
         },
         {
             "type": "python",
+            "title": "区域销量柱状图2",
+            "description": "按区域统计销量并以柱状图展示2",
             "code": "# 返回图\nimport plotly.express as px\nresult = px.bar(df.groupby(\"region\").sum().reset_index(), x=\"region\", y=\"quantity\")"
         }
     ]
