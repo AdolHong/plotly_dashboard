@@ -73,14 +73,24 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
       message.error('请先执行SQL查询');
       return;
     }
-
+    
     setPrintOutput('');
     setHasPrintOutput(false);
     
     try {
       // 使用传入的 overrideOptionValues 或当前的 optionValues
-      const currentOptionValues = overrideOptionValues || optionValues;
+      console.log('overrideOptionValues:', {
+        value: overrideOptionValues,
+        type: typeof overrideOptionValues,
+        isNull: overrideOptionValues === null,
+        isUndefined: overrideOptionValues === undefined
+      });
+            
+      console.info(overrideOptionValues)
+      console.info(2)
 
+      const currentOptionValues = overrideOptionValues || optionValues;
+      
       // 发送Python代码处理请求
       const visualizeResponse = await axios.post('http://localhost:8000/api/visualize', {
         session_id: sessionId,
@@ -89,6 +99,8 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
         option_values: currentOptionValues,
         visualization_index: index - 1 // 索引从0开始，但前端显示从1开始
       });
+
+      
       // 保存print输出（无论成功还是失败）
       if (visualizeResponse.data.print_output) {
         const output = visualizeResponse.data.print_output;
@@ -387,7 +399,7 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
         <Space>
           <Button 
             type="primary" 
-            onClick={handleExecuteVisualization}
+            onClick={() => handleExecuteVisualization()}  // 使用箭头函数包装
           >
             执行
           </Button>
