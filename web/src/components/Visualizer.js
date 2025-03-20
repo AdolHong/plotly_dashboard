@@ -63,7 +63,7 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
   }, [queryHash, processedQueryHash]);
 
   // 执行Python可视化
-  const handleExecuteVisualization = async () => {
+  const handleExecuteVisualization = async (overrideOptionValues = null) => {
     if (!sessionId) {
       message.error('无效的会话ID，请刷新页面');
       return;
@@ -78,12 +78,15 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
     setHasPrintOutput(false);
     
     try {
+      // 使用传入的 overrideOptionValues 或当前的 optionValues
+      const currentOptionValues = overrideOptionValues || optionValues;
+
       // 发送Python代码处理请求
       const visualizeResponse = await axios.post('http://localhost:8000/api/visualize', {
         session_id: sessionId,
         query_hash: queryHash.split('_')[0], // 移除时间戳部分，只使用原始查询哈希值
         python_code: pythonCode || null,
-        option_values: optionValues,
+        option_values: currentOptionValues,
         visualization_index: index - 1 // 索引从0开始，但前端显示从1开始
       });
       // 保存print输出（无论成功还是失败）
@@ -255,15 +258,13 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
 
   // 处理选项值变化
   const handleOptionChange = (name, value) => {
-    setOptionValues(prev => ({
-      ...prev,
+    const newOptionValues = {
+      ...optionValues,
       [name]: value
-    }));
+    };
     
-    // 当选项值变化时，自动重新执行可视化
-    setTimeout(() => {
-      handleExecuteVisualization();
-    }, 300);
+    setOptionValues(newOptionValues);
+    handleExecuteVisualization(newOptionValues);
   };
   
   // 渲染选项区域
