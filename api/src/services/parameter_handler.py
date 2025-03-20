@@ -162,12 +162,15 @@ def replace_parameters_in_sql(sql: str, param_values: Dict[str, Any]) -> str:
 # 初次加载config，预处理
 def preprocess_of_config(config: Dict[str, Any]) ->  Dict[str, Any]:
     """
-    预处理config，处理参数中的动态日期值。
+    预处理config，处理参数中的动态日期值和可视化选项。
     """
     _parse_dynamic_date = lambda v: _parse_date_parameter(v)  if isinstance(v, str) and v.startswith("${")\
                         and v.endswith("}") else v
 
     try:
+        # 预处理可视化选项
+        from .option_handler import preprocess_visualization_options
+        config = preprocess_visualization_options(config)
         if "parameters" in config:
             # 确保default在choices中
             for idx, param in enumerate(config["parameters"]):

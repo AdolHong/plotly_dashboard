@@ -135,6 +135,8 @@ async def visualize_data(request: dict):
         session_id = request.get("session_id", "")
         query_hash = request.get("query_hash", "")
         python_code = request.get("python_code")
+        option_values = request.get("option_values", {})
+        visualization_index = request.get("visualization_index")
         
         if not session_id or not query_hash:
             raise HTTPException(status_code=400, detail="Session ID and query hash are required")
@@ -145,16 +147,34 @@ async def visualize_data(request: dict):
             raise HTTPException(status_code=404, detail="Query result not found")
         
         # Convert cached data back to DataFrame
-
         import json
         df = pd.DataFrame(json.loads(cached_result["data"]))
+        
+        # 获取可视化配置
+        visualization_options = []
+        if visualization_index is not None:
+            try:
+                config_path = Path(__file__).parent / "data" / "dashboard_config.json"
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                
+                if "visualization" in config and len(config["visualization"]) > visualization_index:
+                    visualization_config = config["visualization"][visualization_index]
+                    visualization_options = visualization_config.get("options", [])
+            except Exception as e:
+                print(f"获取可视化配置失败: {str(e)}")
+        
+        # 处理选项值
+        from src.services.option_handler import process_visualization_options
+        processed_options = process_visualization_options(visualization_options, option_values, df)
         
         # Process visualization
         with redirect_stdout(stdout_buffer):
             result = process_analysis_request(
                 sql_query="",  # Not needed as we already have the DataFrame
                 python_code=python_code,
-                df=df
+                df=df,
+                options=processed_options
             )
         
         # Get print output

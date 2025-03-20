@@ -19,7 +19,7 @@ def execute_sql_query(sql: str) -> pd.DataFrame:
         error_msg = f"SQL查询执行错误: {str(e)}"
         raise Exception(error_msg)
 
-def process_data_with_python(df: pd.DataFrame, code: str) -> Tuple[Any, str, str]:
+def process_data_with_python(df: pd.DataFrame, code: str, options: Optional[Dict[str, Any]] = None) -> Tuple[Any, str, str]:
     """使用Python代码处理数据，返回结果、结果类型和print输出"""
     if not code:
         return df, "dataframe", ""
@@ -40,6 +40,11 @@ def process_data_with_python(df: pd.DataFrame, code: str) -> Tuple[Any, str, str
             "px": px,
             "go": go
         }
+        
+        # 添加选项值到局部变量
+        if options:
+            for key, value in options.items():
+                local_vars[key] = value
         
         # 重定向标准输出以捕获print
         with redirect_stdout(stdout_buffer):
@@ -79,7 +84,8 @@ def process_data_with_python(df: pd.DataFrame, code: str) -> Tuple[Any, str, str
 def process_analysis_request(
     sql_query: str,
     python_code: Optional[str],
-    df: Optional[pd.DataFrame] = None
+    df: Optional[pd.DataFrame] = None,
+    options: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """处理分析请求，自动判断结果类型"""
     # 捕获print输出
@@ -96,7 +102,7 @@ def process_analysis_request(
             try:
                 # 重定向标准输出以捕获可能的print输出
                 with redirect_stdout(stdout_buffer):
-                    result, result_type, code_print_output = process_data_with_python(df, python_code)
+                    result, result_type, code_print_output = process_data_with_python(df, python_code, options)
                 
                 # 合并两处捕获的print输出
                 print_output = stdout_buffer.getvalue() + code_print_output

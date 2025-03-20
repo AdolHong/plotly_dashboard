@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/theme-github';
-import { Button, Card, Typography, Tooltip, message, Space } from 'antd';
+import { Button, Card, Typography, Tooltip, message, Space, Select, Checkbox, InputNumber, Input, Form, Row, Col, Divider } from 'antd';
 import PrintModal from './PrintModal';
 import Plot from 'react-plotly.js';
 import axios from 'axios';
@@ -13,17 +13,33 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
   const [pythonCode, setPythonCode] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [options, setOptions] = useState([]);
+  const [optionValues, setOptionValues] = useState({});
   
   // 当配置加载完成后，设置初始Python代码和标题、描述
   useEffect(() => {
     if (configLoaded && initialPythonCode) {
       setPythonCode(initialPythonCode);
       
-      // 从全局配置中获取标题和描述
+      // 从全局配置中获取标题、描述和选项
       if (window.visualizationConfig && window.visualizationConfig[index - 1]) {
         const config = window.visualizationConfig[index - 1];
         setTitle(config.title || "");
         setDescription(config.description || "");
+        
+        // 设置选项
+        if (config.options && Array.isArray(config.options)) {
+          setOptions(config.options);
+          
+          // 初始化选项值
+          const initialValues = {};
+          config.options.forEach(option => {
+            if (option.name) {
+              initialValues[option.name] = option.default;
+            }
+          });
+          setOptionValues(initialValues);
+        }
       }
     }
   }, [configLoaded, initialPythonCode, index]);
@@ -66,7 +82,9 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
       const visualizeResponse = await axios.post('http://localhost:8000/api/visualize', {
         session_id: sessionId,
         query_hash: queryHash.split('_')[0], // 移除时间戳部分，只使用原始查询哈希值
-        python_code: pythonCode || null
+        python_code: pythonCode || null,
+        option_values: optionValues,
+        visualization_index: index - 1 // 索引从0开始，但前端显示从1开始
       });
       // 保存print输出（无论成功还是失败）
       if (visualizeResponse.data.print_output) {
@@ -235,12 +253,143 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
     }
   };
 
+  // 处理选项值变化
+  const handleOptionChange = (name, value) => {
+    setOptionValues(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // 当选项值变化时，自动重新执行可视化
+    setTimeout(() => {
+      handleExecuteVisualization();
+    }, 300);
+  };
+  
+  // 渲染选项区域
+  const renderOptions = () => {
+    if (!options || options.length === 0) {
+      return null;
+    }
+    
+    return (
+      <div style={{ marginBottom: '16px' }}>
+        <Divider orientation="left">选项设置</Divider>
+        <Form layout="vertical">
+          <Row gutter={16}>
+            {options.map((option, optionIndex) => {
+              const { name, type, choices, multiple } = option;
+              
+              if (!name) return null;
+              
+              return (
+                <Col span={8} key={`${name}-${optionIndex}`}>
+                  <Form.Item label={name}>
+                    {type === 'bool' && (
+                      <Checkbox
+                        checked={!!optionValues[name]}
+                        onChange={e => handleOptionChange(name, e.target.checked)}
+                      >
+                        {name}
+                      </Checkbox>
+                    )}
+                    
+                    {(type === 'str' || !type) && choices && !multiple && (
+                      <Select
+                        style={{ width: '100%' }}
+                        value={optionValues[name]}
+                        onChange={value => handleOptionChange(name, value)}
+                      >
+                        {choices.map((choice, i) => (
+                          <Select.Option key={`${choice}-${i}`} value={choice}>
+                            {choice}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    )}
+                    
+                    {(type === 'str' || !type) && choices && multiple && (
+                      <Select
+                        mode="multiple"
+                        style={{ width: '100%' }}
+                        value={optionValues[name] || []}
+                        onChange={value => handleOptionChange(name, value)}
+                      >
+                        {choices.map((choice, i) => (
+                          <Select.Option key={`${choice}-${i}`} value={choice}>
+                            {choice}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    )}
+                    
+                    {type === 'int' && !choices && (
+                      <InputNumber
+                        style={{ width: '100%' }}
+                        value={optionValues[name]}
+                        onChange={value => handleOptionChange(name, value)}
+                      />
+                    )}
+                    
+                    {type === 'double' && !choices && (
+                      <InputNumber
+                        style={{ width: '100%' }}
+                        value={optionValues[name]}
+                        step={0.1}
+                        onChange={value => handleOptionChange(name, value)}
+                      />
+                    )}
+                    
+                    {(type === 'int' || type === 'double') && choices && !multiple && (
+                      <Select
+                        style={{ width: '100%' }}
+                        value={optionValues[name]}
+                        onChange={value => handleOptionChange(name, value)}
+                      >
+                        {choices.map((choice, i) => (
+                          <Select.Option key={`${choice}-${i}`} value={choice}>
+                            {choice}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    )}
+                    
+                    {(type === 'int' || type === 'double') && choices && multiple && (
+                      <Select
+                        mode="multiple"
+                        style={{ width: '100%' }}
+                        value={optionValues[name] || []}
+                        onChange={value => handleOptionChange(name, value)}
+                      >
+                        {choices.map((choice, i) => (
+                          <Select.Option key={`${choice}-${i}`} value={choice}>
+                            {choice}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    )}
+                  </Form.Item>
+                </Col>
+              );
+            })}
+          </Row>
+        </Form>
+      </div>
+    );
+  };
+  
   return (
     <Card 
       title={title ? `${title}` : `可视化区域 ${index}`} 
       style={{ marginBottom: '20px' }}
       extra={
         <Space>
+          <Button 
+            type="primary" 
+            onClick={handleExecuteVisualization}
+          >
+            执行
+          </Button>
           <Tooltip title={hasPrintOutput ? "查看Python代码的print输出" : "没有print输出"}>
             <Button 
               type="default" 
@@ -259,6 +408,10 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
           <Text type="secondary">{description}</Text>
         </div>
       )}
+      
+      {/* 选项区域 */}
+      {renderOptions()}
+      
       <div style={{ marginBottom: '16px' }}>
         <AceEditor
           mode="python"
