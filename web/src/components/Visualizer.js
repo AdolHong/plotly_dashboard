@@ -229,7 +229,7 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
     } else {
       return (
         <div style={{ padding: '20px', textAlign: 'center' }}>
-          <Text type="secondary">暂无可视化结果，请执行Python代码</Text>
+          <Text type="secondary">暂无可视化结果，result为None</Text>
         </div>
       );
     }

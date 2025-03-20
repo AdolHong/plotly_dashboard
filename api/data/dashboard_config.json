@@ -1,7 +1,7 @@
 {
     "query": {
         "type": "SQL",
-        "code": "SELECT * FROM sales WHERE region = '${region}' AND category IN (${categories}) AND price >= ${min_price} AND product_id IN (${product_ids}) AND order_date >= '${order_date}' LIMIT 10"
+        "code": "SELECT * FROM sales"
     },
     "parameters":[
         {
@@ -42,8 +42,16 @@
         {
             "type": "python",
             "title": "数据表格1",
+            "options": [
+                {
+                    "name": "region",
+                    "choices": ["华东","华南","华北","西北","西南"],
+                    "default": "华东",
+                    "type": "bool"
+                }
+            ],
             "description": "显示查询结果的原始数据表格1",
-            "code": "# 返回表格\nresult = df"
+            "code": "# 返回表格\ndf = df.query(f\"region == '{region}'\")\nresult = df"
         },
         {
             "type": "python",
