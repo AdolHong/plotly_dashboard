@@ -52,13 +52,21 @@
                 }
             ],
             "description": "显示查询结果的原始数据表格1",
-            "code": "# 返回表格\ndf = df.query(f\"region == '{region}'\")\nresult = df"
+            "code": "# 返回表格\nif region: df = df.query(f\"region in {region}\")\nresult = df"
         },
         {
             "type": "python",
             "title": "区域销量柱状图2",
+            "options": [
+                {
+                    "name": "region",
+                    "infer": "column",
+                    "infer_column": "region",
+                    "type": "str"
+                }
+            ],
             "description": "按区域统计销量并以柱状图展示2",
-            "code": "# 返回图\nimport plotly.express as px\nresult = px.bar(df.groupby(\"region\").sum().reset_index(), x=\"region\", y=\"quantity\")"
+            "code": "# 返回图\nimport plotly.express as px\nresult = px.bar(df.groupby(\"category\").sum().reset_index(), x=\"category\", y=\"quantity\")"
         }
     ]
 }

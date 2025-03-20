@@ -261,8 +261,7 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
   };
 
   return (
-    <div style={{ padding: '20px', backgroundColor: '#f5f5f5', borderRadius: '5px' }}>
-      <Title level={4}>SQL 查询</Title>
+    <div>
       
       {/* 参数控件 */}
       {renderParameterControls()}

@@ -315,14 +315,14 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
       <div style={{ marginBottom: '16px' }}>
         <Divider orientation="left">选项设置</Divider>
         <Form layout="vertical">
-          <Row gutter={16}>
+          <Row gutter={12}>
             {options.map((option, optionIndex) => {
               const { name, type, choices, multiple } = option;
               
               if (!name) return null;
               
               return (
-                <Col span={8} key={`${name}-${optionIndex}`}>
+                <Col span={4} key={`${name}-${optionIndex}`} style={{ marginBottom: '8px' }}>
                   <Form.Item label={name}>
                     {type === 'bool' && (
                       <Checkbox
@@ -420,7 +420,7 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
   return (
     <Card 
       title={title ? `${title}` : `可视化区域 ${index}`} 
-      style={{ marginBottom: '20px' }}
+      style={{ marginBottom: '20px', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.15)' }}
       extra={
         <Space>
           <Button 
