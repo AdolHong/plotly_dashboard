@@ -14,6 +14,7 @@ const Dashboard = () => {
   const [initialSqlCode, setInitialSqlCode] = useState('');
   const [initialPythonCodes, setInitialPythonCodes] = useState([]);
   const [configLoaded, setConfigLoaded] = useState(false);
+  const [inferredOptions, setInferredOptions] = useState(null);
   
   // 获取会话ID
   useEffect(() => {
@@ -64,10 +65,14 @@ const Dashboard = () => {
   }, []);
   
   // 处理SQL查询成功
-  const handleQuerySuccess = (hash) => {
+  const handleQuerySuccess = (hash, options) => {
     if (!hash) {
       console.error('收到无效的查询哈希值');
       return;
+    }
+    // 如果有推断的选项，更新inferredOptions状态
+    if (options) {
+      setInferredOptions(options);
     }
     // 每次查询成功时，添加时间戳使queryHash变化，强制触发可视化区域更新
     setQueryHash(`${hash}_${new Date().getTime()}`);
@@ -101,6 +106,7 @@ const Dashboard = () => {
           queryHash={queryHash}
           initialPythonCode={initialPythonCodes[index] || ''}
           configLoaded={configLoaded}
+          inferredOptions={inferredOptions}
         />
       ))}
       

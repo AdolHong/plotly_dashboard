@@ -9,7 +9,7 @@ import axios from 'axios';
 
 const Text = Typography;
 
-const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoaded }) => {
+const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoaded, inferredOptions }) => {
   const [pythonCode, setPythonCode] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -29,20 +29,49 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
         
         // 设置选项
         if (config.options && Array.isArray(config.options)) {
-          setOptions(config.options);
+          // 复制选项以避免修改原始对象
+          const optionsCopy = JSON.parse(JSON.stringify(config.options));
           
-          // 初始化选项值
-          const initialValues = {};
-          config.options.forEach(option => {
-            if (option.name) {
-              initialValues[option.name] = option.default;
-            }
-          });
-          setOptionValues(initialValues);
+          setOptions(optionsCopy);
         }
       }
     }
   }, [configLoaded, initialPythonCode, index]);
+  
+  // 当推断的选项变化时更新选项配置
+  useEffect(() => {
+    if (inferredOptions && options.length > 0) {
+      // 复制选项以避免修改原始对象
+      const optionsCopy = JSON.parse(JSON.stringify(options));
+      
+      // 使用从DataFrame中推断的选项更新选项配置
+      // 遍历选项，查找需要从DataFrame中推断的选项
+      optionsCopy.forEach(option => {
+        // 检查选项是否需要从DataFrame中推断
+        if (option.name && option.infer === "column" && option.infer_column) {
+          // 检查inferredOptions中是否有对应的选项
+          if (inferredOptions[option.name]) {
+            const inferredOption = inferredOptions[option.name];
+            
+            // 更新选项的choices
+            option.choices = inferredOption.choices || [];
+            
+            // 如果是单选且没有默认值，设置第一个值为默认值
+            if (!option.multiple && !option.default && option.choices.length > 0) {
+              option.default = option.choices[0];
+            }
+            // 如果是多选且没有默认值，设置为空列表
+            else if (option.multiple && !option.default) {
+              option.default = [];
+            }
+          }
+        }
+      })
+      
+      setOptions(optionsCopy);
+    }
+  }, [inferredOptions]);
+  
   const [printOutput, setPrintOutput] = useState('');
   const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
   const [hasPrintOutput, setHasPrintOutput] = useState(false);
@@ -86,9 +115,6 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
         isUndefined: overrideOptionValues === undefined
       });
             
-      console.info(overrideOptionValues)
-      console.info(2)
-
       const currentOptionValues = overrideOptionValues || optionValues;
       
       // 发送Python代码处理请求

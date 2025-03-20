@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Typography, Divider } from 'antd';
+import { Layout, Typography } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
 import 'antd/dist/reset.css';
 import Dashboard from './components/Dashboard';

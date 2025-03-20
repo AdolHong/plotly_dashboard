@@ -142,11 +142,14 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
         setProcessedSql(queryResponse.data.processed_sql);
       }
       
+      // 处理从DataFrame中推断的选项
+      const inferredOptions = queryResponse.data.inferred_options || null;
+      
       message.success('SQL查询成功');
       
-      // 通知父组件查询成功，传递查询哈希值
+      // 通知父组件查询成功，传递查询哈希值和推断的选项
       if (onQuerySuccess) {
-        onQuerySuccess(queryHash);
+        onQuerySuccess(queryHash, inferredOptions);
       }
     } catch (error) {
       console.error('SQL查询失败:', error);

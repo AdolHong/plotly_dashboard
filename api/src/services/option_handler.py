@@ -1,6 +1,6 @@
 # coding: utf-8
 import pandas as pd
-from typing import Dict, List, Any, Optional, Union, Tuple
+from typing import Dict, List, Any, Optional, Union, Tuple, Set
 
 def process_visualization_options(options: List[Dict[str, Any]], option_values: Dict[str, Any], df: pd.DataFrame) -> Dict[str, Any]:
     """
@@ -39,18 +39,6 @@ def process_visualization_options(options: List[Dict[str, Any]], option_values: 
                 # 对于多选，默认为空列表
                 elif is_multiple:
                     value = []
-        
-        # 从DataFrame列推断选项
-        if option.get("infer") == "column" and "infer_column" in option:
-            column_name = option["infer_column"]
-            if column_name in df.columns:
-                # 获取列中的唯一值作为选项
-                unique_values = df[column_name].dropna().unique().tolist()
-                option["choices"] = unique_values
-                
-                # 如果没有值且是单选，默认选择第一个
-                if value is None and not is_multiple and unique_values:
-                    value = unique_values[0]
         
         # 根据类型转换值
         if value is not None:
@@ -95,9 +83,54 @@ def process_visualization_options(options: List[Dict[str, Any]], option_values: 
         
         # 将处理后的值添加到结果字典中
         processed_options[option_name] = value
-    
     return processed_options
 
+
+def infer_options_from_dataframe(options: List[Dict[str, Any]], df: pd.DataFrame) -> List[Dict[str, Any]]:
+    """
+    从DataFrame中推断选项的choices
+    
+    Args:
+        options: 可视化配置中定义的选项列表
+        df: 数据DataFrame，用于从列中推断选项
+        
+    Returns:
+        更新了choices的选项列表
+    """
+    if df is None or df.empty:
+        return options
+    
+    updated_options = []
+    
+    for option in options:
+        # 复制选项以避免修改原始对象
+        option_copy = option.copy()
+        
+        # 检查是否需要从DataFrame列中推断选项
+        if option.get("infer") == "column" and "infer_column" in option:
+            column_name = option.get("infer_column")
+            
+            # 检查列是否存在于DataFrame中
+            if column_name in df.columns:
+                # 获取列中的唯一值
+                unique_values = df[column_name].dropna().unique().tolist()
+                
+                # 转换为字符串列表
+                unique_values = [str(val) for val in unique_values]
+                
+                # 更新选项的choices
+                option_copy["choices"] = unique_values
+                
+                # 如果是单选且没有默认值，设置第一个值为默认值
+                if not option.get("multiple", False) and "default" not in option and unique_values:
+                    option_copy["default"] = unique_values[0]
+                # 如果是多选且没有默认值，设置为空列表
+                elif option.get("multiple", False) and "default" not in option:
+                    option_copy["default"] = []
+        
+        updated_options.append(option_copy)
+    
+    return updated_options
 
 def preprocess_visualization_options(config: Dict[str, Any], df: Optional[pd.DataFrame] = None) -> Dict[str, Any]:
     """
@@ -125,23 +158,12 @@ def preprocess_visualization_options(config: Dict[str, Any], df: Optional[pd.Dat
             # 确保选项有类型
             if "type" not in option:
                 option["type"] = "str"
-                
-            # 处理从DataFrame列推断选项
-            if df is not None and option.get("infer") == "column" and "infer_column" in option:
-                column_name = option["infer_column"]
-                if column_name in df.columns:
-                    # 获取列中的唯一值作为选项
-                    unique_values = df[column_name].dropna().unique().tolist()
-                    option["choices"] = unique_values
             
             # 确保单选的默认值在选项中
             if not option.get("multiple", False) and "default" in option and "choices" in option:
                 if option["default"] not in option["choices"]:
-                    if option["choices"]:
-                        option["choices"].append(option["default"])
-                    else:
-                        option["choices"] = [option["default"]]
-            
+                    option["choices"].append(option["default"])
+                    
             # 确保多选的默认值在选项中
             if option.get("multiple", False) and "default" in option and isinstance(option["default"], list) and "choices" in option:
                 for default_value in option["default"]:
@@ -153,5 +175,5 @@ def preprocess_visualization_options(config: Dict[str, Any], df: Optional[pd.Dat
         
         # 更新可视化配置
         config["visualization"][idx] = vis
-    
+
     return config

@@ -45,9 +45,10 @@
             "options": [
                 {
                     "name": "region",
-                    "choices": ["华东","华南","华北","西北","西南"],
-                    "default": "华东",
-                    "type": "str"
+                    "infer": "column",
+                    "infer_column": "region",
+                    "type": "str",
+                    "multiple": true
                 }
             ],
             "description": "显示查询结果的原始数据表格1",

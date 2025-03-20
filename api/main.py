@@ -103,6 +103,35 @@ async def execute_sql_query(request: dict):
         # Execute query and get DataFrame
         df = execute_query(processed_sql)
         
+        # 获取可视化配置
+        config_path = Path(__file__).parent / "data" / "dashboard_config.json"
+        visualization_options = []
+        
+        if config_path.exists():
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+                if "visualization" in config:
+                    # 收集所有可视化区域的选项
+                    for vis in config["visualization"]:
+                        if "options" in vis and isinstance(vis["options"], list):
+                            visualization_options.extend(vis["options"])
+        
+        # 从DataFrame中推断选项
+        from src.services.option_handler import infer_options_from_dataframe
+        inferred_options = infer_options_from_dataframe(visualization_options, df)
+        
+        # 提取需要从DataFrame中推断的选项
+        inferred_option_choices = {}
+        for option in inferred_options:
+            if option.get("infer") == "column" and "infer_column" in option and "choices" in option:
+                option_name = option.get("name")
+                if option_name:
+                    inferred_option_choices[option_name] = {
+                        "choices": option.get("choices", []),
+                        "default": option.get("default"),
+                        "multiple": option.get("multiple", False)
+                    }
+        
         # Convert DataFrame to dict for caching
         result = {
             "data": df.to_json(orient='records')
@@ -110,14 +139,12 @@ async def execute_sql_query(request: dict):
         
         # Cache the result and get query hash
         query_hash = session_manager.save_query_result(session_id, sql_query, result)
-
-        print("query_hash: ", query_hash)
-
         return {
             "status": "success",
             "message": "Query executed successfully",
             "query_hash": query_hash,
-            "processed_sql": processed_sql
+            "processed_sql": processed_sql,
+            "inferred_options": inferred_option_choices
         }
     except Exception as e:
         return {
