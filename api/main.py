@@ -1,3 +1,4 @@
+# coding=utf-8
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import traceback
@@ -77,8 +78,6 @@ async def parse_sql_query(request: dict):
         # 替换SQL查询中的参数占位符
         processed_sql = replace_parameters_in_sql(sql_query, param_values)
 
-        print(processed_sql)
-        
         return {
             "status": "success",
             "message": "SQL解析成功",
@@ -106,7 +105,6 @@ async def execute_sql_query(request: dict):
         # 替换SQL查询中的参数占位符
         processed_sql = replace_parameters_in_sql(sql_query, param_values)
 
-        
         # Execute query and get DataFrame
         df = execute_query(processed_sql)
         

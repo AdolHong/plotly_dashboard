@@ -1,6 +1,6 @@
 # coding: utf-8
 import pandas as pd
-from typing import Dict, List, Any, Optional, Union, Tuple, Set
+from typing import Dict, List, Any, Optional
 
 def process_visualization_options(options: List[Dict[str, Any]], option_values: Dict[str, Any], df: pd.DataFrame) -> Dict[str, Any]:
     """

@@ -5,14 +5,7 @@ import 'ace-builds/src-noconflict/theme-github';
 import { Button, message, Form, Select, Input, DatePicker, Card, Row, Col } from 'antd';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 import PrintModal from './PrintModal';
-
-
-// Important: extend dayjs with the plugins
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 
 const { Option } = Select;
@@ -90,6 +83,7 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
   // 获取解析后的SQL
   const fetchParsedSQL = async (sql, params) => {
     try {
+      // JSON序列化、反序列化： 保证date对象被正确地序列化
       const parsedParams = JSON.parse(JSON.stringify(params));
 
       const response = await axios.post('http://localhost:8000/api/parse_sql', {
@@ -118,13 +112,11 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
         return;
       }
       
-      message.info("什么情况啦2", JSON.stringify(paramValues, null, 2));
-
       // 执行SQL查询并缓存结果
       const queryResponse = await axios.post('http://localhost:8000/api/query', {
         sqlQuery: sqlQuery,
         sessionId: sessionId,
-        paramValues: JSON.parse(JSON.stringify(paramValues))
+        paramValues: JSON.parse(JSON.stringify(paramValues)) // JSON序列化、反序列化： 保证date对象被正确地序列化
       });
 
       if (queryResponse.data.status === 'error') {
