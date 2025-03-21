@@ -4,6 +4,7 @@ import os
 from typing import Dict, Any, Optional
 from pathlib import Path
 import time
+from datetime import date, datetime
 import pandas as pd
 
 class ShareManager:
@@ -15,7 +16,9 @@ class ShareManager:
         """Generate a unique share ID based on timestamp and random hash"""
         timestamp = str(int(time.time()))
         random_str = timestamp + str(os.urandom(8).hex())
-        return hashlib.md5(random_str.encode()).hexdigest()[:10]
+
+        # 加上日期，容易删除缓存
+        return datetime.now().strftime("%Y%m%d") + "_" + hashlib.md5(random_str.encode()).hexdigest()[:8]
     
     def get_share_path(self, share_id: str) -> Path:
         """Get the path for shared dashboard state"""
