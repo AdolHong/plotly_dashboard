@@ -9,7 +9,7 @@ import axios from 'axios';
 
 const Text = Typography;
 
-const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoaded, inferredOptions, config, readOnly = false, optionValues: initialOptionValues, isSharedMode, shareId }) => {
+const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoaded, inferredOptions, config, readOnly, optionValues: initialOptionValues, isSharedMode, shareId }) => {
   const [pythonCode, setPythonCode] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
