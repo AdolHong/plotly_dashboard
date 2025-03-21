@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Divider, Typography, Space, message, Modal, Input } from 'antd';
+import { Button, Divider, message, Modal, Input } from 'antd';
 import { ShareAltOutlined } from '@ant-design/icons';
 import SQLEditor from './SQLEditor';
 import Visualizer from './Visualizer';
 import axios from 'axios';
-
-// const { Title } = Typography;
 
 const Dashboard = () => {
   const [sessionId, setSessionId] = useState('');

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-sql';
 import 'ace-builds/src-noconflict/theme-github';
-import { Button, Typography, message, Form, Select, Input, DatePicker, Space, Card, Divider, Row, Col } from 'antd';
+import { Button, message, Form, Select, Input, DatePicker, Card, Row, Col } from 'antd';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -14,7 +14,6 @@ import PrintModal from './PrintModal';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const { Title } = Typography;
 const { Option } = Select;
 
 const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) => {
