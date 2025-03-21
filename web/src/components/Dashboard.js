@@ -15,6 +15,7 @@ const Dashboard = () => {
   const [initialPythonCodes, setInitialPythonCodes] = useState([]);
   const [configLoaded, setConfigLoaded] = useState(false);
   const [inferredOptions, setInferredOptions] = useState(null);
+  const [visualizationConfig, setVisualizationConfig] = useState([]);
   
   // 获取会话ID
   useEffect(() => {
@@ -46,8 +47,8 @@ const Dashboard = () => {
             setInitialPythonCodes(pythonCodes);
             setVisualizerCount(pythonCodes.length || 1);
             
-            // 保存完整的可视化配置，以便传递title和description
-            window.visualizationConfig = config.visualization;
+            // 保存可视化配置到状态变量
+            setVisualizationConfig(config.visualization);
           }
           
           setConfigLoaded(true);
@@ -81,7 +82,7 @@ const Dashboard = () => {
   
   return (
     <div>
-      <Title level={4}>SQL + Python 数据可视化</Title>
+      <Divider orientation="left">SQL 查询区域</Divider>
       
       {/* SQL查询区域 */}
       <SQLEditor 
@@ -103,6 +104,7 @@ const Dashboard = () => {
           initialPythonCode={initialPythonCodes[index] || ''}
           configLoaded={configLoaded}
           inferredOptions={inferredOptions}
+          config={visualizationConfig[index]}
         />
       ))}
     </div>

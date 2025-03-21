@@ -9,7 +9,7 @@ import axios from 'axios';
 
 const Text = Typography;
 
-const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoaded, inferredOptions }) => {
+const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoaded, inferredOptions, config }) => {
   const [pythonCode, setPythonCode] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -21,9 +21,8 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
     if (configLoaded && initialPythonCode) {
       setPythonCode(initialPythonCode);
       
-      // 从全局配置中获取标题、描述和选项
-      if (window.visualizationConfig && window.visualizationConfig[index - 1]) {
-        const config = window.visualizationConfig[index - 1];
+      // 从props中获取标题、描述和选项
+      if (config) {
         setTitle(config.title || "");
         setDescription(config.description || "");
         
@@ -31,12 +30,11 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
         if (config.options && Array.isArray(config.options)) {
           // 复制选项以避免修改原始对象
           const optionsCopy = JSON.parse(JSON.stringify(config.options));
-          
           setOptions(optionsCopy);
         }
       }
     }
-  }, [configLoaded, initialPythonCode, index]);
+  }, [configLoaded, initialPythonCode, config]);
   
   // 当推断的选项变化时更新选项配置
   useEffect(() => {

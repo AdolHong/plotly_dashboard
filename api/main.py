@@ -139,6 +139,8 @@ async def execute_sql_query(request: dict):
         
         # Cache the result and get query hash
         query_hash = session_manager.save_query_result(session_id, sql_query, result)
+
+        print("???:", inferred_option_choices)
         return {
             "status": "success",
             "message": "Query executed successfully",

@@ -25,9 +25,9 @@ function App() {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Header style={{ background: '#fff', padding: '0 20px' }}>
-        <Title level={2} style={{ margin: '16px 0' }}>SQL + Python 数据可视化平台</Title>
+        <Title level={2} style={{ margin: '16px 0' }}>SQL + Plotly</Title>
       </Header>
-      <Content style={{ padding: '0 50px', marginTop: '20px' }}>
+      <Content style={{ padding: '0 50px', marginTop: '10px' }}>
         <div style={{ background: '#fff', padding: '24px', minHeight: '280px' }}>
           <Dashboard 
           />
