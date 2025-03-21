@@ -13,6 +13,9 @@ from src.services.share_manager import ShareManager
 from src.database.db import execute_query, init_db
 from src.services.parameter_handler import replace_parameters_in_sql, preprocess_of_config
 
+
+
+
 # Initialize session manager
 session_manager = SessionManager()
 
@@ -160,10 +163,8 @@ async def execute_sql_query(request: dict):
 
 @app.post("/api/visualize")
 async def visualize_data(request: dict):
-    """Process Python visualization code using cached query results"""
-    stdout_buffer = io.StringIO()
     print_output = ""
-    
+    """Process Python visualization code using cached query results"""    
     try:
         session_id = request.get("session_id", "")
         query_hash = request.get("query_hash", "")
@@ -177,10 +178,9 @@ async def visualize_data(request: dict):
         # Get cached query result
         cached_result = session_manager.get_query_result(session_id, query_hash)
         if not cached_result:
-            raise HTTPException(status_code=404, detail="Query result not found")
+            raise HTTPException(status_code=404, detail="Cached result not found")
         
         # Convert cached data back to DataFrame
-        import json
         df = pd.DataFrame(json.loads(cached_result["data"]))
         
         # 获取可视化配置
@@ -202,18 +202,15 @@ async def visualize_data(request: dict):
         processed_options = process_visualization_options(visualization_options, option_values, df)
         
         # Process visualization
-        with redirect_stdout(stdout_buffer):
-            result = process_analysis_request(
-                sql_query="",  # Not needed as we already have the DataFrame
-                python_code=python_code,
-                df=df,
-                options=processed_options
-            )
-        
+    
+        result = process_analysis_request(
+            df=df,
+            code=python_code,
+            options=processed_options
+        )
+    
         # Get print output
-        api_print_output = stdout_buffer.getvalue()
-        result_print_output = result.get("print_output", "")
-        print_output = api_print_output + result_print_output
+        print_output = result.get("print_output", "")
         
         if result.get("result_type") == "error":
             return {
@@ -230,32 +227,19 @@ async def visualize_data(request: dict):
             "print_output": print_output
         }
     except Exception as e:
-        # 获取print输出（即使发生错误）
-        api_print_output = stdout_buffer.getvalue()
-        
         # 尝试从错误消息中提取print输出
         error_str = str(e)
-        additional_print_output = ""
         
         if "Print输出:" in error_str:
             # 尝试从错误消息中提取print输出
             parts = error_str.split("Print输出:", 1)
             if len(parts) > 1:
                 error_msg = parts[0].strip()
-                additional_print_output = parts[1].strip()
+                print_output = parts[1].strip()
             else:
                 error_msg = error_str
         else:
             error_msg = error_str
-        
-        # 合并所有可能的print输出
-        print_output = api_print_output
-        if additional_print_output:
-            if print_output:
-                print_output += "\n" + additional_print_output
-            else:
-                print_output = additional_print_output
-        
         error_detail = traceback.format_exc()
         
         # 返回错误信息和print输出
@@ -342,8 +326,6 @@ async def visualize_shared_data(request: dict):
         if not dashboard_state:
             raise HTTPException(status_code=404, detail="Shared dashboard not found")
         
-
-        print("???:", dashboard_state)
         # Extract DataFrame from dashboard state
         df = share_manager.get_dataframe_from_state(dashboard_state)
         if df is None:
@@ -356,9 +338,8 @@ async def visualize_shared_data(request: dict):
         # Process visualization
         with redirect_stdout(stdout_buffer):
             result = process_analysis_request(
-                sql_query="",  # Not needed as we already have the DataFrame
-                python_code=python_code,
                 df=df,
+                code=python_code,
                 options=processed_options
             )
         

@@ -67,6 +67,8 @@ def process_parameter_value(param: Dict[str, Any], value: Any) -> Any:
         py_format = date_format.replace("yyyy", "%Y").replace("MM", "%m").replace("dd", "%d")
         
         try:
+
+            print("value", value)
             # 假设value是ISO格式的日期字符串
             date_obj = datetime.fromisoformat(value.replace('Z', '+00:00'))
             return date_obj.strftime(py_format)
