@@ -15,6 +15,10 @@ const Share = ({ shareId }) => {
   // Load shared dashboard state
   useEffect(() => {
     const fetchSharedDashboard = async () => {
+
+      // 等待5秒
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
       try {
         if (!shareId) {
           setError('Share ID is missing');
@@ -25,7 +29,6 @@ const Share = ({ shareId }) => {
         const response = await axios.get(`http://localhost:8000/api/share/${shareId}`);
         
         message.info(JSON.stringify(response.data, null, 2))
-
 
         if (response.data.status === 'success') {
           setDashboardState(response.data.dashboard_state);
@@ -46,6 +49,7 @@ const Share = ({ shareId }) => {
     fetchSharedDashboard();
   }, [shareId]);
   
+  // loading效果
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '50px' }}>
