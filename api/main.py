@@ -271,13 +271,15 @@ async def share_dashboard(request: dict):
     """Save dashboard state for sharing"""
     try:
         # Get dashboard state from request
+
         dashboard_state = request.get("dashboard_state", {})
         
         if not dashboard_state:
             raise HTTPException(status_code=400, detail="Dashboard state is required")
         
         # Get query hash from dashboard state
-        query_hash = dashboard_state.get("queryHash")
+        
+        query_hash = dashboard_state.get("query_hash")
         session_id = request.get("session_id")
         
         # Get DataFrame data if query hash and session ID are provided
@@ -340,6 +342,8 @@ async def visualize_shared_data(request: dict):
         if not dashboard_state:
             raise HTTPException(status_code=404, detail="Shared dashboard not found")
         
+
+        print("???:", dashboard_state)
         # Extract DataFrame from dashboard state
         df = share_manager.get_dataframe_from_state(dashboard_state)
         if df is None:

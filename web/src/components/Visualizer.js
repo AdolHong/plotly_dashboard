@@ -51,7 +51,7 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
       // 遍历选项，查找需要从DataFrame中推断的选项
       optionsCopy.forEach(option => {
         // 检查选项是否需要从DataFrame中推断
-        if (option.name && option.infer === "column" && option.infer_column) {
+        if (option.name && option.infer === "column" && option.inferColumn) {
           // 检查inferredOptions中是否有对应的选项
           if (inferredOptions[option.name]) {
             const inferredOption = inferredOptions[option.name];
