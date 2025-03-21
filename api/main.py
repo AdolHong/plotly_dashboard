@@ -411,8 +411,3 @@ async def visualize_shared_data(request: dict):
             "print_output": print_output,
             "error_detail": error_detail
         }
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": str(e)
-        }
