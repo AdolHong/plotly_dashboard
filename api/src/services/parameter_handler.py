@@ -67,6 +67,7 @@ def process_parameter_value(param: Dict[str, Any], value: Any) -> Any:
         # 将Java风格的日期格式转换为Python风格
         py_format = date_format.replace("yyyy", "%Y").replace("MM", "%m").replace("dd", "%d")
         
+        print(value)
         try:
             # 解析ISO格式日期字符串并转换为北京时间
             from datetime import datetime

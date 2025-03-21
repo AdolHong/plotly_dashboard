@@ -71,12 +71,13 @@ async def parse_sql_query(request: dict):
     try:
         sql_query = request.get("sql_query", "")
         param_values = request.get("param_values", {})
-        
         if not sql_query:
             raise HTTPException(status_code=400, detail="SQL query is required")
         
         # 替换SQL查询中的参数占位符
         processed_sql = replace_parameters_in_sql(sql_query, param_values)
+
+        print(processed_sql)
         
         return {
             "status": "success",
@@ -97,12 +98,14 @@ async def execute_sql_query(request: dict):
         sql_query = request.get("sql_query", "")
         session_id = request.get("session_id", "")
         param_values = request.get("param_values", {})
+
         
         if not sql_query or not session_id:
             raise HTTPException(status_code=400, detail="SQL query and session ID are required")
         
         # 替换SQL查询中的参数占位符
         processed_sql = replace_parameters_in_sql(sql_query, param_values)
+
         
         # Execute query and get DataFrame
         df = execute_query(processed_sql)
@@ -143,8 +146,6 @@ async def execute_sql_query(request: dict):
         
         # Cache the result and get query hash
         query_hash = session_manager.save_query_result(session_id, sql_query, result)
-
-        print("???:", inferred_option_choices)
         return {
             "status": "success",
             "message": "Query executed successfully",
@@ -205,7 +206,7 @@ async def visualize_data(request: dict):
             code=python_code,
             options=processed_options
         )
-    
+
         # Get print output
         print_output = result.get("print_output", "")
         

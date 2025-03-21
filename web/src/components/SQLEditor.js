@@ -42,7 +42,6 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
       if (response.data.status === 'success' && response.data.config.parameters) {
         const params = response.data.config.parameters;
 
-        message.info(JSON.stringify(params, null, 2));
         setParameters(params);
         
         // 设置默认参数值
@@ -76,10 +75,9 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
   
   // 处理参数值变化
   const handleParamChange = (name, value) => {
-    const processedValue = dayjs.isDayjs(value) ? value.toISOString(): value;
     const newParamValues = {
       ...paramValues,
-      [name]: processedValue
+      [name]: value
     };
     setParamValues(newParamValues);
     
@@ -120,13 +118,13 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
         return;
       }
       
-      // message.info(JSON.stringify(paramValues, null, 2));
+      message.info("什么情况啦2", JSON.stringify(paramValues, null, 2));
 
       // 执行SQL查询并缓存结果
       const queryResponse = await axios.post('http://localhost:8000/api/query', {
         sqlQuery: sqlQuery,
         sessionId: sessionId,
-        paramValues: paramValues
+        paramValues: JSON.parse(JSON.stringify(paramValues))
       });
 
       if (queryResponse.data.status === 'error') {
@@ -221,7 +219,6 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
                   <Col span={4} key={name} style={{ marginBottom: '8px' }}>
                     <Form.Item label={name} name={name} style={{ marginBottom: '8px' }}>
                     <DatePicker 
-                      timezone="Asia/Shanghai"
                       style={{ width: '100%' }}
                       onChange={(value) => {handleParamChange(name, value)}}
                     />

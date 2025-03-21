@@ -30,8 +30,7 @@ def format_visualization_oupput(result: Optional[Union[pd.DataFrame, Any]]=None,
             "plot_data": None,
             "print_output": print_output
         }
-    elif isinstance(result, plotly.graph_objs._figure.Figure) or 'plotly.graph_objs' in str(type(result)):
-        print("graph_type: ", type(result))
+    elif isinstance(result, plotly.graph_objs._figure.Figure):
         # 返回Plotly图表对象
         return {
             "result_type": "figure",
@@ -39,6 +38,8 @@ def format_visualization_oupput(result: Optional[Union[pd.DataFrame, Any]]=None,
             "plot_data": json.loads(result.to_json()),
             "print_output": print_output
         }
+    elif'plotly.graph_objs' in str(type(result)):
+        raise ValueError("出现了未知的plotly对象:", type)
     else:
         error_msg = "Python代码的result变量必须是DataFrame或Plotly图表对象"
         raise ValueError(error_msg)
@@ -77,7 +78,7 @@ def process_analysis_request(df: pd.DataFrame, code: Optional[str], options: Opt
         
         # 获取处理后的结果
         if "result" in local_vars:
-            format_visualization_oupput(result=local_vars["result"], print_output=print_output)
+            return format_visualization_oupput(result=local_vars["result"], print_output=print_output)
         else:
             error_msg = "Python代码必须将结果存储在名为'result'的变量中"
             raise ValueError(error_msg)
