@@ -5,6 +5,28 @@ import { BrowserRouter as Router, Routes, Route, useSearchParams } from 'react-r
 import 'antd/dist/reset.css';
 import Dashboard from './components/Dashboard';
 import Share from './components/Share';
+import axios from 'axios';
+import {decamelizeKeys, camelizeKeys } from 'humps';
+
+// 请求拦截器：将驼峰转为下划线
+axios.interceptors.request.use(config => {
+  if (config.data) {
+    config.data = decamelizeKeys(config.data);
+  }
+  return config;
+});
+
+
+// 响应拦截器：将下划线转为驼峰
+axios.interceptors.response.use(response => {
+  if (response.data) {
+    response.data = camelizeKeys(response.data);
+  }
+  return response;
+});
+
+
+
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;

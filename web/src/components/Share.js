@@ -16,8 +16,8 @@ const Share = ({ shareId }) => {
   useEffect(() => {
     const fetchSharedDashboard = async () => {
 
-      // 等待5秒
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // 等待0.5秒
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       try {
         if (!shareId) {
@@ -27,11 +27,10 @@ const Share = ({ shareId }) => {
         }
         
         const response = await axios.get(`http://localhost:8000/api/share/${shareId}`);
-        
-        message.info(JSON.stringify(response.data, null, 2))
+      
 
         if (response.data.status === 'success') {
-          setDashboardState(response.data.dashboard_state);
+          setDashboardState(response.data.dashboardState);
           // Generate a temporary session ID for this view that includes the share ID
           // This will be used for the visualize endpoint
           setSessionId(`share_${shareId}`);

@@ -94,8 +94,8 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
         param_values: params
       });
       
-      if (response.data.status === 'success' && response.data.processed_sql) {
-        setProcessedSql(response.data.processed_sql);
+      if (response.data.status === 'success' && response.data.processedSql) {
+        setProcessedSql(response.data.processedSql);
       } else if (response.data.status === 'error') {
         console.error('SQL解析失败:', response.data.message);
       }
@@ -119,9 +119,9 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
 
       // 执行SQL查询并缓存结果
       const queryResponse = await axios.post('http://localhost:8000/api/query', {
-        sql_query: sqlQuery,
-        session_id: sessionId,
-        param_values: paramValues
+        sqlQuery: sqlQuery,
+        sessionId: sessionId,
+        paramValues: paramValues
       });
 
       if (queryResponse.data.status === 'error') {
@@ -130,19 +130,19 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
       }
       
       // 保存查询哈希值并通知父组件查询成功
-      const queryHash = queryResponse.data.query_hash;
+      const queryHash = queryResponse.data.queryHash;
       if (!queryHash) {
         message.error('服务器未返回有效的查询哈希值');
         return;
       }
       
       // 保存解析后的SQL代码
-      if (queryResponse.data.processed_sql) {
-        setProcessedSql(queryResponse.data.processed_sql);
+      if (queryResponse.data.processedSql) {
+        setProcessedSql(queryResponse.data.processedSql);
       }
       
       // 处理从DataFrame中推断的选项
-      const inferredOptions = queryResponse.data.inferred_options || null;
+      const inferredOptions = queryResponse.data.inferredOptions || null;
       
       message.success('SQL查询成功');
       

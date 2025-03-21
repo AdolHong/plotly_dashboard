@@ -1,7 +1,7 @@
 import hashlib
 import json
 import os
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional
 from pathlib import Path
 import time
 import pandas as pd
@@ -48,6 +48,7 @@ class ShareManager:
             return None
         
         with open(share_path) as f:
+            # Return the data in snake_case format
             return json.load(f)
     
     def get_dataframe_from_state(self, dashboard_state: Dict[str, Any]) -> Optional[pd.DataFrame]:

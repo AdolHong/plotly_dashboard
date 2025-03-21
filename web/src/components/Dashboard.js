@@ -98,7 +98,6 @@ const Dashboard = () => {
     
     try {
       // 收集可视化区域的状态
-      const visualizationRefs = document.querySelectorAll('.visualizer-container');
       const visualizations = [];
       
       // 遍历所有可视化区域，收集它们的状态
@@ -145,7 +144,7 @@ const Dashboard = () => {
       });
       
       if (response.data.status === 'success') {
-        const shareId = response.data.share_id;
+        const shareId = response.data.shareId;
         const shareLink = `${window.location.origin}/share?id=${shareId}`;
         
         setShareUrl(shareLink);

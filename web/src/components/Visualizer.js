@@ -148,8 +148,8 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
 
       
       // 保存print输出（无论成功还是失败）
-      if (visualizeResponse.data.print_output) {
-        const output = visualizeResponse.data.print_output;
+      if (visualizeResponse.data.printOutput) {
+        const output = visualizeResponse.data.printOutput;
         setPrintOutput(output);
         setHasPrintOutput(true);
         
@@ -160,16 +160,16 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
       }
       
       if (visualizeResponse.data.status === 'success') {
-        if (visualizeResponse.data.result_type === 'dataframe') {
+        if (visualizeResponse.data.resultType === 'dataframe') {
           // 如果结果是DataFrame，显示表格
           setTableData(visualizeResponse.data.data);
           setVisualizationData(null);
           setResultType('dataframe');
           message.success('数据处理成功');
-        } else if (visualizeResponse.data.result_type === 'figure') {
+        } else if (visualizeResponse.data.resultType === 'figure') {
           // 如果结果是Plotly图表，显示图表
           setTableData([]);
-          setVisualizationData(visualizeResponse.data.plot_data);
+          setVisualizationData(visualizeResponse.data.plotData);
           setResultType('figure');
           message.success('可视化生成成功');
         }
