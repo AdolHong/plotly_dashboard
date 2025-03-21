@@ -13,9 +13,6 @@ from src.services.share_manager import ShareManager
 from src.database.db import execute_query, init_db
 from src.services.parameter_handler import replace_parameters_in_sql, preprocess_of_config
 
-
-
-
 # Initialize session manager
 session_manager = SessionManager()
 

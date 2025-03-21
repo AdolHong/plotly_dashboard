@@ -18,6 +18,7 @@ def load_dashboard_config() -> Dict[str, Any]:
     return config
 
 
+#  todo : 删除这里的读写
 def get_parameters() -> List[Dict[str, Any]]:
     """获取参数配置列表"""
     try:
@@ -67,11 +68,18 @@ def process_parameter_value(param: Dict[str, Any], value: Any) -> Any:
         py_format = date_format.replace("yyyy", "%Y").replace("MM", "%m").replace("dd", "%d")
         
         try:
+            # 解析ISO格式日期字符串并转换为北京时间
+            from datetime import datetime
+            import pytz
 
-            print("value", value)
-            # 假设value是ISO格式的日期字符串
+            # 解析ISO格式日期
             date_obj = datetime.fromisoformat(value.replace('Z', '+00:00'))
-            return date_obj.strftime(py_format)
+            
+            # 转换为北京时间 (前端传来的日期，不是北京时区)
+            beijing_date = date_obj.astimezone(pytz.timezone('Asia/Shanghai'))
+            
+            # 格式化输出
+            return beijing_date.strftime(py_format)
         except Exception as e:
             print(f"日期格式化失败: {str(e)}")
             return value
@@ -127,7 +135,7 @@ def _parse_date_parameter(pattern: str) -> str:
 
     # 转换Java风格的日期格式为Python风格
     py_format = date_format.replace('yyyy', '%Y').replace('MM', '%m').replace('dd', '%d')
-    
+
     return current_date.strftime(py_format)
 
 def replace_parameters_in_sql(sql: str, param_values: Dict[str, Any]) -> str:

@@ -14,6 +14,7 @@ import PrintModal from './PrintModal';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+
 const { Option } = Select;
 
 const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) => {
@@ -40,6 +41,8 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
       
       if (response.data.status === 'success' && response.data.config.parameters) {
         const params = response.data.config.parameters;
+
+        message.info(JSON.stringify(params, null, 2));
         setParameters(params);
         
         // 设置默认参数值
@@ -53,17 +56,17 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
             // 多选类型默认为空数组
             defaultValues[param.name] = param.default !== undefined ? param.default : [];
           } else if (param.type === 'date_picker') {
+            message.info(param.default)
             // 日期类型特殊处理
-            defaultValues[param.name] = param.default ? dayjs(param.default) : null;
+            defaultValues[param.name] = param.default ? dayjs(param.default): null;
           }
         });
-        
+
         setParamValues(defaultValues);
         form.setFieldsValue(defaultValues);
         
         // 自动获取解析后的SQL          
         fetchParsedSQL(sql, defaultValues);
-        
       }
     } catch (error) {
       console.error('获取参数配置失败:', error);
@@ -73,10 +76,10 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
   
   // 处理参数值变化
   const handleParamChange = (name, value) => {
-    // message.info(`${name}: ${JSON.stringify(value)}`);
+    const processedValue = dayjs.isDayjs(value) ? value.toISOString(): value;
     const newParamValues = {
       ...paramValues,
-      [name]: value
+      [name]: processedValue
     };
     setParamValues(newParamValues);
     
@@ -89,9 +92,11 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
   // 获取解析后的SQL
   const fetchParsedSQL = async (sql, params) => {
     try {
+      const parsedParams = JSON.parse(JSON.stringify(params));
+
       const response = await axios.post('http://localhost:8000/api/parse_sql', {
         sql_query: sql,
-        param_values: params
+        param_values: parsedParams
       });
       
       if (response.data.status === 'success' && response.data.processedSql) {
@@ -216,8 +221,9 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
                   <Col span={4} key={name} style={{ marginBottom: '8px' }}>
                     <Form.Item label={name} name={name} style={{ marginBottom: '8px' }}>
                     <DatePicker 
+                      timezone="Asia/Shanghai"
                       style={{ width: '100%' }}
-                      onChange={(value) => handleParamChange(name, value)}
+                      onChange={(value) => {handleParamChange(name, value)}}
                     />
                     </Form.Item>
                   </Col>
