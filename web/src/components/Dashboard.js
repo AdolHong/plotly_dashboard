@@ -5,7 +5,7 @@ import SQLEditor from './SQLEditor';
 import Visualizer from './Visualizer';
 import axios from 'axios';
 
-const { Title } = Typography;
+// const { Title } = Typography;
 
 const Dashboard = () => {
   const [sessionId, setSessionId] = useState('');
@@ -140,9 +140,10 @@ const Dashboard = () => {
         visualizations
       };
       
-      // 发送到后端保存
+      // 发送到后端保存，包含session_id以便后端获取DataFrame数据
       const response = await axios.post('http://localhost:8000/api/share', {
-        dashboard_state: dashboardState
+        dashboard_state: dashboardState,
+        session_id: sessionId
       });
       
       if (response.data.status === 'success') {

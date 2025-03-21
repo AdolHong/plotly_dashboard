@@ -26,7 +26,8 @@ const Share = ({ shareId }) => {
         
         if (response.data.status === 'success') {
           setDashboardState(response.data.dashboard_state);
-          // Generate a temporary session ID for this view
+          // Generate a temporary session ID for this view that includes the share ID
+          // This will be used for the visualize endpoint
           setSessionId(`share_${shareId}`);
         } else {
           setError(response.data.message || 'Failed to load shared dashboard');
@@ -110,6 +111,8 @@ const Share = ({ shareId }) => {
               config={visualization.config}
               readOnly={true}
               optionValues={visualization.optionValues}
+              shareId={shareId}
+              isSharedMode={true}
             />
           ))
         ) : (

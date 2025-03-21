@@ -276,8 +276,19 @@ async def share_dashboard(request: dict):
         if not dashboard_state:
             raise HTTPException(status_code=400, detail="Dashboard state is required")
         
+        # Get query hash from dashboard state
+        query_hash = dashboard_state.get("queryHash")
+        session_id = request.get("session_id")
+        
+        # Get DataFrame data if query hash and session ID are provided
+        dataframe_data = None
+        if query_hash and session_id:
+            cached_result = session_manager.get_query_result(session_id, query_hash)
+            if cached_result and "data" in cached_result:
+                dataframe_data = cached_result["data"]
+        
         # Save dashboard state and get share ID
-        share_id = share_manager.save_dashboard_state(dashboard_state)
+        share_id = share_manager.save_dashboard_state(dashboard_state, dataframe_data)
         
         return {
             "status": "success",
@@ -303,6 +314,102 @@ async def get_shared_dashboard(share_id: str):
         return {
             "status": "success",
             "dashboard_state": dashboard_state
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
+@app.post("/api/share/visualize")
+async def visualize_shared_data(request: dict):
+    """Process Python visualization code using shared data"""
+    stdout_buffer = io.StringIO()
+    print_output = ""
+    
+    try:
+        share_id = request.get("share_id", "")
+        python_code = request.get("python_code")
+        option_values = request.get("option_values", {})
+        
+        if not share_id:
+            raise HTTPException(status_code=400, detail="Share ID is required")
+        
+        # Get dashboard state from share ID
+        dashboard_state = share_manager.get_dashboard_state(share_id)
+        if not dashboard_state:
+            raise HTTPException(status_code=404, detail="Shared dashboard not found")
+        
+        # Extract DataFrame from dashboard state
+        df = share_manager.get_dataframe_from_state(dashboard_state)
+        if df is None:
+            raise HTTPException(status_code=404, detail="DataFrame data not found in shared dashboard")
+        
+        # Process visualization options
+        from src.services.option_handler import process_visualization_options
+        processed_options = process_visualization_options([], option_values, df)
+        
+        # Process visualization
+        with redirect_stdout(stdout_buffer):
+            result = process_analysis_request(
+                sql_query="",  # Not needed as we already have the DataFrame
+                python_code=python_code,
+                df=df,
+                options=processed_options
+            )
+        
+        # Get print output
+        api_print_output = stdout_buffer.getvalue()
+        result_print_output = result.get("print_output", "")
+        print_output = api_print_output + result_print_output
+        
+        if result.get("result_type") == "error":
+            return {
+                "status": "error",
+                "message": result.get("error_message", "Unknown error"),
+                "print_output": print_output
+            }
+        
+        return {
+            "status": "success",
+            "result_type": result["result_type"],
+            "data": result["data"],
+            "plot_data": result["plot_data"],
+            "print_output": print_output
+        }
+    except Exception as e:
+        # Get print output (even if an error occurred)
+        api_print_output = stdout_buffer.getvalue()
+        
+        # Try to extract print output from error message
+        error_str = str(e)
+        additional_print_output = ""
+        
+        if "Print输出:" in error_str:
+            parts = error_str.split("Print输出:", 1)
+            if len(parts) > 1:
+                error_msg = parts[0].strip()
+                additional_print_output = parts[1].strip()
+            else:
+                error_msg = error_str
+        else:
+            error_msg = error_str
+        
+        # Combine all possible print outputs
+        print_output = api_print_output
+        if additional_print_output:
+            if print_output:
+                print_output += "\n" + additional_print_output
+            else:
+                print_output = additional_print_output
+        
+        error_detail = traceback.format_exc()
+        
+        return {
+            "status": "error",
+            "message": f"分析处理失败: {error_msg}",
+            "print_output": print_output,
+            "error_detail": error_detail
         }
     except Exception as e:
         return {

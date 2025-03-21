@@ -9,7 +9,7 @@ import axios from 'axios';
 
 const Text = Typography;
 
-const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoaded, inferredOptions, config, readOnly = false, optionValues: initialOptionValues }) => {
+const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoaded, inferredOptions, config, readOnly = false, optionValues: initialOptionValues, isSharedMode, shareId }) => {
   const [pythonCode, setPythonCode] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -106,7 +106,7 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
       return;
     }
     
-    if (!queryHash) {
+    if (!queryHash && !isSharedMode) {
       message.error('请先执行SQL查询');
       return;
     }
@@ -125,14 +125,26 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
             
       const currentOptionValues = overrideOptionValues || optionValues;
       
-      // 发送Python代码处理请求
-      const visualizeResponse = await axios.post('http://localhost:8000/api/visualize', {
-        session_id: sessionId,
-        query_hash: queryHash.split('_')[0], // 移除时间戳部分，只使用原始查询哈希值
-        python_code: pythonCode || null,
-        option_values: currentOptionValues,
-        visualization_index: index - 1 // 索引从0开始，但前端显示从1开始
-      });
+      let visualizeResponse;
+      
+      // 根据是否是共享模式选择不同的API端点
+      if (isSharedMode && shareId) {
+        // 使用共享数据的可视化API
+        visualizeResponse = await axios.post('http://localhost:8000/api/share/visualize', {
+          share_id: shareId,
+          python_code: pythonCode || null,
+          option_values: currentOptionValues
+        });
+      } else {
+        // 使用常规会话的可视化API
+        visualizeResponse = await axios.post('http://localhost:8000/api/visualize', {
+          session_id: sessionId,
+          query_hash: queryHash.split('_')[0], // 移除时间戳部分，只使用原始查询哈希值
+          python_code: pythonCode || null,
+          option_values: currentOptionValues,
+          visualization_index: index - 1 // 索引从0开始，但前端显示从1开始
+        });
+      }
 
       
       // 保存print输出（无论成功还是失败）
