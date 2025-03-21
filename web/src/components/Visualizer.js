@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/theme-github';
-import { Button, Card, Typography, Tooltip, message, Space, Select, Checkbox, InputNumber, Input, Form, Row, Col, Divider } from 'antd';
+import { Button, Card, Typography, Tooltip, message, Space, Select, Checkbox, InputNumber, Input, Form, Row, Col, Divider, Alert } from 'antd';
 import PrintModal from './PrintModal';
 import Plot from 'react-plotly.js';
 import axios from 'axios';
@@ -247,9 +247,26 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
 
   // 渲染可视化结果
   const renderVisualization = () => {
+    message.info("什么情况:",resultType)
+
     if (resultType === 'figure' && visualizationData) {
       // 从plotData中提取数据和布局
       const { data, layout, config } = visualizationData;
+      
+      // 检查数据结构是否完整
+      if (!data) {
+        console.error('Visualization data is missing the data property:', visualizationData);
+        return (
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            <Alert
+              message="可视化数据错误"
+              description="无法渲染图表，数据结构不完整"
+              type="error"
+              showIcon
+            />
+          </div>
+        );
+      }
 
       return (
         <Plot
@@ -262,7 +279,7 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
             font: { family: 'Arial, sans-serif' }
           }}
           config={{
-            ...config,
+            ...(config || {}),
             responsive: true,
             displayModeBar: true,
             displaylogo: false,

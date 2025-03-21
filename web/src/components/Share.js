@@ -24,6 +24,9 @@ const Share = ({ shareId }) => {
         
         const response = await axios.get(`http://localhost:8000/api/share/${shareId}`);
         
+        message.info(JSON.stringify(response.data, null, 2))
+
+
         if (response.data.status === 'success') {
           setDashboardState(response.data.dashboard_state);
           // Generate a temporary session ID for this view that includes the share ID
