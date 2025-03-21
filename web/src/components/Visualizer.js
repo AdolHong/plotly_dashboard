@@ -9,7 +9,7 @@ import axios from 'axios';
 
 const Text = Typography;
 
-const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoaded, inferredOptions, config }) => {
+const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoaded, inferredOptions, config, readOnly = false, optionValues: initialOptionValues }) => {
   const [pythonCode, setPythonCode] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -33,8 +33,13 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
           setOptions(optionsCopy);
         }
       }
+      
+      // 如果提供了初始选项值（用于分享模式），则设置它们
+      if (initialOptionValues) {
+        setOptionValues(initialOptionValues);
+      }
     }
-  }, [configLoaded, initialPythonCode, config]);
+  }, [configLoaded, initialPythonCode, config, initialOptionValues]);
   
   // 当推断的选项变化时更新选项配置
   useEffect(() => {
@@ -83,11 +88,16 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
     // 只有当queryHash存在且与上次处理的不同时才执行可视化
     // 这样可以避免新增的可视化区域立即执行现有的queryHash
     if (queryHash && queryHash !== processedQueryHash) {
-      handleExecuteVisualization();
+      // 如果是只读模式且提供了初始选项值，则使用这些值执行可视化
+      if (readOnly && initialOptionValues) {
+        handleExecuteVisualization(initialOptionValues);
+      } else {
+        handleExecuteVisualization();
+      }
       // 记录已处理的queryHash
       setProcessedQueryHash(queryHash);
     }
-  }, [queryHash, processedQueryHash]);
+  }, [queryHash, processedQueryHash, readOnly, initialOptionValues]);
 
   // 执行Python可视化
   const handleExecuteVisualization = async (overrideOptionValues = null) => {
@@ -309,6 +319,32 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
       return null;
     }
     
+    // 在只读模式下显示选项值
+    if (readOnly) {
+      return (
+        <div style={{ marginBottom: '16px' }}>
+          <Divider orientation="left">选项设置</Divider>
+          <Row gutter={12}>
+            {options.map((option, optionIndex) => {
+              const { name } = option;
+              if (!name) return null;
+              
+              const value = optionValues[name];
+              return (
+                <Col span={4} key={`${name}-${optionIndex}`} style={{ marginBottom: '8px' }}>
+                  <div>
+                    <strong>{name}:</strong>{' '}
+                    {Array.isArray(value) ? value.join(', ') : String(value !== undefined ? value : '')}
+                  </div>
+                </Col>
+              );
+            })}
+          </Row>
+        </div>
+      );
+    }
+    
+    // 非只读模式下显示可编辑控件
     return (
       <div style={{ marginBottom: '16px' }}>
         <Divider orientation="left">选项设置</Divider>
@@ -420,24 +456,26 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
       title={title ? `${title}` : `可视化区域 ${index}`} 
       style={{ marginBottom: '20px', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.15)' }}
       extra={
-        <Space>
-          <Button 
-            type="primary" 
-            onClick={() => handleExecuteVisualization()}  // 使用箭头函数包装
-          >
-            执行
-          </Button>
-          <Tooltip title={hasPrintOutput ? "查看Python代码的print输出" : "没有print输出"}>
+        !readOnly && (
+          <Space>
             <Button 
-              type="default" 
-              onClick={showPrintModal} 
-              disabled={!hasPrintOutput}
-              icon={<span role="img" aria-label="console">📋</span>}
+              type="primary" 
+              onClick={() => handleExecuteVisualization()}  // 使用箭头函数包装
             >
-              查看输出
+              执行
             </Button>
-          </Tooltip>
-        </Space>
+            <Tooltip title={hasPrintOutput ? "查看Python代码的print输出" : "没有print输出"}>
+              <Button 
+                type="default" 
+                onClick={showPrintModal} 
+                disabled={!hasPrintOutput}
+                icon={<span role="img" aria-label="console">📋</span>}
+              >
+                查看输出
+              </Button>
+            </Tooltip>
+          </Space>
+        )
       }
     >
       {description && (
@@ -449,28 +487,40 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
       {/* 选项区域 */}
       {renderOptions()}
       
-      <div style={{ marginBottom: '16px' }}>
-        <AceEditor
-          mode="python"
-          theme="github"
-          name={`python-editor-${index}`}
-          value={pythonCode}
-          onChange={setPythonCode}
-          fontSize={14}
-          width="100%"
-          height="150px"
-          showPrintMargin={false}
-          showGutter={true}
-          highlightActiveLine={true}
-          setOptions={{
-            enableBasicAutocompletion: true,
-            enableLiveAutocompletion: true,
-            enableSnippets: true,
-            showLineNumbers: true,
-            tabSize: 2,
-          }}
-        />
-      </div>
+      {/* Python代码编辑器 - 只在非只读模式下显示 */}
+      {!readOnly && (
+        <div style={{ marginBottom: '16px' }}>
+          <AceEditor
+            mode="python"
+            theme="github"
+            name={`python-editor-${index}`}
+            value={pythonCode}
+            onChange={setPythonCode}
+            fontSize={14}
+            width="100%"
+            height="150px"
+            showPrintMargin={false}
+            showGutter={true}
+            highlightActiveLine={true}
+            setOptions={{
+              enableBasicAutocompletion: true,
+              enableLiveAutocompletion: true,
+              enableSnippets: true,
+              showLineNumbers: true,
+              tabSize: 2,
+            }}
+          />
+        </div>
+      )}
+      
+      {/* 在只读模式下显示代码 */}
+      {readOnly && pythonCode && (
+        <div style={{ marginBottom: '16px' }}>
+          <pre style={{ background: '#f5f5f5', padding: '10px', borderRadius: '4px', maxHeight: '150px', overflow: 'auto' }}>
+            {pythonCode}
+          </pre>
+        </div>
+      )}
       
       <div style={{ marginTop: '16px' }}>
         {renderVisualization()}

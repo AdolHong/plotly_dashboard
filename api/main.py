@@ -9,11 +9,15 @@ from pathlib import Path
 
 from src.services.visualization import process_analysis_request
 from src.services.session_manager import SessionManager
+from src.services.share_manager import ShareManager
 from src.database.db import execute_query, init_db
 from src.services.parameter_handler import replace_parameters_in_sql, preprocess_of_config
 
 # Initialize session manager
 session_manager = SessionManager()
+
+# Initialize share manager
+share_manager = ShareManager()
 
 # 初始化数据库
 init_db()
@@ -260,4 +264,48 @@ async def visualize_data(request: dict):
             "message": f"分析处理失败: {error_msg}",
             "print_output": print_output,
             "error_detail": error_detail
+        }
+
+@app.post("/api/share")
+async def share_dashboard(request: dict):
+    """Save dashboard state for sharing"""
+    try:
+        # Get dashboard state from request
+        dashboard_state = request.get("dashboard_state", {})
+        
+        if not dashboard_state:
+            raise HTTPException(status_code=400, detail="Dashboard state is required")
+        
+        # Save dashboard state and get share ID
+        share_id = share_manager.save_dashboard_state(dashboard_state)
+        
+        return {
+            "status": "success",
+            "message": "Dashboard shared successfully",
+            "share_id": share_id
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
+@app.get("/api/share/{share_id}")
+async def get_shared_dashboard(share_id: str):
+    """Get shared dashboard state"""
+    try:
+        # Get dashboard state from share ID
+        dashboard_state = share_manager.get_dashboard_state(share_id)
+        
+        if not dashboard_state:
+            raise HTTPException(status_code=404, detail="Shared dashboard not found")
+        
+        return {
+            "status": "success",
+            "dashboard_state": dashboard_state
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
         }

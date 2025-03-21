@@ -147,9 +147,9 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded }) 
       
       message.success('SQL查询成功');
       
-      // 通知父组件查询成功，传递查询哈希值和推断的选项
+      // 通知父组件查询成功，传递查询哈希值、推断的选项和SQL查询
       if (onQuerySuccess) {
-        onQuerySuccess(queryHash, inferredOptions);
+        onQuerySuccess(queryHash, inferredOptions, sqlQuery);
       }
     } catch (error) {
       console.error('SQL查询失败:', error);
