@@ -9,10 +9,11 @@ import { useOptionValues } from '../hooks/useVisualizerContext';
 const Text = Typography;
 
 const Visualizer = ({ index, sessionId, queryHash, configLoaded, initialPythonCode, inferredOptions, config, readOnly, optionValues: initialOptionValues, shareId }) => {
-  const [pythonCode, setPythonCode] = useState(initialPythonCode);
+  const [pythonCode, setPythonCode] = useState(config?.code || "");
+  const [optionConfig, setOptionConfig] = useState(config?.options || []);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [optionConfig, setOptionConfig] = useState([]);
+  
   
   // Use the context for optionValues instead of local state
   const { getOptionValues,setOptionValues, handleOptionChange } = useOptionValues();
