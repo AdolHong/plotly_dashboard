@@ -134,8 +134,7 @@ async def execute_sql_query(request: dict):
                 if option_name:
                     inferred_option_choices[option_name] = {
                         "choices": option.get("choices", []),
-                        "default": option.get("default"),
-                        "multiple": option.get("multiple", False)
+                        "default": option.get("default")
                     }
         
         # Convert DataFrame to dict for caching
