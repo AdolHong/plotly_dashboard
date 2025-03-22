@@ -9,9 +9,9 @@ import { useSQLQuery } from '../hooks/useSQLQuery';
 import ParameterControls from './ParameterControls';
 
 
-const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, configParameters, dashboardConfig }) => {
+const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, configParameters, dashboardConfig ,onParamValuesChange:updateDashboardParams }) => {
   // parameters controls
-  const { parameters, paramValues, form, handleParamChange } = useParameters(configLoaded, configParameters);
+  const { parameters, paramValues, form, handleParamChange } = useParameters(configLoaded, configParameters, updateDashboardParams);
   // sql editor controls
   const { 
     sqlQuery, 

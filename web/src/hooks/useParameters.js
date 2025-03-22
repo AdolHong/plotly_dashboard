@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Form } from 'antd';
 import dayjs from 'dayjs';
 
-export const useParameters = (configLoaded, configParameters) => {
+export const useParameters = (configLoaded, configParameters, onParamValuesChange) => {
   const [parameters, setParameters] = useState([]);
   const [paramValues, setParamValues] = useState({});
   const [form] = Form.useForm();
@@ -34,9 +34,13 @@ export const useParameters = (configLoaded, configParameters) => {
 
   useEffect(() => {
     if (configLoaded && configParameters) {
-      processParameters(configParameters);
+      const defaultValues = processParameters(configParameters);
+      // 初始化时也触发回调
+      if (defaultValues && onParamValuesChange) {
+        onParamValuesChange(defaultValues);
+      }
     }
-  }, [configLoaded, configParameters]);
+  }, [configLoaded, configParameters, onParamValuesChange]);
 
 
   // 处理参数值变化
@@ -46,6 +50,10 @@ export const useParameters = (configLoaded, configParameters) => {
       [name]: value
     };
     setParamValues(newParamValues);
+    // 参数变化时触发回调
+    if (onParamValuesChange) {
+      onParamValuesChange(newParamValues);
+    }
     return newParamValues;
   };
 

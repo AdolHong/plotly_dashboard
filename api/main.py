@@ -136,7 +136,8 @@ async def execute_sql_query(request: dict):
         
         # Convert DataFrame to dict for caching
         result = {
-            "data": df.to_json(orient='records')
+            "data": df.to_json(orient='records'),
+            "dashboard_config": dashboard_config
         }
         
         # Cache the result and get query hash
@@ -233,7 +234,6 @@ async def share_dashboard(request: dict):
         # Get dashboard state from request
 
         dashboard_state = request.get("dashboard_state", {})
-
         print(dashboard_state)
         
         if not dashboard_state:
@@ -250,7 +250,7 @@ async def share_dashboard(request: dict):
             cached_result = session_manager.get_query_result(session_id, query_hash)
             if cached_result and "data" in cached_result:
                 dataframe_data = cached_result["data"]
-        
+
         # Save dashboard state and get share ID
         share_id = share_manager.save_dashboard_state(dashboard_state, dataframe_data)
         

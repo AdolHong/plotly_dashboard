@@ -19,6 +19,7 @@ const Dashboard = () => {
   const [shareUrl, setShareUrl] = useState('');
   const [isSharing, setIsSharing] = useState(false);
   const [currentSqlQuery, setCurrentSqlQuery] = useState('');
+  const [paramValues, setParamValues] = useState({});
   
   // 获取会话ID
   useEffect(() => {
@@ -100,47 +101,21 @@ const Dashboard = () => {
     
     setIsSharing(true);
     
-    try {
-      // 收集可视化区域的状态
-      const visualizations = [];
-      
-      // 遍历所有可视化区域，收集它们的状态
-      Array.from({ length: visualizerCount }).forEach((_, index) => {        
-        // 获取可视化区域的配置
-        const config = visualizationConfig[index] || {};
-        
-        // 获取可视化区域的选项值
-        // 注意：这里需要从Visualizer组件中获取，可能需要通过ref或其他方式
-        // 这里简化处理，实际实现可能需要更复杂的状态管理
-        const optionValues = {};
-        
-        if (config.options && Array.isArray(config.options)) {
-          config.options.forEach(option => {
-            if (option.name) {
-              // 这里简化处理，实际实现可能需要从Visualizer组件中获取
-              optionValues[option.name] = option.default || '';
-            }
-          });
-        }
-        
-        visualizations.push({
-          config,
-          inferredOptions,
-          optionValues
-        });
-      });
-      
+    try {      
       // 构建仪表盘状态
       const dashboardState = {
         sqlQuery: currentSqlQuery,
-        queryHash: queryHash.split('_')[0], // 移除时间戳部分
-        visualizations
+        paramValues,
+
+        // todo: infer values
+        
       };
       
       // 发送到后端保存，包含session_id以便后端获取DataFrame数据
       const response = await axios.post('http://localhost:8000/api/share', {
         dashboard_state: dashboardState,
-        session_id: sessionId
+        session_id: sessionId,
+        queryHash: queryHash.split('_')[0], // 移除时间戳部分
       });
       
       if (response.data.status === 'success') {
@@ -186,6 +161,7 @@ const Dashboard = () => {
         configLoaded={configLoaded}
         configParameters={configParameters}
         dashboardConfig={dashboardConfig}
+        onParamValuesChange={setParamValues}
       />
       
       <Divider orientation="left">Python 可视化区域</Divider>

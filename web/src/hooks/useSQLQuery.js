@@ -38,7 +38,6 @@ export const useSQLQuery = (sessionId, onQuerySuccess, dashboardConfig) => {
         sessionId: sessionId,
         paramValues: paramValues,
         dashboardConfig: dashboardConfig
-
       });
 
       if (queryResponse.data.status === 'error') {
@@ -62,7 +61,7 @@ export const useSQLQuery = (sessionId, onQuerySuccess, dashboardConfig) => {
       message.success('SQL查询成功');
       
       if (onQuerySuccess) {
-        onQuerySuccess(queryHash, inferredOptions, sqlQuery);
+        onQuerySuccess(queryHash, inferredOptions, queryResponse.data.processedSql);
       }
     } catch (error) {
       console.error('SQL查询失败:', error);
