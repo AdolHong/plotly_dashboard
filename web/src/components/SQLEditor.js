@@ -10,9 +10,9 @@ import ParameterControls from './ParameterControls';
 import { useParamValues } from '../hooks/useVisualizerContext';
 
 
-const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, configParameters, dashboardConfig ,onParamValuesChange:updateDashboardParams }) => {
+const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, configParameters, dashboardConfig }) => {
   // Get form and parameters from useParameters, but use context for paramValues
-  const { parameters, form } = useParameters(configLoaded, configParameters, updateDashboardParams);
+  const { parameters, form } = useParameters(configLoaded, configParameters);
   // Use context for paramValues
   const { paramValues, handleParamChange } = useParamValues();
   // sql editor controls

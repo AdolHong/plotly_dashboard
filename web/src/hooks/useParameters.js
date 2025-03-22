@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Form } from 'antd';
 import dayjs from 'dayjs';
+import { useParamValues } from '../hooks/useVisualizerContext';
 
-export const useParameters = (configLoaded, configParameters, onParamValuesChange) => {
+export const useParameters = (configLoaded, configParameters) => {
   const [parameters, setParameters] = useState([]);
-  const [paramValues, setParamValues] = useState({});
+  const { paramValues, setParamValues } = useParamValues();
   const [form] = Form.useForm();
 
   // 处理参数配置
@@ -34,13 +35,10 @@ export const useParameters = (configLoaded, configParameters, onParamValuesChang
 
   useEffect(() => {
     if (configLoaded && configParameters) {
-      const defaultValues = processParameters(configParameters);
-      // 初始化时也触发回调
-      if (defaultValues && onParamValuesChange) {
-        onParamValuesChange(defaultValues);
-      }
+      processParameters(configParameters);
+
     }
-  }, [configLoaded, configParameters, onParamValuesChange]);
+  }, [configLoaded, configParameters]);
 
 
   // 处理参数值变化
@@ -50,10 +48,6 @@ export const useParameters = (configLoaded, configParameters, onParamValuesChang
       [name]: value
     };
     setParamValues(newParamValues);
-    // 参数变化时触发回调
-    if (onParamValuesChange) {
-      onParamValuesChange(newParamValues);
-    }
     return newParamValues;
   };
 
