@@ -140,7 +140,7 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
     } catch (error) {      
       // 如果是网络错误等其他错误
       message.error('执行失败: ' + error.message);
-
+      
       // 清除之前的数据
       setTableData([]);
       setVisualizationData(null);
