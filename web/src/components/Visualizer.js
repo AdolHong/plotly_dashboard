@@ -3,7 +3,7 @@ import { Card, Typography, message } from 'antd';
 import axios from 'axios';
 import PythonEditor from './PythonEditor';
 import VisualizerOptions from './VisualizerOptions';
-import VisualizationResult from './VisualizationResult';
+import VisualizerDisplayView from './VisualizerDisplayView';
 
 const Text = Typography;
 
@@ -16,20 +16,18 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
   
   // 当配置加载完成后，设置初始Python代码和标题、描述
   useEffect(() => {
-    if (configLoaded && config.code) {
+    if (configLoaded && config && config.code) {
       setPythonCode(config.code);
       
-      // 从props中获取标题、描述和选项
-      if (config) {
-        setTitle(config.title || "");
-        setDescription(config.description || "");
-        
-        // 设置选项
-        if (config.options && Array.isArray(config.options)) {
-          // 复制选项以避免修改原始对象
-          const optionsCopy = JSON.parse(JSON.stringify(config.options));
-          setOptions(optionsCopy);
-        }
+
+      setTitle(config.title || "");
+      setDescription(config.description || "");
+      
+      // 设置选项
+      if (config.options && Array.isArray(config.options)) {
+        // 复制选项以避免修改原始对象
+        const optionsCopy = JSON.parse(JSON.stringify(config.options));
+        setOptions(optionsCopy);
       }
       
       // 如果提供了初始选项值（用于分享模式），则设置它们
@@ -39,39 +37,7 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
     }
   }, [configLoaded, config, initialOptionValues]);
   
-  // 当推断的选项变化时更新选项配置
-  useEffect(() => {
-    if (inferredOptions && options.length > 0) {
-      // 复制选项以避免修改原始对象
-      const optionsCopy = JSON.parse(JSON.stringify(options));
-      
-      // 使用从DataFrame中推断的选项更新选项配置
-      // 遍历选项，查找需要从DataFrame中推断的选项
-      optionsCopy.forEach(option => {
-        // 检查选项是否需要从DataFrame中推断
-        if (option.name && option.infer === "column" && option.inferColumn) {
-          // 检查inferredOptions中是否有对应的选项
-          if (inferredOptions[option.name]) {
-            const inferredOption = inferredOptions[option.name];
-            
-            // 更新选项的choices
-            option.choices = inferredOption.choices || [];
-            
-            // 如果是单选且没有默认值，设置第一个值为默认值
-            if (!option.multiple && !option.default && option.choices.length > 0) {
-              option.default = option.choices[0];
-            }
-            // 如果是多选且没有默认值，设置为空列表
-            else if (option.multiple && !option.default) {
-              option.default = [];
-            }
-          }
-        }
-      })
-      
-      setOptions(optionsCopy);
-    }
-  }, [inferredOptions]);
+
   
   const [printOutput, setPrintOutput] = useState('');
   const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
@@ -86,6 +52,7 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
     // 只有当queryHash存在且与上次处理的不同时才执行可视化
     // 这样可以避免新增的可视化区域立即执行现有的queryHash
     if (queryHash && queryHash !== processedQueryHash) {
+      // todo: share部份 没想明白
       // 如果是只读模式且提供了初始选项值，则使用这些值执行可视化
       if (readOnly && initialOptionValues) {
         handleExecuteVisualization(initialOptionValues);
@@ -95,7 +62,7 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
       // 记录已处理的queryHash
       setProcessedQueryHash(queryHash);
     }
-  }, [queryHash, processedQueryHash, readOnly, initialOptionValues]);
+  }, [queryHash]);
 
   // 执行Python可视化
   const handleExecuteVisualization = async (overrideOptionValues = null) => {
@@ -233,7 +200,6 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
     }
   };
 
-  // 渲染可视化结果已移至VisualizationResult组件
 
   // 处理选项值变化
   const handleOptionChange = (name, value) => {
@@ -245,8 +211,6 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
     setOptionValues(newOptionValues);
     handleExecuteVisualization(newOptionValues);
   };
-  
-  // 渲染选项区域已移至VisualizerOptions组件
   
   return (
     <Card 
@@ -262,8 +226,13 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
       {/* 选项区域 */}
       <VisualizerOptions 
         options={options} 
-        optionValues={optionValues} 
-        handleOptionChange={handleOptionChange} 
+        optionValues={(() => {
+          // message.info("什么奇奇怪怪的")
+          // message.info(JSON.stringify(optionValues, null, 2))
+          return optionValues;
+        })()}
+        handleOptionChange={handleOptionChange}
+        inferredOptions={inferredOptions}
       />
       
       {/* Python代码编辑器 */}
@@ -278,7 +247,7 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
       
       {/* 可视化结果区域 */}
       <div style={{ marginTop: '16px' }}>
-        <VisualizationResult 
+        <VisualizerDisplayView 
           resultType={resultType} 
           visualizationData={visualizationData} 
           tableData={tableData} 

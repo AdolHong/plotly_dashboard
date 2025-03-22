@@ -1,7 +1,46 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Select, Checkbox, InputNumber, Row, Col, Divider } from 'antd';
 
-const VisualizerOptions = ({ options, optionValues, handleOptionChange }) => {
+const VisualizerOptions = ({ options: initialOptions, optionValues, handleOptionChange, inferredOptions }) => {
+  const [options, setOptions] = useState(initialOptions);
+  
+  // 当推断的选项变化时更新选项配置
+  useEffect(() => {
+    if (inferredOptions && initialOptions.length > 0) {
+      // 复制选项以避免修改原始对象
+      const optionsCopy = JSON.parse(JSON.stringify(initialOptions));
+      
+      // 使用从DataFrame中推断的选项更新选项配置
+      // 遍历选项，查找需要从DataFrame中推断的选项
+      const updatedOptions = optionsCopy.map(option => {
+        // 检查选项是否需要从DataFrame中推断
+        if (option.name && option.infer === "column" && option.inferColumn) {
+          // 检查inferredOptions中是否有对应的选项
+          if (inferredOptions[option.name]) {
+            const inferredOption = inferredOptions[option.name];
+            
+            // 创建新的选项对象，避免直接修改原对象
+            const updatedOption = { ...option };
+            
+            // 更新选项的choices
+            updatedOption.choices = inferredOption.choices || [];
+            
+            // 如果是单选且没有默认值，设置第一个值为默认值
+            if (!updatedOption.multiple && !updatedOption.default && updatedOption.choices.length > 0) {
+              updatedOption.default = updatedOption.choices[0];
+            }
+            // 如果是多选且没有默认值，设置为空列表
+            else if (updatedOption.multiple && !updatedOption.default) {
+              updatedOption.default = [];
+            }
+            return updatedOption;
+          }
+        }
+        return option;
+      });
+      setOptions(updatedOptions);
+    }
+  }, [inferredOptions, initialOptions]);
 
   return (
     <div style={{ marginBottom: '16px' }}>

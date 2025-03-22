@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/theme-github';
-import { Button, Space, Tooltip, Typography } from 'antd';
+import { Button, Space, Tooltip } from 'antd';
 import PrintModal from './PrintModal';
 
-const { Text } = Typography;
 
 const PythonEditor = ({
   pythonCode,

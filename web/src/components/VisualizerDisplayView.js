@@ -4,7 +4,7 @@ import Plot from 'react-plotly.js';
 
 const { Text } = Typography;
 
-const VisualizationResult = ({ resultType, visualizationData, tableData }) => {
+const VisualizerDisplayView = ({ resultType, visualizationData, tableData }) => {
   if (resultType === 'figure' && visualizationData) {
     // 从plotData中提取数据和布局
     const { data, layout, config } = visualizationData;
@@ -87,4 +87,4 @@ const VisualizationResult = ({ resultType, visualizationData, tableData }) => {
   }
 };
 
-export default VisualizationResult;
+export default VisualizerDisplayView;
