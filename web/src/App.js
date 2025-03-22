@@ -3,8 +3,8 @@ import { Layout, Typography } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
 import { BrowserRouter as Router, Routes, Route, useSearchParams } from 'react-router-dom';
 import 'antd/dist/reset.css';
-import Dashboard from './components/Dashboard';
-import Share from './components/Share';
+import EditView from './components/EditView';
+import ShareView from './components/ShareView';
 import axios from 'axios';
 import {decamelizeKeys, camelizeKeys } from 'humps';
 import { VisualizerContextProvider } from './hooks/useVisualizerContext';
@@ -19,7 +19,6 @@ axios.interceptors.request.use(config => {
   }
   return config;
 });
-
 
 // 响应拦截器：将下划线转为驼峰
 axios.interceptors.response.use(response => {
@@ -52,7 +51,7 @@ function App() {
     const [searchParams] = useSearchParams();
     const shareId = searchParams.get('id');
     
-    return <Share shareId={shareId} />;
+    return <ShareView shareId={shareId} />;
   };
   
   return (
@@ -66,7 +65,7 @@ function App() {
             <Route path="/" element={
               <Content style={{ padding: '0 50px', marginTop: '10px' }}>
                 <div style={{ background: '#fff', padding: '24px', minHeight: '280px' }}>
-                  <Dashboard />
+                  <EditView />
                 </div>
               </Content>
             } />

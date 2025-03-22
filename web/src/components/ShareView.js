@@ -7,7 +7,7 @@ import { useParamValues, useOptionValues } from '../hooks/useVisualizerContext';
 const { Content } = Layout;
 const { Title, Text } = Typography;
 
-const Share = ({ shareId }) => {
+const ShareView = ({ shareId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
@@ -137,4 +137,4 @@ const Share = ({ shareId }) => {
   );
 };
 
-export default Share;
+export default ShareView;

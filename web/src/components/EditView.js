@@ -6,7 +6,7 @@ import Visualizer from './Visualizer';
 import axios from 'axios';
 import { useParamValues, useOptionValues } from '../hooks/useVisualizerContext';
 
-const Dashboard = () => {
+const EditView = () => {
   const [sessionId, setSessionId] = useState('');
   const [queryHash, setQueryHash] = useState('');
   const [visualizerCount, setVisualizerCount] = useState(1);
@@ -142,15 +142,17 @@ const Dashboard = () => {
   
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Divider orientation="left" style={{ margin: '0 12px 0 0', flex: 1 }}>SQL 查询区域</Divider>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', padding: '0 10px' }}>
+        <div style={{ flex: '1 1 auto', minWidth: '200px', marginRight: '20px' }}>
+          <Divider orientation="left" style={{ margin: '10px 0' }}>SQL 查询区域</Divider>
+        </div>
         <Button 
           type="primary" 
           icon={<ShareAltOutlined />} 
           onClick={handleShare}
           loading={isSharing}
           disabled={!queryHash}
-          style={{ marginRight: '10px' }}
+          style={{ margin: '10px 0', flexShrink: 0 }}
         >
           分享仪表盘
         </Button>
@@ -210,4 +212,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default EditView;
