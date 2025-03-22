@@ -7,27 +7,25 @@ import VisualizerDisplayView from './VisualizerDisplayView';
 
 const Text = Typography;
 
-const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions, config, readOnly, optionValues: initialOptionValues, isSharedMode, shareId }) => {
+const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions, config, readOnly, optionValues: initialOptionValues, shareId }) => {
   const [pythonCode, setPythonCode] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [options, setOptions] = useState([]);
+  const [optionConfig, setOptionConfig] = useState([]);
   const [optionValues, setOptionValues] = useState({});
   
   // 当配置加载完成后，设置初始Python代码和标题、描述
   useEffect(() => {
     if (configLoaded && config && config.code) {
       setPythonCode(config.code);
-      
-
       setTitle(config.title || "");
       setDescription(config.description || "");
       
       // 设置选项
       if (config.options && Array.isArray(config.options)) {
         // 复制选项以避免修改原始对象
-        const optionsCopy = JSON.parse(JSON.stringify(config.options));
-        setOptions(optionsCopy);
+        const optionConfigCopy = JSON.parse(JSON.stringify(config.options));
+        setOptionConfig(optionConfigCopy);
       }
       
       // 如果提供了初始选项值（用于分享模式），则设置它们
@@ -64,6 +62,18 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
     }
   }, [queryHash]);
 
+  // 处理选项值变化
+  const handleOptionChange = (name, value) => {
+    const newOptionValues = {
+      ...optionValues,
+      [name]: value
+    };
+    
+    setOptionValues(newOptionValues);
+    handleExecuteVisualization(newOptionValues);
+  };
+
+
   // 执行Python可视化
   const handleExecuteVisualization = async (overrideOptionValues = null) => {
     if (!sessionId) {
@@ -71,30 +81,23 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
       return;
     }
     
-    if (!queryHash && !isSharedMode) {
+    // 修改判断条件
+    if (!queryHash && !shareId) {
       message.error('请先执行SQL查询');
       return;
     }
     
+    // 清除print输出
     setPrintOutput('');
-    setHasPrintOutput(false);
+    let printOutput = "";
     
+    // 修改 API 调用部分
     try {
-      // 使用传入的 overrideOptionValues 或当前的 optionValues
-      console.log('overrideOptionValues:', {
-        value: overrideOptionValues,
-        type: typeof overrideOptionValues,
-        isNull: overrideOptionValues === null,
-        isUndefined: overrideOptionValues === undefined
-      });
-            
       const currentOptionValues = overrideOptionValues || optionValues;
-      
       let visualizeResponse;
       
-      // 根据是否是共享模式选择不同的API端点
-      if (isSharedMode && shareId) {
-        // 使用共享数据的可视化API
+      // 使用 shareId 判断是否为共享模式
+      if (shareId) {
         visualizeResponse = await axios.post('http://localhost:8000/api/share/visualize', {
           share_id: shareId,
           python_code: pythonCode || null,
@@ -107,21 +110,13 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
           query_hash: queryHash.split('_')[0], // 移除时间戳部分，只使用原始查询哈希值
           python_code: pythonCode || null,
           option_values: currentOptionValues,
-          visualization_index: index - 1 // 索引从0开始，但前端显示从1开始
+          option_config: optionConfig
         });
       }
-
       
       // 保存print输出（无论成功还是失败）
       if (visualizeResponse.data.printOutput) {
-        const output = visualizeResponse.data.printOutput;
-        setPrintOutput(output);
-        setHasPrintOutput(true);
-        
-        // 自动显示print输出对话框
-        if (visualizeResponse.data.status === 'error') {
-          setIsPrintModalVisible(true);
-        }
+        printOutput = visualizeResponse.data.printOutput;
       }
       
       if (visualizeResponse.data.status === 'success') {
@@ -139,78 +134,26 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
           message.success('可视化生成成功');
         }
       } else if (visualizeResponse.data.status === 'error') {
-        // 处理错误情况，但仍然保留print输出
-        message.error('执行失败: ' + visualizeResponse.data.message);
-        // 清除之前的数据
-        setTableData([]);
-        setVisualizationData(null);
-        setResultType(null);
+        // 抛出错误
+        throw new Error(visualizeResponse.data.message);
       }
-    } catch (error) {
-      console.error('执行失败:', error);
-      
-      // 尝试从错误响应中获取print输出
-      const errorResponse = error.response?.data;
-      
-      if (errorResponse) {
-        // 如果是API返回的格式化错误
-        if (errorResponse.detail) {
-          // 检查detail是否为字符串或对象
-          if (typeof errorResponse.detail === 'object') {
-            // 尝试从detail对象中获取print_output
-            if (errorResponse.detail.print_output) {
-              const output = errorResponse.detail.print_output;
-              setPrintOutput(output);
-              setHasPrintOutput(true);
-              
-              // 自动显示print输出对话框
-              setIsPrintModalVisible(true);
-            }
-            message.error('执行失败: ' + (errorResponse.detail.message || '未知错误'));
-          } else {
-            message.error('执行失败: ' + errorResponse.detail);
-          }
-        } else {
-          // 尝试从其他位置获取print_output
-          if (errorResponse.print_output) {
-            const output = errorResponse.print_output;
-            setPrintOutput(output);
-            setHasPrintOutput(true);
-            
-            // 自动显示print输出对话框
-            setIsPrintModalVisible(true);
-          }
-          message.error('执行失败: ' + (errorResponse.message || JSON.stringify(errorResponse)));
-        }
-      } else {
-        // 如果是网络错误等其他错误
-        message.error('执行失败: ' + error.message);
-      }
-      
+    } catch (error) {      
+      // 如果是网络错误等其他错误
+      message.error('执行失败: ' + error.message);
+
       // 清除之前的数据
       setTableData([]);
       setVisualizationData(null);
       setResultType(null);
     } finally {
-      
-      // 如果有print输出但hasPrintOutput没有设置为true，强制设置为true
-      if (printOutput && !hasPrintOutput) {
-        setHasPrintOutput(true);
-      }
+      // 保存print输出
+      setPrintOutput(printOutput);
+      setHasPrintOutput(!!printOutput);
     }
   };
 
 
-  // 处理选项值变化
-  const handleOptionChange = (name, value) => {
-    const newOptionValues = {
-      ...optionValues,
-      [name]: value
-    };
-    
-    setOptionValues(newOptionValues);
-    handleExecuteVisualization(newOptionValues);
-  };
+
   
   return (
     <Card 
@@ -225,12 +168,8 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
       
       {/* 选项区域 */}
       <VisualizerOptions 
-        options={options} 
-        optionValues={(() => {
-          // message.info("什么奇奇怪怪的")
-          // message.info(JSON.stringify(optionValues, null, 2))
-          return optionValues;
-        })()}
+        optionConfig={optionConfig} 
+        optionValues={optionValues}
         handleOptionChange={handleOptionChange}
         inferredOptions={inferredOptions}
       />

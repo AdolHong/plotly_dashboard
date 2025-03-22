@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Select, Checkbox, InputNumber, Row, Col, Divider } from 'antd';
 
-const VisualizerOptions = ({ options: initialOptions, optionValues, handleOptionChange, inferredOptions }) => {
-  const [options, setOptions] = useState(initialOptions);
+const VisualizerOptions = ({ optionConfig:initialOptionConfig, optionValues, handleOptionChange, inferredOptions }) => {
+  const [optionConfig, setOptionConfig] = useState(initialOptionConfig);
   
   // 当推断的选项变化时更新选项配置
   useEffect(() => {
-    if (inferredOptions && initialOptions.length > 0) {
+    if (inferredOptions && optionConfig.length > 0) {
       // 复制选项以避免修改原始对象
-      const optionsCopy = JSON.parse(JSON.stringify(initialOptions));
+      const optionsCopy = JSON.parse(JSON.stringify(optionConfig));
       
       // 使用从DataFrame中推断的选项更新选项配置
       // 遍历选项，查找需要从DataFrame中推断的选项
@@ -38,16 +38,16 @@ const VisualizerOptions = ({ options: initialOptions, optionValues, handleOption
         }
         return option;
       });
-      setOptions(updatedOptions);
+      setOptionConfig(updatedOptions);
     }
-  }, [inferredOptions, initialOptions]);
+  }, [inferredOptions, optionConfig]);
 
   return (
     <div style={{ marginBottom: '16px' }}>
       <Divider orientation="left">选项设置</Divider>
       <Form layout="vertical">
         <Row gutter={12}>
-          {options.map((option, optionIndex) => {
+          {optionConfig.map((option, optionIndex) => {
             const { name, type, choices, multiple } = option;
             
             if (!name) return null;

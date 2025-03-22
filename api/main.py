@@ -13,6 +13,7 @@ from src.services.session_manager import SessionManager
 from src.services.share_manager import ShareManager
 from src.database.db import execute_query, init_db
 from src.services.parameter_handler import replace_parameters_in_sql, preprocess_of_config
+from src.services.option_handler import process_visualization_options
 
 # Initialize session manager
 session_manager = SessionManager()
@@ -166,7 +167,7 @@ async def visualize_data(request: dict):
         query_hash = request.get("query_hash", "")
         python_code = request.get("python_code")
         option_values = request.get("option_values", {})
-        visualization_index = request.get("visualization_index")
+        option_config = request.get("option_config", {})
         
         if not session_id or not query_hash:
             raise HTTPException(status_code=400, detail="Session ID and query hash are required")
@@ -179,26 +180,10 @@ async def visualize_data(request: dict):
         # Convert cached data back to DataFrame
         df = pd.DataFrame(json.loads(cached_result["data"]))
         
-        # 获取可视化配置
-        visualization_options = []
-        if visualization_index is not None:
-            try:
-                config_path = Path(__file__).parent / "data" / "dashboard_config.json"
-                with open(config_path, 'r', encoding='utf-8') as f:
-                    config = json.load(f)
-                
-                if "visualization" in config and len(config["visualization"]) > visualization_index:
-                    visualization_config = config["visualization"][visualization_index]
-                    visualization_options = visualization_config.get("options", [])
-            except Exception as e:
-                print(f"获取可视化配置失败: {str(e)}")
-        
         # 处理选项值
-        from src.services.option_handler import process_visualization_options
-        processed_options = process_visualization_options(visualization_options, option_values, df)
+        processed_options = process_visualization_options(option_config, option_values, df)
         
         # Process visualization
-    
         result = process_analysis_request(
             df=df,
             code=python_code,
@@ -207,7 +192,6 @@ async def visualize_data(request: dict):
 
         # Get print output
         print_output = result.get("print_output", "")
-        
         if result.get("result_type") == "error":
             return {
                 "status": "error",

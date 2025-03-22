@@ -118,7 +118,6 @@ const Share = ({ shareId }) => {
               readOnly={true}
               optionValues={visualization.optionValues}
               shareId={shareId}
-              isSharedMode={true}
             />
           ))
         ) : (
