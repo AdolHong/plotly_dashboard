@@ -8,8 +8,8 @@ import { useOptionValues } from '../hooks/useVisualizerContext';
 
 const Text = Typography;
 
-const Visualizer = ({ index, sessionId, queryHash, configLoaded, inferredOptions, config, readOnly, optionValues: initialOptionValues, shareId }) => {
-  const [pythonCode, setPythonCode] = useState("");
+const Visualizer = ({ index, sessionId, queryHash, configLoaded, initialPythonCode, inferredOptions, config, readOnly, optionValues: initialOptionValues, shareId }) => {
+  const [pythonCode, setPythonCode] = useState(initialPythonCode);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [optionConfig, setOptionConfig] = useState([]);
@@ -19,7 +19,7 @@ const Visualizer = ({ index, sessionId, queryHash, configLoaded, inferredOptions
   
   // 当配置加载完成后，设置初始Python代码和标题、描述
   useEffect(() => {
-    if (configLoaded && config && config.code) {
+    if (configLoaded && config) {
       setPythonCode(config.code);
       setTitle(config.title || "");
       setDescription(config.description || "");
@@ -30,13 +30,8 @@ const Visualizer = ({ index, sessionId, queryHash, configLoaded, inferredOptions
         const optionConfigCopy = JSON.parse(JSON.stringify(config.options));
         setOptionConfig(optionConfigCopy);
       }
-      
-      // 如果提供了初始选项值（用于分享模式），则设置它们
-      if (initialOptionValues) {
-        setOptionValues(initialOptionValues);
-      }
     }
-  }, [configLoaded, config, initialOptionValues]);
+  }, [configLoaded, config]);
   
 
   
@@ -52,13 +47,8 @@ const Visualizer = ({ index, sessionId, queryHash, configLoaded, inferredOptions
     // 只有当queryHash存在且与上次处理的不同时才执行可视化
     // 这样可以避免新增的可视化区域立即执行现有的queryHash
     if (queryHash && queryHash !== processedQueryHash) {
-      // todo: share部份 没想明白
-      // 如果是只读模式且提供了初始选项值，则使用这些值执行可视化
-      if (readOnly && initialOptionValues) {
-        handleExecuteVisualization(initialOptionValues);
-      } else {
-        handleExecuteVisualization();
-      }
+      handleExecuteVisualization();
+      
       // 记录已处理的queryHash
       setProcessedQueryHash(queryHash);
     }
@@ -73,7 +63,7 @@ const Visualizer = ({ index, sessionId, queryHash, configLoaded, inferredOptions
 
   // 执行Python可视化
   const handleExecuteVisualization = async (overrideOptionValues = null) => {
-    if (!sessionId) {
+    if (!sessionId ) {
       message.error('无效的会话ID，请刷新页面');
       return;
     }
@@ -91,25 +81,21 @@ const Visualizer = ({ index, sessionId, queryHash, configLoaded, inferredOptions
     // 修改 API 调用部分
     try {
       const currentOptionValues = overrideOptionValues || getOptionValues(index);
+
+      message.info(JSON.stringify(currentOptionValues, null, 2))
+      message.info(JSON.stringify(optionConfig, null, 2))
+
       let visualizeResponse;
       
-      // 使用 shareId 判断是否为共享模式
-      if (shareId) {
-        visualizeResponse = await axios.post('http://localhost:8000/api/share/visualize', {
-          share_id: shareId,
-          python_code: pythonCode || null,
-          option_values: currentOptionValues
-        });
-      } else {
-        // 使用常规会话的可视化API
-        visualizeResponse = await axios.post('http://localhost:8000/api/visualize', {
-          session_id: sessionId,
-          query_hash: queryHash.split('_')[0], // 移除时间戳部分，只使用原始查询哈希值
-          python_code: pythonCode || null,
-          option_values: currentOptionValues,
-          option_config: optionConfig
-        });
-      }
+      // 使用常规会话的可视化API
+      visualizeResponse = await axios.post('http://localhost:8000/api/visualize', {
+        session_id: sessionId,
+        query_hash: queryHash.split('_')[0], // 移除时间戳部分，只使用原始查询哈希值
+        python_code: pythonCode || null,
+        option_values: currentOptionValues,
+        option_config: optionConfig
+      });
+    
       
       // 保存print输出（无论成功还是失败）
       if (visualizeResponse.data.printOutput) {

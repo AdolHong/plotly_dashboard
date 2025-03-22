@@ -114,10 +114,13 @@ const Share = ({ shareId }) => {
             <Visualizer
               index={index}
               sessionId={shareId}
+              shareId={shareId}
               queryHash={queryHash}
-              config={visualizationConfig[index]}
+              config={visualization}
+              initialPythonCode={visualization.code}
               configLoaded={true}
               inferredOptions={inferredOptions}
+              optionValues={getOptionValues(index)}
               readOnly={true}
             />
           ))
