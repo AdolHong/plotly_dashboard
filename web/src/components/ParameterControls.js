@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Form, Select, Input, DatePicker, Card, Row, Col, message } from 'antd';
 
 
 const { Option } = Select;
 
-const ParameterControls = ({ parameters, form, onParamChange }) => {
+const ParameterControls = ({ parameters, form, onParamChange, paramValues, readOnly = false }) => {
+  // When paramValues are provided, update the form values
+  useEffect(() => {
+    if (paramValues && Object.keys(paramValues).length > 0) {
+      form.setFieldsValue(paramValues);
+    }
+  }, [paramValues, form]);
+
   if (!parameters || parameters.length === 0) {
     return null;
   }
@@ -27,7 +34,8 @@ const ParameterControls = ({ parameters, form, onParamChange }) => {
                     <Select 
                       placeholder={`请选择${name}`}
                       style={{ width: '100%' }}
-                      onChange={(value) => onParamChange(name, value)}
+                      onChange={(value) => !readOnly && onParamChange(name, value)}
+                      disabled={readOnly}
                     >
                       {choices && choices.map(choice => (
                         <Option key={choice} value={choice}>{choice}</Option>
@@ -45,7 +53,8 @@ const ParameterControls = ({ parameters, form, onParamChange }) => {
                       mode="multiple"
                       placeholder={`请选择${name}`}
                       style={{ width: '100%' }}
-                      onChange={(value) => onParamChange(name, value)}
+                      onChange={(value) => !readOnly && onParamChange(name, value)}
+                      disabled={readOnly}
                     >
                       {choices && choices.map(choice => (
                         <Option key={choice} value={choice}>{choice}</Option>
@@ -61,7 +70,8 @@ const ParameterControls = ({ parameters, form, onParamChange }) => {
                   <Form.Item label={name} name={name} style={{ marginBottom: '8px' }}>
                     <DatePicker 
                       style={{ width: '100%' }}
-                      onChange={(value) => onParamChange(name, value)}
+                      onChange={(value) => !readOnly && onParamChange(name, value)}
+                      disabled={readOnly}
                     />
                   </Form.Item>
                 </Col>
@@ -73,7 +83,8 @@ const ParameterControls = ({ parameters, form, onParamChange }) => {
                   <Form.Item label={name} name={name} style={{ marginBottom: '8px' }}>
                     <Input 
                       placeholder={`请输入${name}`}
-                      onChange={(e) => onParamChange(name, e.target.value)}
+                      onChange={(e) => !readOnly && onParamChange(name, e.target.value)}
+                      disabled={readOnly}
                     />
                   </Form.Item>
                 </Col>
@@ -87,7 +98,8 @@ const ParameterControls = ({ parameters, form, onParamChange }) => {
                       mode="tags"
                       style={{ width: '100%' }}
                       placeholder={`请输入${name}，回车分隔多个值`}
-                      onChange={(values) => onParamChange(name, values)}
+                      onChange={(values) => !readOnly && onParamChange(name, values)}
+                      disabled={readOnly}
                     />
                   </Form.Item>
                 </Col>
