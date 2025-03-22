@@ -109,14 +109,16 @@ const Dashboard = () => {
       const dashboardState = {
         sqlQuery: currentSqlQuery,
         paramValues,
-        allOptionValues
+        allOptionValues,
+        dashboardConfig,
+        inferredOptions,
+        queryHash: queryHash.split('_')[0], // 移除时间戳部分
       };
       
       // 发送到后端保存，包含session_id以便后端获取DataFrame数据
       const response = await axios.post('http://localhost:8000/api/share', {
         dashboard_state: dashboardState,
         session_id: sessionId,
-        queryHash: queryHash.split('_')[0], // 移除时间戳部分
       });
       
       if (response.data.status === 'success') {

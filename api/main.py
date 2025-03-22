@@ -233,16 +233,13 @@ async def share_dashboard(request: dict):
     try:
         # Get dashboard state from request
 
-        dashboard_state = request.get("dashboard_state", {})
-        print(dashboard_state)
-        
+        dashboard_state = request.get("dashboard_state", {})        
         if not dashboard_state:
             raise HTTPException(status_code=400, detail="Dashboard state is required")
         
         # Get query hash from dashboard state
-        
-        query_hash = dashboard_state.get("query_hash")
         session_id = request.get("session_id")
+        query_hash = request.get("dashboard_state", {}).get("query_hash")
         
         # Get DataFrame data if query hash and session ID are provided
         dataframe_data = None
@@ -250,6 +247,8 @@ async def share_dashboard(request: dict):
             cached_result = session_manager.get_query_result(session_id, query_hash)
             if cached_result and "data" in cached_result:
                 dataframe_data = cached_result["data"]
+
+        print(dashboard_state)
 
         # Save dashboard state and get share ID
         share_id = share_manager.save_dashboard_state(dashboard_state, dataframe_data)
@@ -275,9 +274,27 @@ async def get_shared_dashboard(share_id: str):
         if not dashboard_state:
             raise HTTPException(status_code=404, detail="Shared dashboard not found")
         
+        sql_query = dashboard_state.get("sql_query", "")
+        inferred_options = dashboard_state.get("inferred_options", {})
+        param_values, all_option_values = dashboard_state.get("param_values", {}), dashboard_state.get("all_option_values", {})
+        
+        # Convert DataFrame to dict for caching
+        result = {
+            "data": dashboard_state.get("dataframe_data"),
+            "dashboard_config": dashboard_state.get("dashboard_config")
+        }
+        
+        # Cache the result and get query hash
+        query_hash = session_manager.save_query_result(share_id, sql_query, result)
         return {
             "status": "success",
-            "dashboard_state": dashboard_state
+            "message": "Shared dashboard retrieved successfully",
+            "query_hash": query_hash,
+            "processed_sql": sql_query,
+            "inferred_options": inferred_options,
+            "param_values": param_values,
+            "all_option_values": all_option_values,
+            "dashboard_config": dashboard_state.get("dashboard_config")
         }
     except Exception as e:
         return {

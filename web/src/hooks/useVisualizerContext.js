@@ -51,7 +51,7 @@ export const VisualizerContextProvider = ({ children }) => {
 
   return (
     <ParamValuesContext.Provider value={{ paramValues, setParamValues, handleParamChange }}>
-      <OptionValuesContext.Provider value={{ getOptionValues, setOptionValues, handleOptionChange, allOptionValues}}>
+      <OptionValuesContext.Provider value={{ getOptionValues, setOptionValues, handleOptionChange, allOptionValues, setAllOptionValues}}>
         {children}
       </OptionValuesContext.Provider>
     </ParamValuesContext.Provider>
