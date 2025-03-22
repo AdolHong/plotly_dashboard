@@ -17,7 +17,7 @@ const ParameterControls = ({ parameters, form, onParamChange, paramValues, readO
   }
   
   return (
-    <Card title="查询参数" style={{ marginBottom: '20px' }}>
+    
       <Form
         form={form}
         layout="vertical"
@@ -110,7 +110,7 @@ const ParameterControls = ({ parameters, form, onParamChange, paramValues, readO
         })}
         </Row>
       </Form>
-    </Card>
+    
   );
 };
 

@@ -3,6 +3,7 @@ import { Layout, Typography, Divider, Spin, Alert, message } from 'antd';
 import axios from 'axios';
 import Visualizer from './Visualizer';
 import { useParamValues, useOptionValues } from '../hooks/useVisualizerContext';
+import SQLEditor from './SQLEditor';
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -97,13 +98,20 @@ const ShareView = ({ shareId }) => {
     <Content style={{ padding: '0 50px', marginTop: '10px' }}>
       <div style={{ background: '#fff', padding: '24px', minHeight: '280px' }}>
         <Title level={2}>Shared Dashboard</Title>
-        
         {processedSql && (
           <div>
             <Divider orientation="left">SQL Query</Divider>
-            <pre style={{ background: '#f5f5f5', padding: '10px', borderRadius: '4px' }}>
-              {processedSql}
-            </pre>
+            <SQLEditor
+              sessionId={shareId}
+              initialSqlCode={processedSql}
+              configLoaded={true}
+              configParameters={dashboardConfig.parameters}
+              dashboardConfig={dashboardConfig}
+              editable={false}
+              parameterReadOnly={true}
+              SQLEditorVisible={false}
+              queryButonVisible={false}
+            />
           </div>
         )}
         

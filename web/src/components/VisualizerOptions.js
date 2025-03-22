@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Select, Checkbox, InputNumber, Row, Col, Divider, message } from 'antd';
+import { Form, Select, Checkbox, InputNumber, Row, Col } from 'antd';
 
 const VisualizerOptions = ({ optionConfig:initialOptionConfig, optionValues, handleOptionChange, inferredOptions }) => {
   const [optionConfig, setOptionConfig] = useState(initialOptionConfig);
@@ -41,9 +41,17 @@ const VisualizerOptions = ({ optionConfig:initialOptionConfig, optionValues, han
     }
   }, [inferredOptions, initialOptionConfig]);
 
+  // 如果没有选项配置，则不渲染任何内容
+  if (!optionConfig || optionConfig.length === 0) {
+    return null;
+  }
+
   return (
     <div style={{ marginBottom: '16px' }}>
-      <Divider orientation="left">选项设置</Divider>
+      <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center' }}>
+        <span style={{ fontSize: '14px', color: '#666', fontWeight: 500, marginRight: '8px' }}>选项设置</span>
+        <div style={{ flex: 1, height: '1px', background: '#f0f0f0' }}></div>
+      </div>
 
       <Form layout="vertical">
         <Row gutter={12}>

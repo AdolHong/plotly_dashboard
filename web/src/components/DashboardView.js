@@ -166,7 +166,9 @@ const DashboardView = () => {
         configLoaded={configLoaded}
         configParameters={configParameters}
         dashboardConfig={dashboardConfig}
-        readOnly={true} // 设置为只读模式，但参数区域仍可交互
+        parameterReadOnly = {false} // 允许在只读模式下编辑参数
+        SQLEditorVisible = {false} // 设置为可见
+        queryButonVisible = {true} // 设置为可见
       />
       
       <Divider orientation="left">数据可视化区域</Divider>

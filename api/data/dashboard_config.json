@@ -49,6 +49,12 @@
                     "infer_column": "region",
                     "type": "str",
                     "multiple": true
+                },
+                {
+                    "name": "category",
+                    "choices": ["电子产品","服装","食品","家居","图书"],
+                    "default": "电子产品",
+                    "type": "str"
                 }
             ],
             "description": "显示查询结果的原始数据表格1",

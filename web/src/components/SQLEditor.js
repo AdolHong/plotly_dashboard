@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-sql';
 import 'ace-builds/src-noconflict/theme-github';
-import { Button } from 'antd';
+import { Button, Card } from 'antd';
 import PrintModal from './PrintModal';
 import { useParameters } from '../hooks/useParameters';
 import { useSQLQuery } from '../hooks/useSQLQuery';
@@ -10,7 +10,11 @@ import ParameterControls from './ParameterControls';
 import { useParamValues } from '../hooks/useVisualizerContext';
 
 
-const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, configParameters, dashboardConfig, readOnly = false }) => {
+const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, configParameters, dashboardConfig, 
+                     parameterReadOnly = true,
+                     SQLEditorReadOnly= true, SQLEditorVisible = true,
+                     queryButonVisible = true
+                    }) => {
   // Get form and parameters from useParameters, but use context for paramValues
   const { parameters, form } = useParameters(configLoaded, configParameters);
   // Use context for paramValues
@@ -43,46 +47,51 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, co
   };
 
   return (
-    <div>
+    <Card 
+      title="查询参数" 
+      style={{ marginBottom: '20px' }}
+      extra={
+        queryButonVisible && (
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <Button 
+              type="primary" 
+              onClick={() => executeQuery(paramValues)} 
+              loading={loading}
+              disabled={false}
+            >
+              Query
+            </Button>
+            <Button 
+              onClick={() => setShowSqlModal(true)}
+              disabled={!processedSql}
+            >
+              查看代码
+            </Button>
+            <PrintModal
+              title="解析后的SQL代码"
+              isVisible={showSqlModal}
+              onClose={() => setShowSqlModal(false)}
+              output={processedSql}
+            />
+          </div>
+        )
+      }
+    >
       <ParameterControls 
         parameters={parameters}
         form={form}
         onParamChange={handleParameterChange}
-        readOnly={readOnly}
+        readOnly={parameterReadOnly}
         paramValues={paramValues}
       />
 
-      <div style={{ marginTop: '20px', marginBottom: '20px', display: 'flex', gap: '10px' }}>
-        <Button 
-          type="primary" 
-          onClick={() => executeQuery(paramValues)} 
-          loading={loading}
-          disabled={false} // 允许在只读模式下执行查询
-        >
-          执行SQL查询
-        </Button>
-        <Button 
-          onClick={() => setShowSqlModal(true)}
-          disabled={!processedSql}
-        >
-          查看解析后的SQL
-        </Button>
-        
-        <PrintModal
-          title="解析后的SQL代码"
-          isVisible={showSqlModal}
-          onClose={() => setShowSqlModal(false)}
-          output={processedSql}
-        />
-      </div>
-
-      {/* 在只读模式下隐藏SQL编辑器 */}
-      {!readOnly && (
+      {SQLEditorVisible && (
         <AceEditor
           mode="sql"
           theme="github"
           name="sql-editor"
           value={sqlQuery}
+          readOnly={SQLEditorReadOnly}
           onChange={(newSql) => {
             setSqlQuery(newSql);
             if (Object.keys(paramValues).length > 0) {
@@ -106,7 +115,7 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, co
       )}
       
 
-    </div>
+    </Card>
   );
 };
 
