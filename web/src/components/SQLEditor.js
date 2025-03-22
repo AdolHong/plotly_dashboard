@@ -62,6 +62,7 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, co
               Query
             </Button>
             <Button 
+              type="default" 
               onClick={() => setShowSqlModal(true)}
               disabled={!processedSql}
             >
