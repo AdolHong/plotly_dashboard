@@ -14,6 +14,7 @@ from src.services.share_manager import ShareManager
 from src.database.db import execute_query, init_db
 from src.services.parameter_handler import replace_parameters_in_sql, preprocess_of_config
 from src.services.option_handler import process_visualization_options
+from src.services.option_handler import infer_options_from_dataframe
 
 # Initialize session manager
 session_manager = SessionManager()
@@ -98,6 +99,7 @@ async def execute_sql_query(request: dict):
         sql_query = request.get("sql_query", "")
         session_id = request.get("session_id", "")
         param_values = request.get("param_values", {})
+        dashboard_config = request.get("dashboard_config", {})
 
         
         if not sql_query or not session_id:
@@ -110,20 +112,15 @@ async def execute_sql_query(request: dict):
         df = execute_query(processed_sql)
         
         # 获取可视化配置
-        config_path = Path(__file__).parent / "data" / "dashboard_config.json"
+
         visualization_options = []
-        
-        if config_path.exists():
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-                if "visualization" in config:
-                    # 收集所有可视化区域的选项
-                    for vis in config["visualization"]:
-                        if "options" in vis and isinstance(vis["options"], list):
-                            visualization_options.extend(vis["options"])
+        if "visualization" in dashboard_config:
+            # 收集所有可视化区域的选项
+            for vis in dashboard_config["visualization"]:
+                if "options" in vis and isinstance(vis["options"], list):
+                    visualization_options.extend(vis["options"])
         
         # 从DataFrame中推断选项
-        from src.services.option_handler import infer_options_from_dataframe
         inferred_options = infer_options_from_dataframe(visualization_options, df)
         
         # 提取需要从DataFrame中推断的选项
@@ -236,6 +233,8 @@ async def share_dashboard(request: dict):
         # Get dashboard state from request
 
         dashboard_state = request.get("dashboard_state", {})
+
+        print(dashboard_state)
         
         if not dashboard_state:
             raise HTTPException(status_code=400, detail="Dashboard state is required")

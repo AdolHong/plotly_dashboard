@@ -38,7 +38,6 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
 
   
   const [printOutput, setPrintOutput] = useState('');
-  const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
   const [hasPrintOutput, setHasPrintOutput] = useState(false);
   const [visualizationData, setVisualizationData] = useState(null);
   const [resultType, setResultType] = useState(null); // 'dataframe' 或 'figure'

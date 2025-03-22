@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { message } from 'antd';
 
-export const useSQLQuery = (sessionId, onQuerySuccess) => {
+export const useSQLQuery = (sessionId, onQuerySuccess, dashboardConfig) => {
   const [sqlQuery, setSqlQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [processedSql, setProcessedSql] = useState('');
@@ -36,7 +36,9 @@ export const useSQLQuery = (sessionId, onQuerySuccess) => {
       const queryResponse = await axios.post('http://localhost:8000/api/query', {
         sqlQuery: sqlQuery,
         sessionId: sessionId,
-        paramValues: JSON.parse(JSON.stringify(paramValues))
+        paramValues: paramValues,
+        dashboardConfig: dashboardConfig
+
       });
 
       if (queryResponse.data.status === 'error') {

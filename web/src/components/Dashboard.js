@@ -185,6 +185,7 @@ const Dashboard = () => {
         initialSqlCode={initialSqlCode}
         configLoaded={configLoaded}
         configParameters={configParameters}
+        dashboardConfig={dashboardConfig}
       />
       
       <Divider orientation="left">Python 可视化区域</Divider>

@@ -9,7 +9,7 @@ import { useSQLQuery } from '../hooks/useSQLQuery';
 import ParameterControls from './ParameterControls';
 
 
-const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, configParameters }) => {
+const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, configParameters, dashboardConfig }) => {
   // parameters controls
   const { parameters, paramValues, form, handleParamChange } = useParameters(configLoaded, configParameters);
   // sql editor controls
@@ -20,7 +20,7 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, co
     processedSql, 
     fetchParsedSQL, 
     executeQuery 
-  } = useSQLQuery(sessionId, onQuerySuccess);
+  } = useSQLQuery(sessionId, onQuerySuccess, dashboardConfig);
   
   const [showSqlModal, setShowSqlModal] = useState(false);
   

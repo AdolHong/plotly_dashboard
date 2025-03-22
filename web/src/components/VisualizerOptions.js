@@ -18,9 +18,6 @@ const VisualizerOptions = ({ optionConfig:initialOptionConfig, optionValues, han
           if (inferredOptions && inferredOptions[option.name]) {
             const inferredOption = inferredOptions[option.name];
             
-
-            message.info(JSON.stringify(inferredOption));
-
             // 创建新的选项对象，避免直接修改原对象
             const updatedOption = { ...option };
             
