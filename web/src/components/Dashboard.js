@@ -13,6 +13,7 @@ const Dashboard = () => {
   const [initialSqlCode, setInitialSqlCode] = useState('');
   const [initialPythonCodes, setInitialPythonCodes] = useState([]);
   const [configLoaded, setConfigLoaded] = useState(false);
+  const [configParameters, setConfigParameters] = useState([]);
   const [inferredOptions, setInferredOptions] = useState(null);
   const [visualizationConfig, setVisualizationConfig] = useState([]);
   const [isShareModalVisible, setIsShareModalVisible] = useState(false);
@@ -42,6 +43,11 @@ const Dashboard = () => {
           // 设置初始SQL代码
           if (config.query && config.query.code) {
             setInitialSqlCode(config.query.code);
+          }
+
+          // 设置初始参数
+          if (config.parameters && Array.isArray(config.parameters)) {
+            setConfigParameters(config.parameters);
           }
           
           // 设置初始Python代码并调整可视化区域数量
@@ -184,6 +190,7 @@ const Dashboard = () => {
         onQuerySuccess={handleQuerySuccess}
         initialSqlCode={initialSqlCode}
         configLoaded={configLoaded}
+        configParameters={configParameters}
       />
       
       <Divider orientation="left">Python 可视化区域</Divider>

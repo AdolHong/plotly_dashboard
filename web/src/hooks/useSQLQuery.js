@@ -12,11 +12,11 @@ export const useSQLQuery = (sessionId, onQuerySuccess) => {
     try {
       const response = await axios.post('http://localhost:8000/api/parse_sql', {
         sql_query: sql,
-        param_values: params
+        param_values: JSON.parse(JSON.stringify(params))
       });
       
-      if (response.data.status === 'success' && response.data.processed_sql) {
-        setProcessedSql(response.data.processed_sql);
+      if (response.data.status === 'success' && response.data.processedSql) {
+        setProcessedSql(response.data.processedSql);
       }
     } catch (error) {
       console.error('获取解析后的SQL失败:', error);

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Form, Select, Input, DatePicker, Card, Row, Col } from 'antd';
+import { Form, Select, Input, DatePicker, Card, Row, Col, message } from 'antd';
+
 
 const { Option } = Select;
 
@@ -7,7 +8,7 @@ const ParameterControls = ({ parameters, form, onParamChange }) => {
   if (!parameters || parameters.length === 0) {
     return null;
   }
-
+  
   return (
     <Card title="查询参数" style={{ marginBottom: '20px' }}>
       <Form
