@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard';
 import Share from './components/Share';
 import axios from 'axios';
 import {decamelizeKeys, camelizeKeys } from 'humps';
+import { VisualizerContextProvider } from './hooks/useVisualizerContext';
 
 // 请求拦截器
 axios.interceptors.request.use(config => {
@@ -55,26 +56,28 @@ function App() {
   };
   
   return (
-    <Router>
-      <Layout style={{ minHeight: '100vh' }}>
-        <Header style={{ background: '#fff', padding: '0 20px' }}>
-          <Title level={2} style={{ margin: '16px 0' }}>SQL + Plotly</Title>
-        </Header>
-        <Routes>
-          <Route path="/" element={
-            <Content style={{ padding: '0 50px', marginTop: '10px' }}>
-              <div style={{ background: '#fff', padding: '24px', minHeight: '280px' }}>
-                <Dashboard />
-              </div>
-            </Content>
-          } />
-          <Route path="/share" element={<SharePage />} />
-        </Routes>
-        <Footer style={{ textAlign: 'center' }}>
-          当前会话 ID: {sessionId}
-        </Footer>
-      </Layout>
-    </Router>
+    <VisualizerContextProvider>
+      <Router>
+        <Layout style={{ minHeight: '100vh' }}>
+          <Header style={{ background: '#fff', padding: '0 20px' }}>
+            <Title level={2} style={{ margin: '16px 0' }}>SQL + Plotly</Title>
+          </Header>
+          <Routes>
+            <Route path="/" element={
+              <Content style={{ padding: '0 50px', marginTop: '10px' }}>
+                <div style={{ background: '#fff', padding: '24px', minHeight: '280px' }}>
+                  <Dashboard />
+                </div>
+              </Content>
+            } />
+            <Route path="/share" element={<SharePage />} />
+          </Routes>
+          <Footer style={{ textAlign: 'center' }}>
+            当前会话 ID: {sessionId}
+          </Footer>
+        </Layout>
+      </Router>
+    </VisualizerContextProvider>
   );
 }
 

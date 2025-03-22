@@ -4,15 +4,18 @@ import axios from 'axios';
 import PythonEditor from './PythonEditor';
 import VisualizerOptions from './VisualizerOptions';
 import VisualizerDisplayView from './VisualizerDisplayView';
+import { useOptionValues } from '../hooks/useVisualizerContext';
 
 const Text = Typography;
 
-const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions, config, readOnly, optionValues: initialOptionValues, shareId }) => {
+const Visualizer = ({ index, sessionId, queryHash, configLoaded, inferredOptions, config, readOnly, optionValues: initialOptionValues, shareId }) => {
   const [pythonCode, setPythonCode] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [optionConfig, setOptionConfig] = useState([]);
-  const [optionValues, setOptionValues] = useState({});
+  
+  // Use the context for optionValues instead of local state
+  const { getOptionValues,setOptionValues, handleOptionChange } = useOptionValues();
   
   // 当配置加载完成后，设置初始Python代码和标题、描述
   useEffect(() => {
@@ -61,14 +64,9 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
     }
   }, [queryHash]);
 
-  // 处理选项值变化
-  const handleOptionChange = (name, value) => {
-    const newOptionValues = {
-      ...optionValues,
-      [name]: value
-    };
-    
-    setOptionValues(newOptionValues);
+  // 处理选项值变化 - 使用上下文中的handleOptionChange并执行可视化
+  const handleOptionChangeAndExecute = (name, value) => {
+    const newOptionValues = handleOptionChange(index, name, value);
     handleExecuteVisualization(newOptionValues);
   };
 
@@ -92,7 +90,7 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
     
     // 修改 API 调用部分
     try {
-      const currentOptionValues = overrideOptionValues || optionValues;
+      const currentOptionValues = overrideOptionValues || getOptionValues(index);
       let visualizeResponse;
       
       // 使用 shareId 判断是否为共享模式
@@ -168,8 +166,8 @@ const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions
       {/* 选项区域 */}
       <VisualizerOptions 
         optionConfig={optionConfig} 
-        optionValues={optionValues}
-        handleOptionChange={handleOptionChange}
+        optionValues={getOptionValues(index)}
+        handleOptionChange={handleOptionChangeAndExecute}
         inferredOptions={inferredOptions}
       />
       

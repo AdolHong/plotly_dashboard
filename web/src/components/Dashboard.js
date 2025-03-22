@@ -4,6 +4,7 @@ import { ShareAltOutlined } from '@ant-design/icons';
 import SQLEditor from './SQLEditor';
 import Visualizer from './Visualizer';
 import axios from 'axios';
+import { useParamValues, useOptionValues } from '../hooks/useVisualizerContext';
 
 const Dashboard = () => {
   const [sessionId, setSessionId] = useState('');
@@ -19,7 +20,9 @@ const Dashboard = () => {
   const [shareUrl, setShareUrl] = useState('');
   const [isSharing, setIsSharing] = useState(false);
   const [currentSqlQuery, setCurrentSqlQuery] = useState('');
-  const [paramValues, setParamValues] = useState({});
+  // Use context for paramValues instead of local state
+  const { paramValues } = useParamValues();
+  const { allOptionValues } = useOptionValues();
   
   // 获取会话ID
   useEffect(() => {
@@ -106,9 +109,7 @@ const Dashboard = () => {
       const dashboardState = {
         sqlQuery: currentSqlQuery,
         paramValues,
-
-        // todo: infer values
-        
+        allOptionValues
       };
       
       // 发送到后端保存，包含session_id以便后端获取DataFrame数据
@@ -161,7 +162,6 @@ const Dashboard = () => {
         configLoaded={configLoaded}
         configParameters={configParameters}
         dashboardConfig={dashboardConfig}
-        onParamValuesChange={setParamValues}
       />
       
       <Divider orientation="left">Python 可视化区域</Divider>
@@ -169,7 +169,7 @@ const Dashboard = () => {
       {/* 可视化区域列表 */}
       {Array.from({ length: visualizerCount }).map((_, index) => (
         <Visualizer 
-          index={index + 1}
+          index={index}
           sessionId={sessionId}
           queryHash={queryHash}
           config={visualizationConfig[index]}

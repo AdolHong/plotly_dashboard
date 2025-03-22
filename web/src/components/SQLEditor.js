@@ -7,11 +7,14 @@ import PrintModal from './PrintModal';
 import { useParameters } from '../hooks/useParameters';
 import { useSQLQuery } from '../hooks/useSQLQuery';
 import ParameterControls from './ParameterControls';
+import { useParamValues } from '../hooks/useVisualizerContext';
 
 
 const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, configParameters, dashboardConfig ,onParamValuesChange:updateDashboardParams }) => {
-  // parameters controls
-  const { parameters, paramValues, form, handleParamChange } = useParameters(configLoaded, configParameters, updateDashboardParams);
+  // Get form and parameters from useParameters, but use context for paramValues
+  const { parameters, form } = useParameters(configLoaded, configParameters, updateDashboardParams);
+  // Use context for paramValues
+  const { paramValues, handleParamChange } = useParamValues();
   // sql editor controls
   const { 
     sqlQuery, 
