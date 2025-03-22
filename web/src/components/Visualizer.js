@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Typography, message } from 'antd';
+import { Card, Typography, message, Button, Tooltip, Modal } from 'antd';
 import axios from 'axios';
 import PythonEditor from './PythonEditor';
 import VisualizerOptions from './VisualizerOptions';
@@ -137,16 +137,65 @@ const Visualizer = ({ index, sessionId, queryHash, configLoaded, initialPythonCo
   
   return (
     <Card 
-      title={title ? `${title}` : `可视化区域 ${index}`} 
+      title={
+        <div>
+          {title ? `${title}` : `可视化区域 ${index}`}
+          {description && (
+            <Text type="secondary" style={{ fontSize: '13px', color: '#999' }}>
+              {description}
+            </Text>
+          )}
+        </div>
+      }
       style={{ marginBottom: '20px', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.15)' }}
-    >
-      {description && (
-        <Text type="secondary" style={{ display: 'block', marginTop: '-12px', marginBottom: '16px', fontSize: '13px' }}>
-          {description}
-        </Text>
+      extra={readOnly && (
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Tooltip title="查看Python代码">
+            <Button 
+              type="default" 
+              onClick={() => {
+                Modal.info({
+                  title: 'Python 代码',
+                  content: (
+                    <div style={{ maxHeight: '400px', overflow: 'auto' }}>
+                      <pre style={{ background: '#f5f5f5', padding: '10px', borderRadius: '4px' }}>
+                        {pythonCode || '没有代码'}
+                      </pre>
+                    </div>
+                  ),
+                  width: 600,
+                });
+              }} 
+              icon={<span role="img" aria-label="code">📝</span>}
+            >
+              查看代码
+            </Button>
+          </Tooltip>
+          <Tooltip title="查看Python代码的print输出">
+            <Button 
+              type="default" 
+              onClick={() => {
+                Modal.info({
+                  title: 'Python 输出',
+                  content: (
+                    <div style={{ maxHeight: '400px', overflow: 'auto' }}>
+                      <pre>{printOutput || '没有输出'}</pre>
+                    </div>
+                  ),
+                  width: 600,
+                });
+              }} 
+              icon={<span role="img" aria-label="console">📋</span>}
+            >
+              查看输出
+            </Button>
+          </Tooltip>
+        </div>
       )}
+    >
+
       
-      {/* 选项区域 */}
+      {/* 选项区域 - 始终显示并保持交互 */}
       <VisualizerOptions 
         optionConfig={optionConfig} 
         optionValues={getOptionValues(index)}
@@ -154,15 +203,17 @@ const Visualizer = ({ index, sessionId, queryHash, configLoaded, initialPythonCo
         inferredOptions={inferredOptions}
       />
       
-      {/* Python代码编辑器 */}
-      <PythonEditor 
-        pythonCode={pythonCode}
-        setPythonCode={setPythonCode}
-        onExecute={() => handleExecuteVisualization()}
-        printOutput={printOutput}
-        hasPrintOutput={hasPrintOutput}
-        readOnly={readOnly}
-      />
+      {/* Python代码编辑器 - 只在非只读模式下显示 */}
+      {!readOnly && (
+        <PythonEditor 
+          pythonCode={pythonCode}
+          setPythonCode={setPythonCode}
+          onExecute={() => handleExecuteVisualization()}
+          printOutput={printOutput}
+          hasPrintOutput={hasPrintOutput}
+          readOnly={readOnly}
+        />
+      )}
       
       {/* 可视化结果区域 */}
       <div style={{ marginTop: '16px' }}>

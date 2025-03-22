@@ -44,6 +44,7 @@ const VisualizerOptions = ({ optionConfig:initialOptionConfig, optionValues, han
   return (
     <div style={{ marginBottom: '16px' }}>
       <Divider orientation="left">选项设置</Divider>
+
       <Form layout="vertical">
         <Row gutter={12}>
           {optionConfig.map((option, optionIndex) => {

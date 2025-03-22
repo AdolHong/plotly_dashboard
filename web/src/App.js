@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Typography } from 'antd';
+import { Layout, Typography, Menu } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
-import { BrowserRouter as Router, Routes, Route, useSearchParams } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useSearchParams, Link, useLocation } from 'react-router-dom';
 import 'antd/dist/reset.css';
 import EditView from './components/EditView';
 import ShareView from './components/ShareView';
+import DashboardView from './components/DashboardView';
 import axios from 'axios';
 import {decamelizeKeys, camelizeKeys } from 'humps';
 import { VisualizerContextProvider } from './hooks/useVisualizerContext';
@@ -30,6 +31,23 @@ axios.interceptors.response.use(response => {
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
+
+// Navigation component
+const Navigation = () => {
+  const location = useLocation();
+  const currentPath = location.pathname;
+  
+  return (
+    <Menu mode="horizontal" selectedKeys={[currentPath]} style={{ marginLeft: '20px' }}>
+      <Menu.Item key="/">
+        <Link to="/">Dashboard</Link>
+      </Menu.Item>
+      <Menu.Item key="/edit">
+        <Link to="/edit">Edit</Link>
+      </Menu.Item>
+    </Menu>
+  );
+};
 
 function App() {
   const [sessionId, setSessionId] = useState('');
@@ -58,11 +76,19 @@ function App() {
     <VisualizerContextProvider>
       <Router>
         <Layout style={{ minHeight: '100vh' }}>
-          <Header style={{ background: '#fff', padding: '0 20px' }}>
-            <Title level={2} style={{ margin: '16px 0' }}>SQL + Plotly</Title>
+          <Header style={{ background: '#fff', padding: '0 20px', display: 'flex', alignItems: 'center' }}>
+            <Title level={2} style={{ margin: '16px 0', marginRight: '20px' }}>SQL + Plotly</Title>
+            <Navigation />
           </Header>
           <Routes>
             <Route path="/" element={
+              <Content style={{ padding: '0 50px', marginTop: '10px' }}>
+                <div style={{ background: '#fff', padding: '24px', minHeight: '280px' }}>
+                  <DashboardView />
+                </div>
+              </Content>
+            } />
+            <Route path="/edit" element={
               <Content style={{ padding: '0 50px', marginTop: '10px' }}>
                 <div style={{ background: '#fff', padding: '24px', minHeight: '280px' }}>
                   <EditView />
