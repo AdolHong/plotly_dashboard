@@ -12,7 +12,7 @@ export const useSQLQuery = (sessionId, onQuerySuccess) => {
     try {
       const response = await axios.post('http://localhost:8000/api/parse_sql', {
         sql_query: sql,
-        param_values: JSON.parse(JSON.stringify(params))
+        param_values: params
       });
       
       if (response.data.status === 'success' && response.data.processedSql) {

@@ -10,7 +10,7 @@ export const useParameters = (configLoaded, configParameters) => {
   // 处理参数配置
   const processParameters = (params) => {
     if (!params) return;
-    
+    // 保存参数配置
     setParameters(params);
     
     // 设置默认参数值
@@ -25,6 +25,7 @@ export const useParameters = (configLoaded, configParameters) => {
       }
     });
     
+    // 保存参数值
     setParamValues(defaultValues);
     form.setFieldsValue(defaultValues);
     

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, message, Typography } from 'antd';
+import { Layout, Typography } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
 import { BrowserRouter as Router, Routes, Route, useSearchParams } from 'react-router-dom';
 import 'antd/dist/reset.css';
@@ -7,16 +7,13 @@ import Dashboard from './components/Dashboard';
 import Share from './components/Share';
 import axios from 'axios';
 import {decamelizeKeys, camelizeKeys } from 'humps';
-import dayjs from 'dayjs';
 
-// 自定义 dayjs 的序列化行为
-dayjs.prototype.toJSON = function() {
-  return this.format('YYYY-MM-DD');
-};
-
-// 请求拦截器：将驼峰转为下划线
+// 请求拦截器
 axios.interceptors.request.use(config => {
   if (config.data) {
+    // 序列化和反序列化一次； 保证dayjs的序列化正常
+    config.data = JSON.parse(JSON.stringify(config.data))
+    // 驼峰转为下划线
     config.data = decamelizeKeys(config.data);
   }
   return config;
@@ -30,9 +27,6 @@ axios.interceptors.response.use(response => {
   }
   return response;
 });
-
-
-
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
