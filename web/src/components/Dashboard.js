@@ -11,7 +11,6 @@ const Dashboard = () => {
   const [visualizerCount, setVisualizerCount] = useState(1);
   const [dashboardConfig, setDashboardConfig] = useState(null);
   const [initialSqlCode, setInitialSqlCode] = useState('');
-  const [initialPythonCodes, setInitialPythonCodes] = useState([]);
   const [configLoaded, setConfigLoaded] = useState(false);
   const [configParameters, setConfigParameters] = useState([]);
   const [inferredOptions, setInferredOptions] = useState(null);
@@ -53,7 +52,6 @@ const Dashboard = () => {
           // 设置初始Python代码并调整可视化区域数量
           if (config.visualization && Array.isArray(config.visualization)) {
             const pythonCodes = config.visualization.map(item => item.code || '');
-            setInitialPythonCodes(pythonCodes);
             setVisualizerCount(pythonCodes.length || 1);
             
             // 保存可视化配置到状态变量
@@ -107,10 +105,7 @@ const Dashboard = () => {
       const visualizations = [];
       
       // 遍历所有可视化区域，收集它们的状态
-      Array.from({ length: visualizerCount }).forEach((_, index) => {
-        // 获取可视化区域的Python代码
-        const pythonCode = initialPythonCodes[index] || '';
-        
+      Array.from({ length: visualizerCount }).forEach((_, index) => {        
         // 获取可视化区域的配置
         const config = visualizationConfig[index] || {};
         
@@ -129,7 +124,6 @@ const Dashboard = () => {
         }
         
         visualizations.push({
-          pythonCode,
           config,
           inferredOptions,
           optionValues
@@ -198,14 +192,12 @@ const Dashboard = () => {
       {/* 可视化区域列表 */}
       {Array.from({ length: visualizerCount }).map((_, index) => (
         <Visualizer 
-          key={index}
           index={index + 1}
           sessionId={sessionId}
           queryHash={queryHash}
-          initialPythonCode={initialPythonCodes[index] || ''}
+          config={visualizationConfig[index]}
           configLoaded={configLoaded}
           inferredOptions={inferredOptions}
-          config={visualizationConfig[index]}
           className="visualizer-container"
         />
       ))}

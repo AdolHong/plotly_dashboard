@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import AceEditor from 'react-ace';
-import 'ace-builds/src-noconflict/mode-python';
-import 'ace-builds/src-noconflict/theme-github';
-import { Button, Card, Typography, Tooltip, message, Space, Select, Checkbox, InputNumber, Input, Form, Row, Col, Divider, Alert } from 'antd';
-import PrintModal from './PrintModal';
-import Plot from 'react-plotly.js';
+import { Card, Typography, message } from 'antd';
 import axios from 'axios';
+import PythonEditor from './PythonEditor';
+import VisualizerOptions from './VisualizerOptions';
+import VisualizationResult from './VisualizationResult';
 
 const Text = Typography;
 
-const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoaded, inferredOptions, config, readOnly, optionValues: initialOptionValues, isSharedMode, shareId }) => {
+const Visualizer = ({ sessionId, queryHash, index, configLoaded, inferredOptions, config, readOnly, optionValues: initialOptionValues, isSharedMode, shareId }) => {
   const [pythonCode, setPythonCode] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -18,8 +16,8 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
   
   // 当配置加载完成后，设置初始Python代码和标题、描述
   useEffect(() => {
-    if (configLoaded && initialPythonCode) {
-      setPythonCode(initialPythonCode);
+    if (configLoaded && config.code) {
+      setPythonCode(config.code);
       
       // 从props中获取标题、描述和选项
       if (config) {
@@ -39,7 +37,7 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
         setOptionValues(initialOptionValues);
       }
     }
-  }, [configLoaded, initialPythonCode, config, initialOptionValues]);
+  }, [configLoaded, config, initialOptionValues]);
   
   // 当推断的选项变化时更新选项配置
   useEffect(() => {
@@ -235,101 +233,7 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
     }
   };
 
-  // 显示print输出对话框
-  const showPrintModal = () => {
-    setIsPrintModalVisible(true);
-  };
-
-  // 关闭print输出对话框
-  const handlePrintModalClose = () => {
-    setIsPrintModalVisible(false);
-  };
-
-  // 渲染可视化结果
-  const renderVisualization = () => {
-    message.info("什么情况:",resultType)
-
-    if (resultType === 'figure' && visualizationData) {
-      // 从plotData中提取数据和布局
-      const { data, layout, config } = visualizationData;
-      
-      // 检查数据结构是否完整
-      if (!data) {
-        console.error('Visualization data is missing the data property:', visualizationData);
-        return (
-          <div style={{ padding: '20px', textAlign: 'center' }}>
-            <Alert
-              message="可视化数据错误"
-              description="无法渲染图表，数据结构不完整"
-              type="error"
-              showIcon
-            />
-          </div>
-        );
-      }
-
-      return (
-        <Plot
-          data={data}
-          layout={{
-            ...layout,
-            autosize: true,
-            height: 300,
-            margin: { l: 50, r: 50, b: 50, t: 50, pad: 4 },
-            font: { family: 'Arial, sans-serif' }
-          }}
-          config={{
-            ...(config || {}),
-            responsive: true,
-            displayModeBar: true,
-            displaylogo: false,
-            modeBarButtonsToRemove: ['lasso2d', 'select2d']
-          }}
-          style={{ width: '100%', height: '100%' }}
-        />
-      );
-    } else if (resultType === 'dataframe' && tableData && tableData.length > 0) {
-      // 简单表格显示
-      return (
-        <div style={{ overflowX: 'auto', maxHeight: '300px' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                {Object.keys(tableData[0]).map(key => (
-                  <th key={key} style={{ border: '1px solid #ddd', padding: '8px', backgroundColor: '#f2f2f2' }}>
-                    {key}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {tableData.slice(0, 10).map((row, rowIndex) => (
-                <tr key={rowIndex} style={{ backgroundColor: rowIndex % 2 === 0 ? 'white' : '#f9f9f9' }}>
-                  {Object.values(row).map((value, colIndex) => (
-                    <td key={colIndex} style={{ border: '1px solid #ddd', padding: '8px' }}>
-                      {value === null || value === undefined ? '-' : 
-                       typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {tableData.length > 10 && (
-            <div style={{ textAlign: 'center', padding: '8px' }}>
-              <Text type="secondary">显示前10条记录，共 {tableData.length} 条</Text>
-            </div>
-          )}
-        </div>
-      );
-    } else {
-      return (
-        <div style={{ padding: '20px', textAlign: 'center' }}>
-          <Text type="secondary">暂无可视化结果，result为None</Text>
-        </div>
-      );
-    }
-  };
+  // 渲染可视化结果已移至VisualizationResult组件
 
   // 处理选项值变化
   const handleOptionChange = (name, value) => {
@@ -342,170 +246,12 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
     handleExecuteVisualization(newOptionValues);
   };
   
-  // 渲染选项区域
-  const renderOptions = () => {
-    if (!options || options.length === 0) {
-      return null;
-    }
-    
-    // 在只读模式下显示选项值
-    if (readOnly) {
-      return (
-        <div style={{ marginBottom: '16px' }}>
-          <Divider orientation="left">选项设置</Divider>
-          <Row gutter={12}>
-            {options.map((option, optionIndex) => {
-              const { name } = option;
-              if (!name) return null;
-              
-              const value = optionValues[name];
-              return (
-                <Col span={4} key={`${name}-${optionIndex}`} style={{ marginBottom: '8px' }}>
-                  <div>
-                    <strong>{name}:</strong>{' '}
-                    {Array.isArray(value) ? value.join(', ') : String(value !== undefined ? value : '')}
-                  </div>
-                </Col>
-              );
-            })}
-          </Row>
-        </div>
-      );
-    }
-    
-    // 非只读模式下显示可编辑控件
-    return (
-      <div style={{ marginBottom: '16px' }}>
-        <Divider orientation="left">选项设置</Divider>
-        <Form layout="vertical">
-          <Row gutter={12}>
-            {options.map((option, optionIndex) => {
-              const { name, type, choices, multiple } = option;
-              
-              if (!name) return null;
-              
-              return (
-                <Col span={4} key={`${name}-${optionIndex}`} style={{ marginBottom: '8px' }}>
-                  <Form.Item label={name}>
-                    {type === 'bool' && (
-                      <Checkbox
-                        checked={!!optionValues[name]}
-                        onChange={e => handleOptionChange(name, e.target.checked)}
-                      >
-                        {name}
-                      </Checkbox>
-                    )}
-                    
-                    {(type === 'str' || !type) && choices && !multiple && (
-                      <Select
-                        style={{ width: '100%' }}
-                        value={optionValues[name]}
-                        onChange={value => handleOptionChange(name, value)}
-                      >
-                        {choices.map((choice, i) => (
-                          <Select.Option key={`${choice}-${i}`} value={choice}>
-                            {choice}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    )}
-                    
-                    {(type === 'str' || !type) && choices && multiple && (
-                      <Select
-                        mode="multiple"
-                        style={{ width: '100%' }}
-                        value={optionValues[name] || []}
-                        onChange={value => handleOptionChange(name, value)}
-                      >
-                        {choices.map((choice, i) => (
-                          <Select.Option key={`${choice}-${i}`} value={choice}>
-                            {choice}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    )}
-                    
-                    {type === 'int' && !choices && (
-                      <InputNumber
-                        style={{ width: '100%' }}
-                        value={optionValues[name]}
-                        onChange={value => handleOptionChange(name, value)}
-                      />
-                    )}
-                    
-                    {type === 'double' && !choices && (
-                      <InputNumber
-                        style={{ width: '100%' }}
-                        value={optionValues[name]}
-                        step={0.1}
-                        onChange={value => handleOptionChange(name, value)}
-                      />
-                    )}
-                    
-                    {(type === 'int' || type === 'double') && choices && !multiple && (
-                      <Select
-                        style={{ width: '100%' }}
-                        value={optionValues[name]}
-                        onChange={value => handleOptionChange(name, value)}
-                      >
-                        {choices.map((choice, i) => (
-                          <Select.Option key={`${choice}-${i}`} value={choice}>
-                            {choice}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    )}
-                    
-                    {(type === 'int' || type === 'double') && choices && multiple && (
-                      <Select
-                        mode="multiple"
-                        style={{ width: '100%' }}
-                        value={optionValues[name] || []}
-                        onChange={value => handleOptionChange(name, value)}
-                      >
-                        {choices.map((choice, i) => (
-                          <Select.Option key={`${choice}-${i}`} value={choice}>
-                            {choice}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    )}
-                  </Form.Item>
-                </Col>
-              );
-            })}
-          </Row>
-        </Form>
-      </div>
-    );
-  };
+  // 渲染选项区域已移至VisualizerOptions组件
   
   return (
     <Card 
       title={title ? `${title}` : `可视化区域 ${index}`} 
       style={{ marginBottom: '20px', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.15)' }}
-      extra={
-        !readOnly && (
-          <Space>
-            <Button 
-              type="primary" 
-              onClick={() => handleExecuteVisualization()}  // 使用箭头函数包装
-            >
-              执行
-            </Button>
-            <Tooltip title={hasPrintOutput ? "查看Python代码的print输出" : "没有print输出"}>
-              <Button 
-                type="default" 
-                onClick={showPrintModal} 
-                disabled={!hasPrintOutput}
-                icon={<span role="img" aria-label="console">📋</span>}
-              >
-                查看输出
-              </Button>
-            </Tooltip>
-          </Space>
-        )
-      }
     >
       {description && (
         <Text type="secondary" style={{ display: 'block', marginTop: '-12px', marginBottom: '16px', fontSize: '13px' }}>
@@ -514,54 +260,30 @@ const Visualizer = ({ sessionId, queryHash, index, initialPythonCode, configLoad
       )}
       
       {/* 选项区域 */}
-      {renderOptions()}
-      
-      {/* Python代码编辑器 - 只在非只读模式下显示 */}
-      {!readOnly && (
-        <div style={{ marginBottom: '16px' }}>
-          <AceEditor
-            mode="python"
-            theme="github"
-            name={`python-editor-${index}`}
-            value={pythonCode}
-            onChange={setPythonCode}
-            fontSize={14}
-            width="100%"
-            height="150px"
-            showPrintMargin={false}
-            showGutter={true}
-            highlightActiveLine={true}
-            setOptions={{
-              enableBasicAutocompletion: true,
-              enableLiveAutocompletion: true,
-              enableSnippets: true,
-              showLineNumbers: true,
-              tabSize: 2,
-            }}
-          />
-        </div>
-      )}
-      
-      {/* 在只读模式下显示代码 */}
-      {readOnly && pythonCode && (
-        <div style={{ marginBottom: '16px' }}>
-          <pre style={{ background: '#f5f5f5', padding: '10px', borderRadius: '4px', maxHeight: '150px', overflow: 'auto' }}>
-            {pythonCode}
-          </pre>
-        </div>
-      )}
-      
-      <div style={{ marginTop: '16px' }}>
-        {renderVisualization()}
-      </div>
-      
-      {/* Print输出对话框 */}
-      <PrintModal
-        title="Python 输出"
-        isVisible={isPrintModalVisible}
-        onClose={handlePrintModalClose}
-        output={printOutput}
+      <VisualizerOptions 
+        options={options} 
+        optionValues={optionValues} 
+        handleOptionChange={handleOptionChange} 
       />
+      
+      {/* Python代码编辑器 */}
+      <PythonEditor 
+        pythonCode={pythonCode}
+        setPythonCode={setPythonCode}
+        onExecute={() => handleExecuteVisualization()}
+        printOutput={printOutput}
+        hasPrintOutput={hasPrintOutput}
+        readOnly={readOnly}
+      />
+      
+      {/* 可视化结果区域 */}
+      <div style={{ marginTop: '16px' }}>
+        <VisualizationResult 
+          resultType={resultType} 
+          visualizationData={visualizationData} 
+          tableData={tableData} 
+        />
+      </div>
     </Card>
   );
 };

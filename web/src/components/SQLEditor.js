@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-sql';
 import 'ace-builds/src-noconflict/theme-github';
-import { Button, message} from 'antd';
+import { Button} from 'antd';
 import PrintModal from './PrintModal';
 import { useParameters } from '../hooks/useParameters';
 import { useSQLQuery } from '../hooks/useSQLQuery';
