@@ -11,8 +11,8 @@ import { useParamValues } from '../hooks/useVisualizerContext';
 
 
 const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, configParameters, dashboardConfig, 
-                     parameterReadOnly = true,
-                     SQLEditorReadOnly= true, SQLEditorVisible = true,
+                     parameterReadOnly = false,
+                     SQLEditorReadOnly= false, SQLEditorVisible = true,
                      queryButonVisible = true
                     }) => {
   // Get form and parameters from useParameters, but use context for paramValues

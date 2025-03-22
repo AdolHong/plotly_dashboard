@@ -166,7 +166,6 @@ const Visualizer = ({ index, sessionId, queryHash, configLoaded, initialPythonCo
                   width: 600,
                 });
               }} 
-              icon={<span role="img" aria-label="code">📝</span>}
             >
               查看代码
             </Button>
@@ -185,9 +184,8 @@ const Visualizer = ({ index, sessionId, queryHash, configLoaded, initialPythonCo
                   width: 600,
                 });
               }} 
-              icon={<span role="img" aria-label="console">📋</span>}
             >
-              查看输出
+              查看日志
             </Button>
           </Tooltip>
         </div>
