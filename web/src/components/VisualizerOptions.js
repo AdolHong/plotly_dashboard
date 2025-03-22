@@ -68,6 +68,7 @@ const VisualizerOptions = ({ optionConfig:initialOptionConfig, optionValues, han
                       style={{ width: '100%' }}
                       value={optionValues[name]}
                       onChange={value => handleOptionChange(name, value)}
+                      allowClear
                     >
                       {choices.map((choice, i) => (
                         <Select.Option key={`${choice}-${i}`} value={choice}>
@@ -114,6 +115,7 @@ const VisualizerOptions = ({ optionConfig:initialOptionConfig, optionValues, han
                       style={{ width: '100%' }}
                       value={optionValues[name]}
                       onChange={value => handleOptionChange(name, value)}
+                      allowClear
                     >
                       {choices.map((choice, i) => (
                         <Select.Option key={`${choice}-${i}`} value={choice}>

@@ -82,10 +82,6 @@ const Visualizer = ({ index, sessionId, queryHash, configLoaded, initialPythonCo
     // 修改 API 调用部分
     try {
       const currentOptionValues = overrideOptionValues || getOptionValues(index);
-
-      message.info(JSON.stringify(currentOptionValues, null, 2))
-      message.info(JSON.stringify(optionConfig, null, 2))
-
       let visualizeResponse;
       
       // 使用常规会话的可视化API
