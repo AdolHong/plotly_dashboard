@@ -3,7 +3,7 @@ import { Button, Divider, message, Modal, Input } from 'antd';
 import { ShareAltOutlined, EditOutlined } from '@ant-design/icons';
 import SQLEditor from './SQLEditor';
 import Visualizer from './Visualizer';
-import ParameterEditModal from './ParameterEditModal';
+import EditModal from './EditModal';
 import axios from 'axios';
 import { useParamValues, useOptionValues } from '../hooks/useVisualizerContext';
 
@@ -225,8 +225,8 @@ const DashboardView = () => {
         />
       </Modal>
       
-      {/* 参数编辑模态框 */}
-      <ParameterEditModal 
+      {/* 仪表盘配置编辑模态框 */}
+      <EditModal 
         visible={isParameterEditModalVisible}
         onCancel={() => setIsParameterEditModalVisible(false)}
         onSave={(newParameters, newVisualizations) => {

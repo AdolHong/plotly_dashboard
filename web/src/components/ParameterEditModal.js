@@ -485,23 +485,48 @@ const ParameterEditModal = ({ visible, onCancel, onSave, parameters, visualizati
             label="Python代码"
             rules={[{ required: true, message: '请输入Python代码' }]}
           >
-            <Input.TextArea 
-              placeholder="# 返回表格\nresult = df" 
-              autoSize={{ minRows: 6, maxRows: 12 }}
-              style={{ fontFamily: 'monospace' }}
+            <PythonEditor
+              pythonCode={visualizationEditForm.getFieldValue('code') || '# 返回表格\nresult = df'}
+              setPythonCode={(value) => visualizationEditForm.setFieldsValue({ code: value })}
+              readOnly={false}
             />
           </Form.Item>
           
           <Form.Item
             name="options"
             label="图表选项配置"
-            help="JSON格式，例如：[{}]"
+            help="JSON格式，可视化图表的配置选项"
           >
-            <Input.TextArea 
-              placeholder="[]" 
-              autoSize={{ minRows: 4, maxRows: 8 }}
-              style={{ fontFamily: 'monospace' }}
-            />
+            <div style={{ border: '1px solid #d9d9d9', borderRadius: '2px', padding: '8px' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <Button 
+                  type="dashed" 
+                  onClick={() => {
+                    try {
+                      const currentOptions = JSON.parse(visualizationEditForm.getFieldValue('options') || '[]');
+                      currentOptions.push({});
+                      visualizationEditForm.setFieldsValue({
+                        options: JSON.stringify(currentOptions, null, 2)
+                      });
+                    } catch (error) {
+                      message.error('选项格式不正确，请检查JSON格式');
+                    }
+                  }}
+                  icon={<PlusOutlined />}
+                  style={{ width: '100%' }}
+                >
+                  添加选项
+                </Button>
+              </div>
+              <Input.TextArea 
+                placeholder="[]" 
+                autoSize={{ minRows: 4, maxRows: 8 }}
+                style={{ fontFamily: 'monospace' }}
+              />
+              <div style={{ marginTop: '8px', fontSize: '12px', color: '#888' }}>
+                提示：选项配置将被用于图表渲染，请确保格式正确
+              </div>
+            </div>
           </Form.Item>
         </Form>
       </Modal>
