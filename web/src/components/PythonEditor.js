@@ -12,7 +12,9 @@ const PythonEditor = ({
   onExecute,
   printOutput,
   hasPrintOutput,
-  readOnly,
+  readOnly = false,
+  hideButtons = false,
+  autoUpdate = true
 }) => {
   const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
 
@@ -26,6 +28,21 @@ const PythonEditor = ({
     setIsPrintModalVisible(false);
   };
 
+  // 修改 onChange 处理函数
+  const handleEditorChange = (value) => {
+    if (!readOnly) {
+      setPythonCode(value);
+    }
+  };
+
+  const handleExecute = () => {
+    // Implementation of handleExecute
+  };
+
+  const handleViewOutput = () => {
+    // Implementation of handleViewOutput
+  };
+
   return (
     <div>
       {/* Python代码编辑器 - 只在非只读模式下显示 */}
@@ -34,29 +51,25 @@ const PythonEditor = ({
           <AceEditor
             mode="python"
             theme="github"
-            name="python-editor"
             value={pythonCode}
-            onChange={setPythonCode}
-            fontSize={14}
+            onChange={handleEditorChange}
+            name="python-editor"
+            editorProps={{ $blockScrolling: true }}
             width="100%"
-            height="150px"
-            showPrintMargin={false}
-            showGutter={true}
-            highlightActiveLine={true}
+            height="200px"
             setOptions={{
-              enableBasicAutocompletion: true,
-              enableLiveAutocompletion: true,
-              enableSnippets: true,
               showLineNumbers: true,
               tabSize: 2,
+              readOnly: readOnly,
+            }}
+            style={{
+              border: '1px solid #d9d9d9',
+              borderRadius: '2px',
             }}
           />
-          <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'flex-end' }}>
-            <Space>
-              <Button 
-                type="primary" 
-                onClick={onExecute}
-              >
+          {!hideButtons && (
+            <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
+              <Button type="primary" onClick={handleExecute}>
                 执行
               </Button>
               <Tooltip title={hasPrintOutput ? "查看Python代码的print输出" : "没有print输出"}>
@@ -69,8 +82,8 @@ const PythonEditor = ({
                   查看输出
                 </Button>
               </Tooltip>
-            </Space>
-          </div>
+            </div>
+          )}
         </div>
       )}
       

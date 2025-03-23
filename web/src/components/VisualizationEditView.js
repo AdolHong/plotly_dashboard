@@ -435,6 +435,8 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
               pythonCode={visualizationEditForm.getFieldValue('code') || '# 返回表格\nresult = df'}
               setPythonCode={(value) => visualizationEditForm.setFieldsValue({ code: value })}
               readOnly={false}
+              hideButtons={true}
+              autoUpdate={false}
             />
           </Form.Item>
           

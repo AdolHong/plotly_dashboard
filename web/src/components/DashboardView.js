@@ -154,7 +154,7 @@ const DashboardView = () => {
             onClick={() => setIsParameterEditModalVisible(true)}
             style={{ margin: '10px 0', flexShrink: 0 }}
           >
-            编辑筛选条件
+            编辑
           </Button>
           <Button 
             type="primary" 
@@ -164,7 +164,7 @@ const DashboardView = () => {
             disabled={!queryHash}
             style={{ margin: '10px 0', flexShrink: 0 }}
           >
-            分享仪表盘
+            分享
           </Button>
         </div>
       </div>
