@@ -27,14 +27,18 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
     // 重置当前选项列表
     setCurrentOptions([]);
     
+    // 确保表单重置完成
     visualizationEditForm.resetFields();
-    visualizationEditForm.setFieldsValue({
-      type: 'python',
-      title: '',
-      description: '',
-      code: '# 返回表格\nresult = df',
-      options: '[]'
-    });
+    setTimeout(() => {
+      visualizationEditForm.setFieldsValue({
+        type: 'python',
+        title: '',
+        description: '',
+        code: '# 返回表格\nresult = df',
+        options: '[]'
+      });
+    }, 0);
+    
     setVisualizationEditModalVisible(true);
   };
 
@@ -48,13 +52,17 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
     // 设置当前选项列表
     setCurrentOptions(visualization.options || []);
     
-    visualizationEditForm.setFieldsValue({
-      type: visualization.type || 'python',
-      title: visualization.title || '',
-      description: visualization.description || '',
-      code: visualization.code || '',
-      options: optionsStr
-    });
+    // 确保表单重置后再设置新的值
+    visualizationEditForm.resetFields();
+    setTimeout(() => {
+      visualizationEditForm.setFieldsValue({
+        type: visualization.type || 'python',
+        title: visualization.title || '',
+        description: visualization.description || '',
+        code: visualization.code || '',
+        options: optionsStr
+      });
+    }, 0);
     
     setVisualizationEditModalVisible(true);
   };
@@ -99,6 +107,9 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
       
       setVisualizationList(newVisualizationList);
       setVisualizationEditModalVisible(false);
+    }).catch(err => {
+      console.error('表单验证失败:', err);
+      message.error('请检查表单内容是否正确填写');
     });
   };
 
@@ -433,7 +444,9 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
           >
             <PythonEditor
               pythonCode={visualizationEditForm.getFieldValue('code') || '# 返回表格\nresult = df'}
-              setPythonCode={(value) => visualizationEditForm.setFieldsValue({ code: value })}
+              setPythonCode={(value) => {
+                visualizationEditForm.setFieldsValue({ code: value });
+              }}
               readOnly={false}
               hideButtons={true}
             />

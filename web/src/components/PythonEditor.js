@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/theme-github';
@@ -15,6 +15,12 @@ const PythonEditor = ({
   hideButtons = false
 }) => {
   const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
+  const [editorContent, setEditorContent] = useState(pythonCode || '');
+
+  // 监听 pythonCode 属性的变化
+  useEffect(() => {
+    setEditorContent(pythonCode || '');
+  }, [pythonCode]);
 
   // 显示print输出对话框
   const showPrintModal = () => {
@@ -28,7 +34,8 @@ const PythonEditor = ({
 
   // 修改 onChange 处理函数
   const handleEditorChange = (value) => {
-    if (!readOnly) {
+    if (!readOnly && setPythonCode) {
+      setEditorContent(value);
       setPythonCode(value);
     }
   };
@@ -49,7 +56,7 @@ const PythonEditor = ({
           <AceEditor
             mode="python"
             theme="github"
-            value={pythonCode}
+            value={editorContent}
             onChange={handleEditorChange}
             name="python-editor"
             editorProps={{ $blockScrolling: true }}
@@ -59,6 +66,7 @@ const PythonEditor = ({
               showLineNumbers: true,
               tabSize: 2,
               readOnly: readOnly,
+              useWorker: false,
             }}
             style={{
               border: '1px solid #d9d9d9',
