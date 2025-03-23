@@ -15,9 +15,18 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
   const [currentOptions, setCurrentOptions] = useState([]);
   const [optionForm] = Form.useForm();
 
+  // 添加新的状态
+  const [jsonEditModalVisible, setJsonEditModalVisible] = useState(false);
+
+  // 添加新状态
+  const [addOptionModalVisible, setAddOptionModalVisible] = useState(false);
+
   // 添加新图表
   const handleAddVisualization = () => {
     setCurrentEditVisualization(null);
+    // 重置当前选项列表
+    setCurrentOptions([]);
+    
     visualizationEditForm.resetFields();
     visualizationEditForm.setFieldsValue({
       type: 'python',
@@ -35,6 +44,9 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
     
     // 将options转换为JSON字符串以便编辑
     const optionsStr = JSON.stringify(visualization.options || [], null, 2);
+    
+    // 设置当前选项列表
+    setCurrentOptions(visualization.options || []);
     
     visualizationEditForm.setFieldsValue({
       type: visualization.type || 'python',
@@ -102,7 +114,7 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
     }
   };
 
-  // 添加新选项
+  // 修改添加选项函数
   const handleAddOption = () => {
     optionForm.resetFields();
     optionForm.setFieldsValue({
@@ -113,65 +125,34 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
       inferColumn: '',
       choices: ''
     });
-    Modal.confirm({
-      title: '添加选项',
-      content: (
-        <Form form={optionForm} layout="vertical">
-          <Form.Item name="name" label="选项名称" rules={[{ required: true }]}>
-            <Input placeholder="请输入选项名称" />
-          </Form.Item>
-          <Form.Item name="type" label="选项类型">
-            <Select defaultValue="str">
-              <Option value="str">字符串</Option>
-              <Option value="int">整数</Option>
-              <Option value="double">浮点数</Option>
-              <Option value="bool">布尔值</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="multiple" label="是否多选" valuePropName="checked">
-            <Select defaultValue={false}>
-              <Option value={true}>是</Option>
-              <Option value={false}>否</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="infer" label="推断来源">
-            <Select defaultValue="">
-              <Option value="">无</Option>
-              <Option value="column">数据列</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="inferColumn" label="推断列名">
-            <Input placeholder="请输入推断列名" />
-          </Form.Item>
-          <Form.Item name="choices" label="选项列表" help="多个选项用逗号分隔">
-            <Input.TextArea placeholder="选项1,选项2,选项3" />
-          </Form.Item>
-        </Form>
-      ),
-      onOk: () => {
-        optionForm.validateFields().then(values => {
-          const { name, type, multiple, infer, inferColumn, choices } = values;
-          
-          // 处理选项列表
-          const choicesList = choices ? choices.split(',').map(item => item.trim()).filter(item => item) : [];
-          
-          const newOption = {
-            name,
-            type,
-            multiple: !!multiple,
-            ...(infer ? { infer, inferColumn } : {}),
-            ...(choicesList.length > 0 ? { choices: choicesList } : {})
-          };
-          
-          const newOptions = [...currentOptions, newOption];
-          setCurrentOptions(newOptions);
-          
-          // 更新表单中的options字段
-          visualizationEditForm.setFieldsValue({
-            options: JSON.stringify(newOptions, null, 2)
-          });
-        });
-      }
+    setAddOptionModalVisible(true);
+  };
+
+  // 添加保存选项函数
+  const handleSaveOption = () => {
+    optionForm.validateFields().then(values => {
+      const { name, type, multiple, infer, inferColumn, choices } = values;
+      
+      // 处理选项列表
+      const choicesList = choices ? choices.split(',').map(item => item.trim()).filter(item => item) : [];
+      
+      const newOption = {
+        name,
+        type,
+        multiple: !!multiple,
+        ...(infer ? { infer, inferColumn } : {}),
+        ...(choicesList.length > 0 ? { choices: choicesList } : {})
+      };
+      
+      const newOptions = [...currentOptions, newOption];
+      setCurrentOptions(newOptions);
+      
+      // 更新表单中的options字段
+      visualizationEditForm.setFieldsValue({
+        options: JSON.stringify(newOptions, null, 2)
+      });
+      
+      setAddOptionModalVisible(false);
     });
   };
 
@@ -268,8 +249,100 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
     });
   };
 
+  // 修改 JSON 编辑相关函数
+  const handleOpenJsonEdit = () => {
+    // 确保使用当前的 options 状态
+    visualizationEditForm.setFieldsValue({
+      options: JSON.stringify(currentOptions, null, 2)
+    });
+    setJsonEditModalVisible(true);
+  };
+
+  const handleSaveJsonEdit = () => {
+    try {
+      const optionsStr = visualizationEditForm.getFieldValue('options');
+      const parsedOptions = JSON.parse(optionsStr);
+      setCurrentOptions(parsedOptions);
+      setJsonEditModalVisible(false);
+    } catch (error) {
+      message.error('JSON格式不正确，请检查');
+    }
+  };
+
+  // 修改表单中的选项配置部分
+  const renderOptionsSection = () => (
+    <Form.Item
+      name="options"
+      label="图表选项配置"
+    >
+      <div style={{ border: '1px solid #d9d9d9', borderRadius: '2px', padding: '8px' }}>
+        <div style={{ marginBottom: '16px', display: 'flex', gap: '8px' }}>
+          <Button 
+            type="primary" 
+            onClick={handleAddOption}
+            icon={<PlusOutlined />}
+            style={{ flex: '1' }}
+          >
+            添加选项
+          </Button>
+          <Button 
+            onClick={handleOpenJsonEdit}
+            style={{ flex: '1' }}
+          >
+            JSON编辑
+          </Button>
+        </div>
+        
+        {currentOptions.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '20px' }}>暂无选项，请点击上方按钮添加</div>
+        ) : (
+          currentOptions.map((option, index) => (
+            <div 
+              key={index} 
+              style={{ 
+                marginBottom: '8px', 
+                padding: '12px', 
+                border: '1px solid #f0f0f0', 
+                borderRadius: '4px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}
+            >
+              <div>
+                <strong>{option.name}</strong>
+                <div style={{ fontSize: '12px', color: '#888' }}>
+                  类型: {option.type}, 
+                  {option.multiple ? '多选' : '单选'}
+                  {option.infer ? `, 推断自: ${option.infer}` : ''}
+                </div>
+              </div>
+              <Space>
+                <Button 
+                  icon={<EditOutlined />} 
+                  type="text" 
+                  onClick={() => handleEditOption(option, index)}
+                >
+                  编辑
+                </Button>
+                <Button 
+                  icon={<DeleteOutlined />} 
+                  type="text" 
+                  danger 
+                  onClick={() => handleDeleteOption(index)}
+                >
+                  删除
+                </Button>
+              </Space>
+            </div>
+          ))
+        )}
+      </div>
+    </Form.Item>
+  );
+
   return (
-    <>
+    <div>
       <div style={{ marginBottom: '16px' }}>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAddVisualization}>
           添加图表
@@ -365,36 +438,110 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
             />
           </Form.Item>
           
+          {renderOptionsSection()}
+        </Form>
+      </Modal>
+
+      {/* 添加 JSON 编辑模态框 */}
+      <Modal
+        title="JSON编辑"
+        open={jsonEditModalVisible}
+        onCancel={() => setJsonEditModalVisible(false)}
+        onOk={handleSaveJsonEdit}
+        width={600}
+      >
+        <Form form={visualizationEditForm}>
           <Form.Item
             name="options"
-            label="图表选项配置"
-            help="JSON格式，可视化图表的配置选项"
           >
-            <div style={{ border: '1px solid #d9d9d9', borderRadius: '2px', padding: '8px' }}>
-              <div style={{ marginBottom: '8px', display: 'flex', gap: '8px' }}>
-                <Button 
-                  type="primary" 
-                  onClick={handleAddOption}
-                  icon={<PlusOutlined />}
-                  style={{ flex: '1' }}
-                >
-                  添加选项
-                </Button>
-                <Button 
-                  type="default" 
-                  onClick={handleOpenOptionModal}
-                  style={{ flex: '1' }}
-                >
-                  管理选项
-                </Button>
-              </div>
-              <Input.TextArea 
-                placeholder="[]" 
-                autoSize={{ minRows: 4, maxRows: 8 }}
-                style={{ fontFamily: 'monospace' }}
-              />
-              <div style={{ marginTop: '8px', fontSize: '12px', color: '#888' }}>
-                提示：选项配置将被用于图表渲染，请确保格式正确
-              </div>
-            </div>
+            <Input.TextArea 
+              placeholder="[]" 
+              autoSize={{ minRows: 10, maxRows: 20 }}
+              style={{ fontFamily: 'monospace' }}
+            />
           </Form.Item>
+        </Form>
+        <div style={{ fontSize: '12px', color: '#888' }}>
+          提示：请输入有效的JSON格式
+        </div>
+      </Modal>
+
+      {/* 添加选项模态框 */}
+      <Modal
+        title="添加选项"
+        open={addOptionModalVisible}
+        onCancel={() => setAddOptionModalVisible(false)}
+        onOk={handleSaveOption}
+        width={600}
+      >
+        <Form 
+          form={optionForm} 
+          layout="vertical"
+        >
+          <Form.Item 
+            name="name" 
+            label="选项名称" 
+            rules={[{ required: true, message: '请输入选项名称' }]}
+          >
+            <Input placeholder="请输入选项名称" />
+          </Form.Item>
+          
+          <Form.Item 
+            name="type" 
+            label="选项类型"
+            initialValue="str"
+          >
+            <Select>
+              <Option value="str">字符串</Option>
+              <Option value="int">整数</Option>
+              <Option value="double">浮点数</Option>
+              <Option value="bool">布尔值</Option>
+            </Select>
+          </Form.Item>
+          
+          <Form.Item 
+            name="multiple" 
+            label="是否多选"
+            initialValue={false}
+          >
+            <Select>
+              <Option value={true}>是</Option>
+              <Option value={false}>否</Option>
+            </Select>
+          </Form.Item>
+          
+          <Form.Item 
+            name="infer" 
+            label="推断来源"
+            initialValue=""
+          >
+            <Select>
+              <Option value="">无</Option>
+              <Option value="column">数据列</Option>
+            </Select>
+          </Form.Item>
+          
+          <Form.Item 
+            name="inferColumn" 
+            label="推断列名"
+          >
+            <Input placeholder="请输入推断列名" />
+          </Form.Item>
+          
+          <Form.Item 
+            name="choices" 
+            label="选项列表" 
+            help="多个选项用逗号分隔"
+          >
+            <Input.TextArea 
+              placeholder="选项1,选项2,选项3" 
+              autoSize={{ minRows: 3, maxRows: 6 }}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </div>
+  );
+};
+
+export default VisualizationEditView;
