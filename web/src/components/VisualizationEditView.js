@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Input, Select, Button, Space, message, Modal } from 'antd';
 import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import PythonEditor from './PythonEditor';
@@ -9,6 +9,7 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
   const [currentEditVisualization, setCurrentEditVisualization] = useState(null);
   const [visualizationEditModalVisible, setVisualizationEditModalVisible] = useState(false);
   const [visualizationEditForm] = Form.useForm();
+  const [currentEditedCode, setCurrentEditedCode] = useState('');
   
   // 选项编辑相关状态
   const [optionModalVisible, setOptionModalVisible] = useState(false);
@@ -21,11 +22,20 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
   // 添加新状态
   const [addOptionModalVisible, setAddOptionModalVisible] = useState(false);
 
+  // 监听 Modal 可见性变化
+  useEffect(() => {
+    if (!visualizationEditModalVisible) {
+      // 当 Modal 关闭时重置编辑状态
+      setCurrentEditedCode('');
+    }
+  }, [visualizationEditModalVisible]);
+
   // 添加新图表
   const handleAddVisualization = () => {
     setCurrentEditVisualization(null);
     // 重置当前选项列表
     setCurrentOptions([]);
+    setCurrentEditedCode('# 返回表格\nresult = df');
     
     // 确保表单重置完成
     visualizationEditForm.resetFields();
@@ -52,6 +62,10 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
     // 设置当前选项列表
     setCurrentOptions(visualization.options || []);
     
+    // 设置当前编辑的代码
+    const code = visualization.code || '# 返回表格\nresult = df';
+    setCurrentEditedCode(code);
+    
     // 确保表单重置后再设置新的值
     visualizationEditForm.resetFields();
     setTimeout(() => {
@@ -59,7 +73,7 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
         type: visualization.type || 'python',
         title: visualization.title || '',
         description: visualization.description || '',
-        code: visualization.code || '',
+        code: code,
         options: optionsStr
       });
     }, 0);
@@ -76,8 +90,20 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
 
   // 保存图表编辑
   const handleSaveVisualizationEdit = () => {
+    // 确保使用最新的 Python 代码
+    const formValues = visualizationEditForm.getFieldsValue();
+    
+    // 如果有编辑过的代码，使用最新的编辑内容
+    if (currentEditedCode) {
+      formValues.code = currentEditedCode;
+    }
+    
+    console.log('保存图表信息:', formValues);
+    
     visualizationEditForm.validateFields().then(values => {
-      const { type, title, description, code, options } = values;
+      // 使用 formValues 替代 values，确保包含最新的代码内容
+      const { type, title, description, options } = values;
+      const code = formValues.code; // 使用我们跟踪的最新代码
       
       // 解析options JSON字符串
       let parsedOptions = [];
@@ -276,6 +302,7 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
       setCurrentOptions(parsedOptions);
       setJsonEditModalVisible(false);
     } catch (error) {
+      console.error('JSON解析错误:', error);
       message.error('JSON格式不正确，请检查');
     }
   };
@@ -404,9 +431,18 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
       <Modal
         title={currentEditVisualization ? "编辑图表" : "添加图表"}
         open={visualizationEditModalVisible}
-        onCancel={() => setVisualizationEditModalVisible(false)}
+        onCancel={() => {
+          Modal.confirm({
+            title: '确认关闭',
+            content: '关闭后未保存的内容将会丢失，是否确认关闭？',
+            onOk: () => {
+              setVisualizationEditModalVisible(false);
+            },
+          });
+        }}
         onOk={handleSaveVisualizationEdit}
         width={800}
+        maskClosable={false}
       >
         <Form
           form={visualizationEditForm}
@@ -443,9 +479,10 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
             rules={[{ required: true, message: '请输入Python代码' }]}
           >
             <PythonEditor
-              pythonCode={visualizationEditForm.getFieldValue('code') || '# 返回表格\nresult = df'}
+              pythonCode={ visualizationEditForm.getFieldValue('code') || '# 返回表格\nresult = df'}
               setPythonCode={(value) => {
-                visualizationEditForm.setFieldsValue({ code: value });
+                setCurrentEditedCode(value);
+                // visualizationEditForm.setFieldsValue({ code: value });
               }}
               readOnly={false}
               hideButtons={true}

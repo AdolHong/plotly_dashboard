@@ -138,6 +138,9 @@ const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [],
       // 从SQLEditor获取最新的SQL查询
       const currentSqlCode = sqlEditorRef.current ? sqlEditorRef.current.getSqlQuery() : sqlCode;
       
+      // 确保可视化列表中的 Python 代码得到保存
+      console.log('可视化列表保存前:', visualizationList);
+      
       // 构建更新后的配置...
       const newConfig = { 
         ...dashboardConfig, 
@@ -150,6 +153,8 @@ const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [],
           updateMode,
         }
       };
+      
+      console.log('保存配置到服务器:', newConfig);
       
       // 保存到后端
       const response = await axios.post('http://localhost:8000/api/update_config', {

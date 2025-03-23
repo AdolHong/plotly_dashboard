@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/theme-github';
@@ -16,11 +16,38 @@ const PythonEditor = ({
 }) => {
   const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
   const [editorContent, setEditorContent] = useState(pythonCode || '');
+  const editorRef = useRef(null);
+  const isInitialMount = useRef(true);
 
   // 监听 pythonCode 属性的变化
   useEffect(() => {
-    setEditorContent(pythonCode || '');
+    if (pythonCode !== undefined) {
+      console.log('PythonEditor - pythonCode prop更新:', pythonCode);
+      setEditorContent(pythonCode);
+      
+      // 如果编辑器已经初始化，更新内容
+      if (editorRef.current) {
+        editorRef.current.editor.setValue(pythonCode, 1);
+      }
+    }
   }, [pythonCode]);
+
+  // 组件挂载完成或更新后进行初始设置
+  useEffect(() => {
+    // 仅在第一次挂载时执行
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      console.log('PythonEditor - 初始化完成，初始内容:', editorContent);
+    }
+    
+    return () => {
+      // 组件卸载前保存内容
+      if (setPythonCode && !readOnly && editorContent) {
+        console.log('PythonEditor - 组件卸载时保存内容');
+        setPythonCode(editorContent);
+      }
+    };
+  }, []);
 
   // 显示print输出对话框
   const showPrintModal = () => {
@@ -35,6 +62,7 @@ const PythonEditor = ({
   // 修改 onChange 处理函数
   const handleEditorChange = (value) => {
     if (!readOnly && setPythonCode) {
+      console.log('PythonEditor - 内容变化:', value);
       setEditorContent(value);
       setPythonCode(value);
     }
@@ -54,6 +82,7 @@ const PythonEditor = ({
       {!readOnly && (
         <div style={{ marginBottom: '16px' }}>
           <AceEditor
+            ref={editorRef}
             mode="python"
             theme="github"
             value={editorContent}
@@ -71,6 +100,10 @@ const PythonEditor = ({
             style={{
               border: '1px solid #d9d9d9',
               borderRadius: '2px',
+            }}
+            onLoad={(editor) => {
+              console.log('PythonEditor - 编辑器加载完成');
+              editor.resize();
             }}
           />
           {!hideButtons && (
