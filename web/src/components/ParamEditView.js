@@ -17,6 +17,7 @@ const ParamEditView = ({ paramList, setParamList }) => {
   const [currentEditParam, setCurrentEditParam] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editForm] = Form.useForm();
+  const [isFormValid, setIsFormValid] = useState(true);
 
   // 添加新参数
   const handleAddParam = () => {
@@ -47,6 +48,45 @@ const ParamEditView = ({ paramList, setParamList }) => {
     const newParamList = [...paramList];
     newParamList.splice(index, 1);
     setParamList(newParamList);
+  };
+
+  // 验证默认值是否在选项列表中
+  const validateDefaultValue = (defaultValue, choices, type) => {
+    if (!defaultValue || !choices || choices.length === 0) return true;
+    
+    // 处理多选和单选的情况
+    const defaultValues = type === 'multi_select' 
+      ? defaultValue.split(',').map(v => v.trim())
+      : [defaultValue.trim()];
+    
+    const choicesList = choices.split(',').map(v => v.trim());
+    
+    // 检查所有默认值是否都在选项列表中
+    const invalidValues = defaultValues.filter(v => !choicesList.includes(v));
+    
+    return invalidValues.length === 0;
+  };
+
+  // 修改表单验证逻辑
+  const handleFormChange = () => {
+    try {
+      const type = editForm.getFieldValue('type');
+      if (type === 'single_select' || type === 'multi_select') {
+        const defaultValue = editForm.getFieldValue('default');
+        const choices = editForm.getFieldValue('choices');
+        
+        if (defaultValue && choices) {
+          const isValid = validateDefaultValue(defaultValue, choices, type);
+          setIsFormValid(isValid);
+        } else {
+          setIsFormValid(true);
+        }
+      } else {
+        setIsFormValid(true);
+      }
+    } catch (error) {
+      setIsFormValid(false);
+    }
   };
 
   // 保存参数编辑
@@ -152,11 +192,13 @@ const ParamEditView = ({ paramList, setParamList }) => {
         open={editModalVisible}
         onCancel={() => setEditModalVisible(false)}
         onOk={handleSaveParamEdit}
+        okButtonProps={{ disabled: !isFormValid }}
         width={600}
       >
         <Form
           form={editForm}
           layout="vertical"
+          onValuesChange={handleFormChange}
         >
           <Form.Item
             name="name"
@@ -180,10 +222,27 @@ const ParamEditView = ({ paramList, setParamList }) => {
           
           <Form.Item
             noStyle
-            shouldUpdate={(prevValues, currentValues) => prevValues.type !== currentValues.type}
+            shouldUpdate={(prevValues, currentValues) => 
+              prevValues.type !== currentValues.type ||
+              prevValues.choices !== currentValues.choices ||
+              prevValues.default !== currentValues.default
+            }
           >
             {({ getFieldValue }) => {
               const type = getFieldValue('type');
+              const defaultValue = getFieldValue('default');
+              const choices = getFieldValue('choices');
+              
+              // 验证默认值并显示错误信息
+              let defaultValueError = null;
+              if (type === 'single_select' || type === 'multi_select') {
+                if (defaultValue && choices) {
+                  const isValid = validateDefaultValue(defaultValue, choices, type);
+                  if (!isValid) {
+                    defaultValueError = '默认值必须在选项列表中';
+                  }
+                }
+              }
               
               return (
                 <>
@@ -204,7 +263,8 @@ const ParamEditView = ({ paramList, setParamList }) => {
                   <Form.Item
                     name="default"
                     label="默认值"
-                    help={type === 'multi_select' || type === 'multi_input' ? '多个值请用逗号分隔' : ''}
+                    help={defaultValueError || (type === 'multi_select' || type === 'multi_input' ? '多个值请用逗号分隔' : '')}
+                    validateStatus={defaultValueError ? 'error' : ''}
                   >
                     {type === 'date_picker' ? (
                       <Input placeholder="例如: ${yyyy-MM-dd} 表示当前日期" />
