@@ -229,6 +229,7 @@ const DashboardView = () => {
       <EditModal 
         visible={isParameterEditModalVisible}
         onCancel={() => setIsParameterEditModalVisible(false)}
+        initialSqlCode={currentSqlQuery}
         onSave={(newParameters, newVisualizations, newSqlCode) => {
           // 更新参数配置
           setConfigParameters(newParameters);
@@ -248,6 +249,7 @@ const DashboardView = () => {
             
             // 更新SQL代码
             setInitialSqlCode(newSqlCode);
+            setCurrentSqlQuery(newSqlCode);
             
             // 更新可视化配置和数量
             if (newVisualizations) {

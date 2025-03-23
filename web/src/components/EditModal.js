@@ -6,27 +6,24 @@ import VisualizationEditView from './VisualizationEditView';
 import SQLEditor from './SQLEditor';
 import axios from 'axios';
 
-const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [], dashboardConfig }) => {
+const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [], dashboardConfig, initialSqlCode }) => {
   const [paramList, setParamList] = useState([]);
   const [visualizationList, setVisualizationList] = useState([]);
   const [activeTab, setActiveTab] = useState('1');
-  const [sqlCode, setSqlCode] = useState('');
+  const [sqlCode, setSqlCode] = useState(initialSqlCode|| '');
   const [executorType, setExecutorType] = useState('MySQL');
   const [dataFrameName, setDataFrameName] = useState('df1');
   const [updateMode, setUpdateMode] = useState('手动更新');
 
   // 当modal显示或dashboardConfig变化时初始化SQL相关配置
   useEffect(() => {
-    message.info(JSON.stringify(dashboardConfig))
     if (dashboardConfig?.query) {
-      message.info(2)
-      message.info(JSON.stringify(dashboardConfig))
       setSqlCode(dashboardConfig.query.code || '');
       setExecutorType(dashboardConfig.query.executorType || 'MySQL');
       setDataFrameName(dashboardConfig.query.dataFrameName || 'df1');
       setUpdateMode(dashboardConfig.query.updateMode || '手动更新');
     }
-  }, [dashboardConfig]);
+  }, [sqlCode, dashboardConfig]);
 
   // 当参数列表变化时更新表单
   useEffect(() => {
@@ -42,7 +39,7 @@ const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [],
     } else {
       setVisualizationList([]);
     }
-  }, [parameters, visualizations, visible]);
+  }, [parameters, visualizations]);
 
   const items = [
     {
@@ -123,6 +120,7 @@ const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [],
           <div style={{ height: '400px', border: '1px solid #d9d9d9', borderRadius: '2px' }}>
             <SQLEditor
               initialSqlCode={sqlCode}
+              configLoaded={true}
               onCodeChange={(code) => setSqlCode(code)}
               readOnly={false}
               queryButtonVisible={false}
@@ -135,7 +133,6 @@ const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [],
 
   const handleSave = async () => {
     try {
-
       const newConfig = { 
         ...dashboardConfig, 
         parameters: paramList,

@@ -4,7 +4,7 @@
     "code": "SELECT *, '${region}' as region, '${a}' as a FROM sales",
     "executor_type": "MySQL",
     "dataframe_name": "df1",
-    "update_mode": "手动更新"
+    "update_mode": "自动更新"
   },
   "parameters": [
     {

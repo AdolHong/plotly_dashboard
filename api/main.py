@@ -320,9 +320,6 @@ async def update_dashboard_config(request: dict):
         # 保存更新后的配置
         with open(config_path, 'w', encoding='utf-8') as f:
             json.dump(updated_config, f, ensure_ascii=False, indent=2)
-        print("yes")
-        assert 1==2
-
         return {
             "status": "success",
             "message": "配置更新成功",
