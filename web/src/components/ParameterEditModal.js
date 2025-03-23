@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, Button, Space, Divider, message } from 'antd';
-import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Modal, Form, Input, Select, Button, Space, Divider, message, Tabs } from 'antd';
+import { PlusOutlined, DeleteOutlined, EditOutlined, BarChartOutlined, FilterOutlined } from '@ant-design/icons';
+import PythonEditor from './PythonEditor';
 
 const { Option } = Select;
 
@@ -13,12 +14,19 @@ const PARAMETER_TYPES = [
   { value: 'multi_input', label: '多行输入框' }
 ];
 
-const ParameterEditModal = ({ visible, onCancel, onSave, parameters }) => {
+const ParameterEditModal = ({ visible, onCancel, onSave, parameters, visualizations = [] }) => {
   const [form] = Form.useForm();
   const [paramList, setParamList] = useState([]);
   const [currentEditParam, setCurrentEditParam] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editForm] = Form.useForm();
+  
+  // 图表相关状态
+  const [visualizationList, setVisualizationList] = useState([]);
+  const [currentEditVisualization, setCurrentEditVisualization] = useState(null);
+  const [visualizationEditModalVisible, setVisualizationEditModalVisible] = useState(false);
+  const [visualizationEditForm] = Form.useForm();
+  const [activeTabKey, setActiveTabKey] = useState('1'); // 默认选中筛选条件标签页
 
   // 当参数列表变化时更新表单
   useEffect(() => {
@@ -27,11 +35,18 @@ const ParameterEditModal = ({ visible, onCancel, onSave, parameters }) => {
     } else {
       setParamList([]);
     }
-  }, [parameters, visible]);
+    
+    // 当可视化列表变化时更新
+    if (visualizations && visualizations.length > 0) {
+      setVisualizationList([...visualizations]);
+    } else {
+      setVisualizationList([]);
+    }
+  }, [parameters, visualizations, visible]);
 
   // 保存参数配置
   const handleSave = () => {
-    onSave(paramList);
+    onSave(paramList, visualizationList);
   };
 
   // 添加新参数
@@ -115,10 +130,85 @@ const ParameterEditModal = ({ visible, onCancel, onSave, parameters }) => {
     return typeObj ? typeObj.label : type;
   };
 
+  // 添加新图表
+  const handleAddVisualization = () => {
+    setCurrentEditVisualization(null);
+    visualizationEditForm.resetFields();
+    visualizationEditForm.setFieldsValue({
+      type: 'python',
+      title: '',
+      description: '',
+      code: '# 返回表格\nresult = df',
+      options: '[]'
+    });
+    setVisualizationEditModalVisible(true);
+  };
+
+  // 编辑图表
+  const handleEditVisualization = (visualization, index) => {
+    setCurrentEditVisualization({ ...visualization, index });
+    
+    // 将options转换为JSON字符串以便编辑
+    const optionsStr = JSON.stringify(visualization.options || [], null, 2);
+    
+    visualizationEditForm.setFieldsValue({
+      type: visualization.type || 'python',
+      title: visualization.title || '',
+      description: visualization.description || '',
+      code: visualization.code || '',
+      options: optionsStr
+    });
+    
+    setVisualizationEditModalVisible(true);
+  };
+
+  // 删除图表
+  const handleDeleteVisualization = (index) => {
+    const newVisualizationList = [...visualizationList];
+    newVisualizationList.splice(index, 1);
+    setVisualizationList(newVisualizationList);
+  };
+
+  // 保存图表编辑
+  const handleSaveVisualizationEdit = () => {
+    visualizationEditForm.validateFields().then(values => {
+      const { type, title, description, code, options } = values;
+      
+      // 解析options JSON字符串
+      let parsedOptions = [];
+      try {
+        parsedOptions = JSON.parse(options);
+      } catch (error) {
+        message.error('选项格式不正确，请检查JSON格式');
+        return;
+      }
+      
+      const visualizationData = {
+        type,
+        title,
+        description,
+        code,
+        options: parsedOptions
+      };
+      
+      const newVisualizationList = [...visualizationList];
+      if (currentEditVisualization !== null) {
+        // 更新现有图表
+        newVisualizationList[currentEditVisualization.index] = visualizationData;
+      } else {
+        // 添加新图表
+        newVisualizationList.push(visualizationData);
+      }
+      
+      setVisualizationList(newVisualizationList);
+      setVisualizationEditModalVisible(false);
+    });
+  };
+
   return (
     <>
       <Modal
-        title="编辑筛选条件"
+        title="编辑仪表盘配置"
         open={visible}
         onCancel={onCancel}
         width={800}
@@ -127,50 +217,127 @@ const ParameterEditModal = ({ visible, onCancel, onSave, parameters }) => {
           <Button key="save" type="primary" onClick={handleSave}>保存</Button>
         ]}
       >
-        <div style={{ marginBottom: '16px' }}>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddParam}>
-            添加筛选条件
-          </Button>
-        </div>
-        
-        <div>
-          {paramList.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '20px' }}>暂无筛选条件，请点击上方按钮添加</div>
-          ) : (
-            paramList.map((param, index) => (
-              <div key={index} style={{ marginBottom: '16px', padding: '12px', border: '1px solid #f0f0f0', borderRadius: '4px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <strong>{param.name}</strong> ({renderParamTypeName(param.type)})
+        <Tabs 
+          activeKey={activeTabKey} 
+          onChange={setActiveTabKey}
+          items={[
+            {
+              key: '1',
+              label: (
+                <span>
+                  <FilterOutlined />
+                  筛选条件
+                </span>
+              ),
+              children: (
+                <>
+                  <div style={{ marginBottom: '16px' }}>
+                    <Button type="primary" icon={<PlusOutlined />} onClick={handleAddParam}>
+                      添加筛选条件
+                    </Button>
                   </div>
-                  <Space>
-                    <Button 
-                      icon={<EditOutlined />} 
-                      type="text" 
-                      onClick={() => handleEditParam(param, index)}
-                    >
-                      编辑
+                  
+                  <div>
+                    {paramList.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '20px' }}>暂无筛选条件，请点击上方按钮添加</div>
+                    ) : (
+                      paramList.map((param, index) => (
+                        <div key={index} style={{ marginBottom: '16px', padding: '12px', border: '1px solid #f0f0f0', borderRadius: '4px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <strong>{param.name}</strong> ({renderParamTypeName(param.type)})
+                            </div>
+                            <Space>
+                              <Button 
+                                icon={<EditOutlined />} 
+                                type="text" 
+                                onClick={() => handleEditParam(param, index)}
+                              >
+                                编辑
+                              </Button>
+                              <Button 
+                                icon={<DeleteOutlined />} 
+                                type="text" 
+                                danger 
+                                onClick={() => handleDeleteParam(index)}
+                              >
+                                删除
+                              </Button>
+                            </Space>
+                          </div>
+                          <div style={{ marginTop: '8px', fontSize: '12px', color: '#888' }}>
+                            {param.type === 'single_select' || param.type === 'multi_select' ? (
+                              <div>选项: {param.choices ? param.choices.join(', ') : '无'}</div>
+                            ) : null}
+                            <div>默认值: {Array.isArray(param.default) ? param.default.join(', ') : (param.default || '无')}</div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </>
+              ),
+            },
+            {
+              key: '2',
+              label: (
+                <span>
+                  <BarChartOutlined />
+                  图表管理
+                </span>
+              ),
+              children: (
+                <>
+                  <div style={{ marginBottom: '16px' }}>
+                    <Button type="primary" icon={<PlusOutlined />} onClick={handleAddVisualization}>
+                      添加图表
                     </Button>
-                    <Button 
-                      icon={<DeleteOutlined />} 
-                      type="text" 
-                      danger 
-                      onClick={() => handleDeleteParam(index)}
-                    >
-                      删除
-                    </Button>
-                  </Space>
-                </div>
-                <div style={{ marginTop: '8px', fontSize: '12px', color: '#888' }}>
-                  {param.type === 'single_select' || param.type === 'multi_select' ? (
-                    <div>选项: {param.choices ? param.choices.join(', ') : '无'}</div>
-                  ) : null}
-                  <div>默认值: {Array.isArray(param.default) ? param.default.join(', ') : (param.default || '无')}</div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+                  </div>
+                  
+                  <div>
+                    {visualizationList.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '20px' }}>暂无图表，请点击上方按钮添加</div>
+                    ) : (
+                      visualizationList.map((visualization, index) => (
+                        <div key={index} style={{ marginBottom: '16px', padding: '12px', border: '1px solid #f0f0f0', borderRadius: '4px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <strong>{visualization.title || `图表 ${index + 1}`}</strong>
+                              {visualization.description && (
+                                <div style={{ fontSize: '12px', color: '#888' }}>{visualization.description}</div>
+                              )}
+                            </div>
+                            <Space>
+                              <Button 
+                                icon={<EditOutlined />} 
+                                type="text" 
+                                onClick={() => handleEditVisualization(visualization, index)}
+                              >
+                                编辑
+                              </Button>
+                              <Button 
+                                icon={<DeleteOutlined />} 
+                                type="text" 
+                                danger 
+                                onClick={() => handleDeleteVisualization(index)}
+                              >
+                                删除
+                              </Button>
+                            </Space>
+                          </div>
+                          <div style={{ marginTop: '8px', fontSize: '12px', color: '#888' }}>
+                            <div>类型: {visualization.type || 'python'}</div>
+                            <div>选项数量: {(visualization.options || []).length}</div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </>
+              ),
+            },
+          ]}
+        />
       </Modal>
       
       {/* 参数编辑模态框 */}
@@ -272,6 +439,69 @@ const ParameterEditModal = ({ visible, onCancel, onSave, parameters }) => {
                 </>
               );
             }}
+          </Form.Item>
+        </Form>
+      </Modal>
+      
+      {/* 图表编辑模态框 */}
+      <Modal
+        title={currentEditVisualization ? "编辑图表" : "添加图表"}
+        open={visualizationEditModalVisible}
+        onCancel={() => setVisualizationEditModalVisible(false)}
+        onOk={handleSaveVisualizationEdit}
+        width={800}
+      >
+        <Form
+          form={visualizationEditForm}
+          layout="vertical"
+        >
+          <Form.Item
+            name="title"
+            label="图表标题"
+            rules={[{ required: true, message: '请输入图表标题' }]}
+          >
+            <Input placeholder="请输入图表标题" />
+          </Form.Item>
+          
+          <Form.Item
+            name="description"
+            label="图表描述"
+          >
+            <Input.TextArea placeholder="请输入图表描述" autoSize={{ minRows: 2, maxRows: 4 }} />
+          </Form.Item>
+          
+          <Form.Item
+            name="type"
+            label="图表类型"
+            rules={[{ required: true, message: '请选择图表类型' }]}
+          >
+            <Select placeholder="请选择图表类型">
+              <Option value="python">Python</Option>
+            </Select>
+          </Form.Item>
+          
+          <Form.Item
+            name="code"
+            label="Python代码"
+            rules={[{ required: true, message: '请输入Python代码' }]}
+          >
+            <Input.TextArea 
+              placeholder="# 返回表格\nresult = df" 
+              autoSize={{ minRows: 6, maxRows: 12 }}
+              style={{ fontFamily: 'monospace' }}
+            />
+          </Form.Item>
+          
+          <Form.Item
+            name="options"
+            label="图表选项配置"
+            help="JSON格式，例如：[{}]"
+          >
+            <Input.TextArea 
+              placeholder="[]" 
+              autoSize={{ minRows: 4, maxRows: 8 }}
+              style={{ fontFamily: 'monospace' }}
+            />
           </Form.Item>
         </Form>
       </Modal>

@@ -229,20 +229,31 @@ const DashboardView = () => {
       <ParameterEditModal 
         visible={isParameterEditModalVisible}
         onCancel={() => setIsParameterEditModalVisible(false)}
-        onSave={(newParameters) => {
-
-          message.info(JSON.stringify(newParameters, null, 2))
+        onSave={(newParameters, newVisualizations) => {
           // 更新参数配置
           setConfigParameters(newParameters);
+          
           // 更新仪表盘配置
           if (dashboardConfig) {
-            const newConfig = { ...dashboardConfig, parameters: newParameters };
+            const newConfig = { 
+              ...dashboardConfig, 
+              parameters: newParameters,
+              visualization: newVisualizations || dashboardConfig.visualization
+            };
             setDashboardConfig(newConfig);
-            message.success('筛选条件已更新');
+            
+            // 更新可视化配置和数量
+            if (newVisualizations) {
+              setVisualizationConfig(newVisualizations);
+              setVisualizerCount(newVisualizations.length || 1);
+            }
+            
+            message.success('仪表盘配置已更新');
           }
           setIsParameterEditModalVisible(false);
         }}
         parameters={configParameters}
+        visualizations={visualizationConfig}
       />
     </div>
   );
