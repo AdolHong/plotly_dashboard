@@ -1,7 +1,7 @@
 {
     "query": {
         "type": "SQL",
-        "code": "SELECT * FROM sales"
+        "code": "SELECT *, '${region}' as region, '${a}' as a FROM sales"
     },
     "parameters":[
         {

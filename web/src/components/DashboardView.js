@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Divider, message, Modal, Input } from 'antd';
-import { ShareAltOutlined } from '@ant-design/icons';
+import { ShareAltOutlined, EditOutlined } from '@ant-design/icons';
 import SQLEditor from './SQLEditor';
 import Visualizer from './Visualizer';
+import ParameterEditModal from './ParameterEditModal';
 import axios from 'axios';
 import { useParamValues, useOptionValues } from '../hooks/useVisualizerContext';
 
@@ -20,6 +21,7 @@ const DashboardView = () => {
   const [shareUrl, setShareUrl] = useState('');
   const [isSharing, setIsSharing] = useState(false);
   const [currentSqlQuery, setCurrentSqlQuery] = useState('');
+  const [isParameterEditModalVisible, setIsParameterEditModalVisible] = useState(false);
   // Use context for paramValues instead of local state
   const { paramValues } = useParamValues();
   const { allOptionValues } = useOptionValues();
@@ -146,16 +148,25 @@ const DashboardView = () => {
         <div style={{ flex: '1 1 auto', minWidth: '200px', marginRight: '20px' }}>
           <Divider orientation="left" style={{ margin: '10px 0' }}>SQL 查询区域</Divider>
         </div>
-        <Button 
-          type="primary" 
-          icon={<ShareAltOutlined />} 
-          onClick={handleShare}
-          loading={isSharing}
-          disabled={!queryHash}
-          style={{ margin: '10px 0', flexShrink: 0 }}
-        >
-          分享仪表盘
-        </Button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <Button 
+            icon={<EditOutlined />} 
+            onClick={() => setIsParameterEditModalVisible(true)}
+            style={{ margin: '10px 0', flexShrink: 0 }}
+          >
+            编辑筛选条件
+          </Button>
+          <Button 
+            type="primary" 
+            icon={<ShareAltOutlined />} 
+            onClick={handleShare}
+            loading={isSharing}
+            disabled={!queryHash}
+            style={{ margin: '10px 0', flexShrink: 0 }}
+          >
+            分享仪表盘
+          </Button>
+        </div>
       </div>
       
       {/* SQL查询区域 - 只读模式但参数可交互 */}
@@ -213,6 +224,26 @@ const DashboardView = () => {
           style={{ marginBottom: '10px' }}
         />
       </Modal>
+      
+      {/* 参数编辑模态框 */}
+      <ParameterEditModal 
+        visible={isParameterEditModalVisible}
+        onCancel={() => setIsParameterEditModalVisible(false)}
+        onSave={(newParameters) => {
+
+          message.info(JSON.stringify(newParameters, null, 2))
+          // 更新参数配置
+          setConfigParameters(newParameters);
+          // 更新仪表盘配置
+          if (dashboardConfig) {
+            const newConfig = { ...dashboardConfig, parameters: newParameters };
+            setDashboardConfig(newConfig);
+            message.success('筛选条件已更新');
+          }
+          setIsParameterEditModalVisible(false);
+        }}
+        parameters={configParameters}
+      />
     </div>
   );
 };
