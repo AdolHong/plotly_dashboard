@@ -5,6 +5,8 @@ import PythonEditor from './PythonEditor';
 import VisualizerOptions from './VisualizerOptions';
 import VisualizerDisplayView from './VisualizerDisplayView';
 import { useOptionValues } from '../hooks/useVisualizerContext';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const Text = Typography;
 
@@ -158,9 +160,13 @@ const Visualizer = ({ index, sessionId, queryHash, configLoaded, initialPythonCo
                   title: 'Python 代码',
                   content: (
                     <div style={{ maxHeight: '400px', overflow: 'auto' }}>
-                      <pre style={{ background: '#f5f5f5', padding: '10px', borderRadius: '4px' }}>
+                      <SyntaxHighlighter 
+                        language="python" 
+                        style={tomorrow}
+                        customStyle={{ borderRadius: '4px' }}
+                      >
                         {pythonCode || '没有代码'}
-                      </pre>
+                      </SyntaxHighlighter>
                     </div>
                   ),
                   width: 600,
@@ -178,7 +184,13 @@ const Visualizer = ({ index, sessionId, queryHash, configLoaded, initialPythonCo
                   title: 'Python 输出',
                   content: (
                     <div style={{ maxHeight: '400px', overflow: 'auto' }}>
-                      <pre>{printOutput || '没有输出'}</pre>
+                      <SyntaxHighlighter 
+                        language="text" 
+                        style={tomorrow}
+                        customStyle={{ borderRadius: '4px' }}
+                      >
+                        {printOutput || '没有输出'}
+                      </SyntaxHighlighter>
                     </div>
                   ),
                   width: 600,
