@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 确保 Tailwind 样式优先级高于 Ant Design */
+.bg-blue-500 {
+  background-color: #f0720b !important;
+}

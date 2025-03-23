@@ -20,6 +20,23 @@ axios.interceptors.request.use(config => {
   }
   return config;
 });
+function Button() {
+  return (
+    <button className="
+      bg-blue-500 
+      hover:bg-blue-700 
+      text-white 
+      font-bold 
+      py-2 
+      px-4 
+      rounded 
+      transition 
+      duration-300
+    ">
+      点击我
+    </button>
+  );
+}
 
 // 响应拦截器：将下划线转为驼峰
 axios.interceptors.response.use(response => {
@@ -66,7 +83,9 @@ function App() {
             <Route path="/" element={
               <Content style={{ padding: '0 50px', marginTop: '10px' }}>
                 <div style={{ background: '#fff', padding: '24px', minHeight: '280px' }}>
+                  <Button />
                   <DashboardView />
+
                 </div>
               </Content>
             } />
