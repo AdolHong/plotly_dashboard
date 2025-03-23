@@ -63,21 +63,6 @@ const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [],
       key: '2',
       label: (
         <span>
-          <BarChartOutlined />
-          图表管理
-        </span>
-      ),
-      children: (
-        <VisualizationEditView 
-          visualizationList={visualizationList} 
-          setVisualizationList={setVisualizationList} 
-        />
-      ),
-    },
-    {
-      key: '3',
-      label: (
-        <span>
           <CodeOutlined />
           数据
         </span>
@@ -129,6 +114,21 @@ const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [],
             />
           </div>
         </div>
+      ),
+    },
+        {
+      key: '3',
+      label: (
+        <span>
+          <BarChartOutlined />
+          图表管理
+        </span>
+      ),
+      children: (
+        <VisualizationEditView 
+          visualizationList={visualizationList} 
+          setVisualizationList={setVisualizationList} 
+        />
       ),
     },
   ];
