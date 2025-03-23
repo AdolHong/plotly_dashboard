@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect, useRef } from 'react';
 import { Modal, Button, Tabs, Form, message, Select, Input } from 'antd';
 import { FilterOutlined, BarChartOutlined, CodeOutlined } from '@ant-design/icons';
 import ParamEditView from './ParamEditView';
 import VisualizationEditView from './VisualizationEditView';
 import SQLEditor from './SQLEditor';
 import axios from 'axios';
+
 
 const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [], dashboardConfig, initialSqlCode }) => {
   const [paramList, setParamList] = useState([]);
@@ -14,16 +15,17 @@ const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [],
   const [executorType, setExecutorType] = useState('MySQL');
   const [dataFrameName, setDataFrameName] = useState('df1');
   const [updateMode, setUpdateMode] = useState('手动更新');
+  const sqlEditorRef = useRef(null);
 
   // 当modal显示或dashboardConfig变化时初始化SQL相关配置
   useEffect(() => {
     if (dashboardConfig?.query) {
       setSqlCode(dashboardConfig.query.code || '');
       setExecutorType(dashboardConfig.query.executorType || 'MySQL');
-      setDataFrameName(dashboardConfig.query.dataFrameName || 'df1');
+      setDataFrameName(dashboardConfig.query.dataFrameName || 'df');
       setUpdateMode(dashboardConfig.query.updateMode || '手动更新');
     }
-  }, [sqlCode, dashboardConfig]);
+  }, [dashboardConfig]);
 
   // 当参数列表变化时更新表单
   useEffect(() => {
@@ -119,9 +121,9 @@ const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [],
           </div>
           <div style={{ height: '400px', border: '1px solid #d9d9d9', borderRadius: '2px' }}>
             <SQLEditor
+              ref={sqlEditorRef}
               initialSqlCode={sqlCode}
               configLoaded={true}
-              onCodeChange={(code) => setSqlCode(code)}
               readOnly={false}
               queryButtonVisible={false}
             />
@@ -133,19 +135,22 @@ const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [],
 
   const handleSave = async () => {
     try {
+      // 从SQLEditor获取最新的SQL查询
+      const currentSqlCode = sqlEditorRef.current ? sqlEditorRef.current.getSqlQuery() : sqlCode;
+      
+      // 构建更新后的配置...
       const newConfig = { 
         ...dashboardConfig, 
         parameters: paramList,
-        visualization: visualizationList || dashboardConfig.visualization,
+        visualization: visualizationList,
         query: {
-          ...dashboardConfig.query,
-          code: sqlCode,
+          code: currentSqlCode,
           executorType,
-          dataframeName:dataFrameName,
+          dataFrameName,
           updateMode,
-        }};
-
-
+        }
+      };
+      
       // 保存到后端
       const response = await axios.post('http://localhost:8000/api/update_config', {
           config: newConfig
@@ -153,7 +158,7 @@ const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [],
 
       if (response.data.status === 'success') {
         message.success('配置已保存');
-        onSave(paramList, visualizationList, sqlCode);
+        onSave(paramList, visualizationList, currentSqlCode);
       } else {
         message.error('保存失败：' + response.data.message);
       }

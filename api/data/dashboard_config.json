@@ -1,9 +1,8 @@
 {
   "query": {
-    "type": "SQL",
     "code": "SELECT *, '${region}' as region, '${a}' as a FROM sales",
     "executor_type": "MySQL",
-    "dataframe_name": "df1",
+    "data_frame_name": "df",
     "update_mode": "自动更新"
   },
   "parameters": [
