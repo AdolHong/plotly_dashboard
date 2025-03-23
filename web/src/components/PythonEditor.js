@@ -9,12 +9,10 @@ import PrintModal from './PrintModal';
 const PythonEditor = ({
   pythonCode,
   setPythonCode,
-  onExecute,
   printOutput,
   hasPrintOutput,
   readOnly = false,
-  hideButtons = false,
-  autoUpdate = true
+  hideButtons = false
 }) => {
   const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
 

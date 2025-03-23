@@ -436,7 +436,6 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
               setPythonCode={(value) => visualizationEditForm.setFieldsValue({ code: value })}
               readOnly={false}
               hideButtons={true}
-              autoUpdate={false}
             />
           </Form.Item>
           
