@@ -7,11 +7,11 @@ const { Option } = Select;
 
 // 参数类型选项
 const PARAMETER_TYPES = [
-  { value: 'single_select', label: '单选下拉框' },
-  { value: 'multi_select', label: '多选下拉框' },
+  { value: 'single_select', label: '下拉框, 单选' },
+  { value: 'multi_select', label: '下拉框, 多选' },
   { value: 'date_picker', label: '日期选择器' },
-  { value: 'single_input', label: '单行输入框' },
-  { value: 'multi_input', label: '多行输入框' }
+  { value: 'single_input', label: '输入框, 单值' },
+  { value: 'multi_input', label: '输入框, 多值' }
 ];
 
 const ParameterEditModal = ({ visible, onCancel, onSave, parameters, visualizations = [] }) => {

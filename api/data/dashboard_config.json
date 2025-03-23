@@ -40,7 +40,7 @@
       "name": "order_date",
       "type": "date_picker",
       "format": "yyyy-MM-dd",
-      "default": "2025-03-23"
+      "default": "${yyyy-MM-dd-1d}"
     },
     {
       "name": "min_price",
