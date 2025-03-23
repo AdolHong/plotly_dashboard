@@ -6,7 +6,7 @@ import Visualizer from './Visualizer';
 import axios from 'axios';
 import { useParamValues, useOptionValues } from '../hooks/useVisualizerContext';
 
-const EditView = () => {
+const PlaygroundView = () => {
   const [sessionId, setSessionId] = useState('');
   const [queryHash, setQueryHash] = useState('');
   const [visualizerCount, setVisualizerCount] = useState(1);
@@ -212,4 +212,4 @@ const EditView = () => {
   );
 };
 
-export default EditView;
+export default PlaygroundView;

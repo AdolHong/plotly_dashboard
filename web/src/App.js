@@ -3,7 +3,7 @@ import { Layout, Typography, Menu } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
 import { BrowserRouter as Router, Routes, Route, useSearchParams, Link, useLocation } from 'react-router-dom';
 import 'antd/dist/reset.css';
-import EditView from './components/EditView';
+import PlaygroundView from './components/PlaygroundView';
 import ShareView from './components/ShareView';
 import DashboardView from './components/DashboardView';
 import axios from 'axios';
@@ -42,8 +42,8 @@ const Navigation = () => {
       <Menu.Item key="/">
         <Link to="/">Dashboard</Link>
       </Menu.Item>
-      <Menu.Item key="/edit">
-        <Link to="/edit">Edit</Link>
+      <Menu.Item key="/playground">
+        <Link to="/playground">Playgorund</Link>
       </Menu.Item>
     </Menu>
   );
@@ -88,10 +88,10 @@ function App() {
                 </div>
               </Content>
             } />
-            <Route path="/edit" element={
+            <Route path="/playground" element={
               <Content style={{ padding: '0 50px', marginTop: '10px' }}>
                 <div style={{ background: '#fff', padding: '24px', minHeight: '280px' }}>
-                  <EditView />
+                  <PlaygroundView />
                 </div>
               </Content>
             } />
