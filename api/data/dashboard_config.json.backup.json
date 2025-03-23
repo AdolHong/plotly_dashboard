@@ -1,0 +1,72 @@
+{
+    "query": {
+        "type": "SQL",
+        "code": "SELECT *, '${region}' as region, '${a}' as a FROM sales"
+    },
+    "parameters":[
+        {
+            "name": "region",
+            "type": "single_select",
+            "choices": ["华东","华南","华北","西北","西南"],
+            "default": "华东",
+            "sep": ",",
+            "wrapper": "'"
+        },
+        {
+            "name": "categories",
+            "type": "multi_select",
+            "choices": ["电子产品","服装","食品","家居","图书"],
+            "default": ["电子产品"],
+            "sep": ",",
+            "wrapper": "'"
+        },
+        {
+            "name": "order_date",
+            "type": "date_picker",
+            "format": "yyyy-MM-dd",
+            "default": "${yyyy-MM-dd}"
+        },
+        {
+            "name": "min_price",
+            "type": "single_input",
+            "default": "100"
+        },
+        {
+            "name": "product_ids",
+            "type": "multi_input",
+            "sep": ",",
+            "wrapper": "'"
+        }
+    ],
+    "visualization": [
+        {
+            "type": "python",
+            "title": "数据表格1",
+            "options": [
+                {
+                    "name": "region",
+                    "infer": "column",
+                    "infer_column": "region",
+                    "type": "str",
+                    "multiple": true
+                }
+            ],
+            "description": "显示查询结果的原始数据表格1",
+            "code": "# 返回表格\nif region: df = df.query(f\"region in {region}\")\nresult = df"
+        },
+        {
+            "type": "python",
+            "title": "区域销量柱状图2",
+            "options": [
+                {
+                    "name": "region",
+                    "infer": "column",
+                    "infer_column": "region",
+                    "type": "str"
+                }
+            ],
+            "description": "按区域统计销量并以柱状图展示2",
+            "code": "# 返回图\nimport plotly.express as px\nif region: df = df.query(f\"region == '{region}'\")\nresult = px.bar(df.groupby(\"category\").sum().reset_index(), x=\"category\", y=\"quantity\")"
+        }
+    ]
+}

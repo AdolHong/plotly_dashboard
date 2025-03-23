@@ -520,23 +520,42 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
               <Option value="column">数据列</Option>
             </Select>
           </Form.Item>
-          
-          <Form.Item 
-            name="inferColumn" 
-            label="推断列名"
+
+          <Form.Item
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => prevValues.infer !== currentValues.infer}
           >
-            <Input placeholder="请输入推断列名" />
-          </Form.Item>
-          
-          <Form.Item 
-            name="choices" 
-            label="选项列表" 
-            help="多个选项用逗号分隔"
-          >
-            <Input.TextArea 
-              placeholder="选项1,选项2,选项3" 
-              autoSize={{ minRows: 3, maxRows: 6 }}
-            />
+            {({ getFieldValue }) => {
+              const infer = getFieldValue('infer');
+              
+              return (
+                <>
+                  {infer === 'column' && (
+                    <Form.Item 
+                      name="inferColumn" 
+                      label="推断列名"
+                      rules={[{ required: true, message: '请输入推断列名' }]}
+                    >
+                      <Input placeholder="请输入推断列名" />
+                    </Form.Item>
+                  )}
+                  
+                  {!infer && (
+                    <Form.Item 
+                      name="choices" 
+                      label="选项列表" 
+                      help="多个选项用逗号分隔"
+                      rules={[{ required: true, message: '请输入选项列表' }]}
+                    >
+                      <Input.TextArea 
+                        placeholder="选项1,选项2,选项3" 
+                        autoSize={{ minRows: 3, maxRows: 6 }}
+                      />
+                    </Form.Item>
+                  )}
+                </>
+              );
+            }}
           </Form.Item>
         </Form>
       </Modal>

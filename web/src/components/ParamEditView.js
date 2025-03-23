@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Select, Button, Space, message, Modal } from 'antd';
+import { Form, Input, Select, Button, Space, message, Modal, Row, Col } from 'antd';
 import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
@@ -34,7 +34,7 @@ const ParamEditView = ({ paramList, setParamList }) => {
       default: param.type === 'multi_select' || param.type === 'multi_input' 
         ? Array.isArray(param.default) ? param.default.join(',') : param.default
         : param.default,
-      choices: param.choices ? param.choices.join('\n') : '',
+      choices: param.choices ? param.choices.join(',') : '',
       format: param.format || '',
       sep: param.sep || ',',
       wrapper: param.wrapper || '\''
@@ -62,11 +62,11 @@ const ParamEditView = ({ paramList, setParamList }) => {
         processedDefault = defaultValue;
       }
       
-      // 处理选项列表
+      // 处理选项列表 - 改为用逗号分隔
       const processedChoices = choices ? 
-        choices.split('\n')
-          .map(line => line.trim())
-          .filter(line => line.length > 0) : 
+        choices.split(',')
+          .map(item => item.trim())
+          .filter(item => item.length > 0) : 
         [];
       
       const paramData = {
@@ -192,10 +192,10 @@ const ParamEditView = ({ paramList, setParamList }) => {
                       name="choices"
                       label="选项列表"
                       rules={[{ required: true, message: '请输入选项列表' }]}
-                      help="每行一个选项"
+                      help="多个选项用逗号分隔"
                     >
                       <Input.TextArea 
-                        placeholder="每行输入一个选项" 
+                        placeholder="选项1,选项2,选项3" 
                         autoSize={{ minRows: 3, maxRows: 6 }}
                       />
                     </Form.Item>
@@ -223,24 +223,27 @@ const ParamEditView = ({ paramList, setParamList }) => {
                     </Form.Item>
                   )}
                   
-                  {( type === 'multi_select' || type === 'multi_input') && (
-                    <>
-                      <Form.Item
-                        name="sep"
-                        label="分隔符"
-                        initialValue=","
-                      >
-                        <Input placeholder="例如: ," />
-                      </Form.Item>
-                      
-                      <Form.Item
-                        name="wrapper"
-                        label="包装符"
-                        initialValue="'"
-                      >
-                        <Input placeholder="例如: '" />
-                      </Form.Item>
-                    </>
+                  {(type === 'multi_select' || type === 'multi_input') && (
+                    <Row gutter={16}>
+                      <Col span={12}>
+                        <Form.Item
+                          name="sep"
+                          label="分隔符"
+                          initialValue=","
+                        >
+                          <Input placeholder="例如: ," />
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item
+                          name="wrapper"
+                          label="包装符"
+                          initialValue="'"
+                        >
+                          <Input placeholder="例如: '" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
                   )}
                 </>
               );
