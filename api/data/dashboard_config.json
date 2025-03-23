@@ -74,7 +74,7 @@
       "type": "python",
       "title": "2",
       "description": "2",
-      "code": "# 返回表格\nfig = px.line(\n    df,\n    x=\"x\",  # X-axis values\n    y=\"y\",  # Y-axis values\n\n    animation_frame=\"id\",  # Animation frames based on year\n)\nresult = fig",
+      "code": "# 返回表格\ndf = df.sort_values([\"id\", \"x\"])\nfig = px.line(\n    df,\n    x=\"x\",  # X-axis values\n    y=\"y\",  # Y-axis values\n\n    animation_frame=\"id\",  # Animation frames based on year\n)\nresult = fig",
       "options": []
     }
   ]

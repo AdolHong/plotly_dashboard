@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Alert } from 'antd';
+import { Typography, Alert, message } from 'antd';
 import Plot from 'react-plotly.js';
 
 const { Text } = Typography;
@@ -7,8 +7,12 @@ const { Text } = Typography;
 const VisualizerDisplayView = ({ resultType, visualizationData, tableData }) => {
   if (resultType === 'figure' && visualizationData) {
     // 从plotData中提取数据和布局
+
+    
     const { data, layout, config, frames } = visualizationData;
     
+    // console.info(JSON.stringify(config));
+
     // 检查数据结构是否完整
     if (!data) {
       console.error('Visualization data is missing the data property:', visualizationData);
@@ -35,6 +39,7 @@ const VisualizerDisplayView = ({ resultType, visualizationData, tableData }) => 
           font: { family: 'Arial, sans-serif' },
           sliders: layout.sliders  // 确保滑块配置被传递
         }}
+        frames={frames}  // 明确传递动画帧
         config={{
           ...(config || {}),
           responsive: true,
@@ -43,7 +48,6 @@ const VisualizerDisplayView = ({ resultType, visualizationData, tableData }) => 
           modeBarButtonsToRemove: ['lasso2d', 'select2d']
         }}
         style={{ width: '100%', height: '100%' }}
-        frames={frames}  // 明确传递动画帧
       />
     );
   } else if (resultType === 'dataframe' && tableData && tableData.length > 0) {
