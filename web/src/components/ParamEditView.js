@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Select, Button, Space, message, Modal, Row, Col } from 'antd';
 import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import ParameterControls from './ParameterControls';
 
 const { Option } = Select;
 
@@ -312,6 +313,12 @@ const ParamEditView = ({ paramList, setParamList }) => {
           </Form.Item>
         </Form>
       </Modal>
+
+      <ParameterControls 
+        parameters={paramList} 
+        form={editForm}
+        preserveDynamicDate={true}
+      />
     </>
   );
 };

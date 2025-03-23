@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Typography, Menu } from 'antd';
+import { Layout, Typography } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
-import { BrowserRouter as Router, Routes, Route, useSearchParams, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useSearchParams } from 'react-router-dom';
 import 'antd/dist/reset.css';
 import PlaygroundView from './components/PlaygroundView';
 import ShareView from './components/ShareView';
@@ -32,23 +32,6 @@ axios.interceptors.response.use(response => {
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
 
-// Navigation component
-const Navigation = () => {
-  const location = useLocation();
-  const currentPath = location.pathname;
-  
-  return (
-    <Menu mode="horizontal" selectedKeys={[currentPath]} style={{ marginLeft: '20px' }}>
-      <Menu.Item key="/">
-        <Link to="/">Dashboard</Link>
-      </Menu.Item>
-      <Menu.Item key="/playground">
-        <Link to="/playground">Playgorund</Link>
-      </Menu.Item>
-    </Menu>
-  );
-};
-
 function App() {
   const [sessionId, setSessionId] = useState('');
 
@@ -78,7 +61,6 @@ function App() {
         <Layout style={{ minHeight: '100vh' }}>
           <Header style={{ background: '#fff', padding: '0 20px', display: 'flex', alignItems: 'center' }}>
             <Title level={2} style={{ margin: '16px 0', marginRight: '20px' }}>SQL + Plotly</Title>
-            <Navigation />
           </Header>
           <Routes>
             <Route path="/" element={

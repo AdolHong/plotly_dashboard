@@ -6,7 +6,7 @@ import { Button, Card, message } from 'antd';
 import PrintModal from './PrintModal';
 import { useParameters } from '../hooks/useParameters';
 import { useSQLQuery } from '../hooks/useSQLQuery';
-import ParameterControls from './ParameterControls';
+import  ParameterControls, { parseDynamicDate } from './ParameterControls';
 import { useParamValues } from '../hooks/useVisualizerContext';
 
 const SQLEditor = forwardRef(({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, configParameters, dashboardConfig, 
@@ -37,16 +37,6 @@ const SQLEditor = forwardRef(({ sessionId, onQuerySuccess, initialSqlCode, confi
     }
   }, [configLoaded, initialSqlCode]);
 
-
-    // 当配置加载完成后，设置初始SQL代码
-    useEffect(() => {
-      if (configLoaded && initialSqlCode) {
-        setSqlQuery(initialSqlCode);
-      }
-    }, [configLoaded, initialSqlCode]);
-
-    
-
   // 当参数变化时更新SQL
   const handleParameterChange = (name, value) => {
     const newValues = handleParamChange(name, value);
@@ -71,6 +61,31 @@ const SQLEditor = forwardRef(({ sessionId, onQuerySuccess, initialSqlCode, confi
   // 处理SQL编辑器内容变化
   const handleSqlChange = (newValue) => {
     setSqlQuery(newValue);
+  };
+
+  // 在处理参数替换时使用解析后的值
+  const replacePlaceholders = (sql, params) => {
+    if (!sql || !params) return sql;
+    
+    let processedSql = sql;
+    
+    Object.entries(params).forEach(([key, value]) => {
+      let processedValue = value;
+      
+      // 处理可能包含动态日期的参数
+      if (typeof processedValue === 'string') {
+        processedValue = parseDynamicDate(processedValue);
+      } else if (Array.isArray(processedValue)) {
+        processedValue = processedValue.map(item => 
+          typeof item === 'string' ? parseDynamicDate(item) : item
+        );
+      }
+      
+      // 处理替换逻辑
+      // ... existing replacement code ...
+    });
+    
+    return processedSql;
   };
 
   return (
