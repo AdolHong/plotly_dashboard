@@ -13,7 +13,7 @@ import { useParamValues } from '../hooks/useVisualizerContext';
 const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, configParameters, dashboardConfig, 
                      parameterReadOnly = false,
                      SQLEditorReadOnly= false, SQLEditorVisible = true,
-                     queryButonVisible = true
+                     queryButtonVisible = true
                     }) => {
   // Get form and parameters from useParameters, but use context for paramValues
   const { parameters, form } = useParameters(configLoaded, configParameters);
@@ -51,7 +51,7 @@ const SQLEditor = ({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, co
       title="查询参数" 
       style={{ marginBottom: '20px' }}
       extra={
-        queryButonVisible && (
+        queryButtonVisible && (
           <div style={{ display: 'flex', gap: '10px' }}>
             <Button 
               type="primary" 
