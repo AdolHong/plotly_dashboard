@@ -1,6 +1,6 @@
 {
   "query": {
-    "code": "SELECT *, '${region}' as region FROM sales",
+    "code": "with temp as (\n\n    select 1 as id, 1 as y, 1 as x\n    union select 1 as id, 2 as y, 2 as x\n    union select 1 as id, 3 as y, 3 as x\n    union select 1 as id, 4 as y, 4 as x\n\n    union select 2 as id, 11 as y, 1 as x\n    union select 2 as id, 12 as y, 2 as x\n    union select 2 as id, 13 as y, 3 as x\n    union select 2 as id, 14 as y, 4 as x\n)\nselect * from temp",
     "executor_type": "MySQL",
     "data_frame_name": "df",
     "update_mode": "自动更新"
@@ -40,7 +40,7 @@
       "name": "order_date",
       "type": "date_picker",
       "format": "yyyy-MM-dd",
-      "default": "${yyyy-MM-dd-1d}"
+      "default": "2025-03-23"
     },
     {
       "name": "min_price",
@@ -59,7 +59,7 @@
       "type": "python",
       "title": "数据表格1",
       "description": "显示查询结果的原始数据表格1",
-      "code": "# 返回表格\nif region: df = df.query(f\"region in {region}\")\nprint(2)\nresult = df",
+      "code": "\nresult = df",
       "options": [
         {
           "name": "region",
@@ -72,17 +72,10 @@
     },
     {
       "type": "python",
-      "title": "区域销量柱状图2",
-      "description": "按区域统计销量并以柱状图展示2",
-      "code": "# 返回图\nimport plotly.express as px\nif region: df = df.query(f\"region == '{region}'\")\nresult = px.bar(df.groupby(\"category\").sum().reset_index(), x=\"category\", y=\"quantity\")",
-      "options": [
-        {
-          "name": "region",
-          "infer": "column",
-          "infer_column": "region",
-          "type": "str"
-        }
-      ]
+      "title": "2",
+      "description": "2",
+      "code": "# 返回表格\nfig = px.line(\n    df,\n    x=\"x\",  # X-axis values\n    y=\"y\",  # Y-axis values\n\n    animation_frame=\"id\",  # Animation frames based on year\n)\nresult = fig",
+      "options": []
     }
   ]
 }

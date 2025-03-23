@@ -7,7 +7,7 @@ const { Text } = Typography;
 const VisualizerDisplayView = ({ resultType, visualizationData, tableData }) => {
   if (resultType === 'figure' && visualizationData) {
     // 从plotData中提取数据和布局
-    const { data, layout, config } = visualizationData;
+    const { data, layout, config, frames } = visualizationData;
     
     // 检查数据结构是否完整
     if (!data) {
@@ -32,7 +32,8 @@ const VisualizerDisplayView = ({ resultType, visualizationData, tableData }) => 
           autosize: true,
           height: 300,
           margin: { l: 50, r: 50, b: 50, t: 50, pad: 4 },
-          font: { family: 'Arial, sans-serif' }
+          font: { family: 'Arial, sans-serif' },
+          sliders: layout.sliders  // 确保滑块配置被传递
         }}
         config={{
           ...(config || {}),
@@ -42,6 +43,7 @@ const VisualizerDisplayView = ({ resultType, visualizationData, tableData }) => 
           modeBarButtonsToRemove: ['lasso2d', 'select2d']
         }}
         style={{ width: '100%', height: '100%' }}
+        frames={frames}  // 明确传递动画帧
       />
     );
   } else if (resultType === 'dataframe' && tableData && tableData.length > 0) {
