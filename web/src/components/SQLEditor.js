@@ -2,7 +2,7 @@ import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'rea
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-sql';
 import 'ace-builds/src-noconflict/theme-github';
-import { Button, Card } from 'antd';
+import { Button, Card, message } from 'antd';
 import PrintModal from './PrintModal';
 import { useParameters } from '../hooks/useParameters';
 import { useSQLQuery } from '../hooks/useSQLQuery';
@@ -36,6 +36,16 @@ const SQLEditor = forwardRef(({ sessionId, onQuerySuccess, initialSqlCode, confi
       setSqlQuery(initialSqlCode);
     }
   }, [configLoaded, initialSqlCode]);
+
+
+    // 当配置加载完成后，设置初始SQL代码
+    useEffect(() => {
+      if (configLoaded && initialSqlCode) {
+        setSqlQuery(initialSqlCode);
+      }
+    }, [configLoaded, initialSqlCode]);
+
+    
 
   // 当参数变化时更新SQL
   const handleParameterChange = (name, value) => {
@@ -81,7 +91,7 @@ const SQLEditor = forwardRef(({ sessionId, onQuerySuccess, initialSqlCode, confi
             <Button 
               type="default" 
               onClick={() => setShowSqlModal(true)}
-              disabled={!processedSql}
+              disabled={false}
             >
               查看代码
             </Button>

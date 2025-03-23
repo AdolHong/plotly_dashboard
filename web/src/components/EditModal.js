@@ -13,7 +13,7 @@ const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [],
   const [activeTab, setActiveTab] = useState('1');
   const [sqlCode, setSqlCode] = useState(initialSqlCode|| '');
   const [executorType, setExecutorType] = useState('MySQL');
-  const [dataFrameName, setDataFrameName] = useState('df1');
+  const [dataFrameName, setDataFrameName] = useState('df');
   const [updateMode, setUpdateMode] = useState('手动更新');
   const sqlEditorRef = useRef(null);
 

@@ -1,6 +1,6 @@
 {
   "query": {
-    "code": "SELECT *, '${region}' as region, '${a}' as a FROM sales.  ",
+    "code": "SELECT *, '${region}' as region, '${a}' as a FROM sales",
     "executor_type": "MySQL",
     "data_frame_name": "df",
     "update_mode": "自动更新"
@@ -59,7 +59,7 @@
       "type": "python",
       "title": "数据表格1",
       "description": "显示查询结果的原始数据表格1",
-      "code": "# 返回表格\nif region: df = df.query(f\"region in {region}\")\nprint(1)\nresult = df",
+      "code": "# 返回表格\nresult = df",
       "options": [
         {
           "name": "region",
