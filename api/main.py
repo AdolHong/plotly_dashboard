@@ -301,3 +301,35 @@ async def get_shared_dashboard(share_id: str):
             "status": "error",
             "message": str(e)
         }
+
+@app.post("/api/update_config")
+async def update_dashboard_config(request: dict):
+    """更新仪表盘配置"""
+    try:
+        # 获取配置文件路径
+        config_path = Path(__file__).parent / "data" / "dashboard_config.json"
+        
+        
+
+        # 获取请求中的配置数据
+        updated_config = request.get("config", [])
+
+
+        
+
+        # 保存更新后的配置
+        with open(config_path, 'w', encoding='utf-8') as f:
+            json.dump(updated_config, f, ensure_ascii=False, indent=2)
+        print("yes")
+        assert 1==2
+
+        return {
+            "status": "success",
+            "message": "配置更新成功",
+            "config": updated_config
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"更新配置失败: {str(e)}"
+        }

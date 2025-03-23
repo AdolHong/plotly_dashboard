@@ -229,7 +229,7 @@ const DashboardView = () => {
       <EditModal 
         visible={isParameterEditModalVisible}
         onCancel={() => setIsParameterEditModalVisible(false)}
-        onSave={(newParameters, newVisualizations) => {
+        onSave={(newParameters, newVisualizations, newSqlCode) => {
           // 更新参数配置
           setConfigParameters(newParameters);
           
@@ -238,9 +238,16 @@ const DashboardView = () => {
             const newConfig = { 
               ...dashboardConfig, 
               parameters: newParameters,
-              visualization: newVisualizations || dashboardConfig.visualization
+              visualization: newVisualizations || dashboardConfig.visualization,
+              query: {
+                ...dashboardConfig.query,
+                code: newSqlCode
+              }
             };
             setDashboardConfig(newConfig);
+            
+            // 更新SQL代码
+            setInitialSqlCode(newSqlCode);
             
             // 更新可视化配置和数量
             if (newVisualizations) {
@@ -254,6 +261,7 @@ const DashboardView = () => {
         }}
         parameters={configParameters}
         visualizations={visualizationConfig}
+        dashboardConfig={dashboardConfig}
       />
     </div>
   );
