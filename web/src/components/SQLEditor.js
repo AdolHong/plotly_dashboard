@@ -7,6 +7,7 @@ import PrintModal from './PrintModal';
 import { useParameters } from '../hooks/useParameters';
 import { useSQLQuery } from '../hooks/useSQLQuery';
 import { useParamValues } from '../hooks/useVisualizerContext';
+import ParameterControls from './ParameterControls';
 
 const SQLEditor = forwardRef(({ sessionId, onQuerySuccess, initialSqlCode, configLoaded, configParameters, dashboardConfig, 
                      parameterReadOnly = false,

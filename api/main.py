@@ -3,7 +3,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import traceback
 import io
-from contextlib import redirect_stdout
 import pandas as pd
 import json
 from pathlib import Path
@@ -12,7 +11,7 @@ from src.services.visualization import process_analysis_request
 from src.services.session_manager import SessionManager
 from src.services.share_manager import ShareManager
 from src.database.db import execute_query, init_db
-from src.services.parameter_handler import replace_parameters_in_sql, preprocess_of_config
+from src.services.parameter_handler import replace_parameters_in_sql
 from src.services.option_handler import process_visualization_options
 from src.services.option_handler import infer_options_from_dataframe
 
@@ -54,9 +53,6 @@ async def get_dashboard_config():
         
         with open(config_path, 'r', encoding='utf-8') as f:
             config = json.load(f)
-
-        # 预处理配置
-        config = preprocess_of_config(config)   
         
         return {
             "status": "success",

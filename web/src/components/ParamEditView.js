@@ -313,12 +313,6 @@ const ParamEditView = ({ paramList, setParamList }) => {
           </Form.Item>
         </Form>
       </Modal>
-
-      <ParameterControls 
-        parameters={paramList} 
-        form={editForm}
-        preserveDynamicDate={true}
-      />
     </>
   );
 };

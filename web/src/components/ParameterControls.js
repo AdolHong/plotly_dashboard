@@ -10,22 +10,39 @@ const parseDynamicDate = (value) => {
     return value;
   }
   
-  // 匹配动态日期格式 ${yyyy-MM-dd} 或 ${yyyyMMdd}
-  const dateMatch = value.match(/\$\{(yyyy-MM-dd|yyyyMMdd)-(\d+)([dMy])\}/);
+  // 匹配三种格式：
+  // 1. ${yyyyMMdd} - 当前日期，无偏移
+  // 2. ${yyyy-MM-dd+Nd} - 当前日期加N天
+  // 3. ${yyyy-MM-dd-Nd} - 当前日期减N天
+  const dateMatch = value.match(/\$\{(yyyy-MM-dd|yyyyMMdd)(?:([+-])(\d+)([dMy]))?\}/);
+  
   if (dateMatch) {
     const format = dateMatch[1];
-    const amount = parseInt(dateMatch[2]);
-    const unit = dateMatch[3];
+    const operation = dateMatch[2] || ''; // '+', '-' 或空字符串
+    const amount = dateMatch[3] ? parseInt(dateMatch[3]) : 0;
+    const unit = dateMatch[4] || 'd'; // 如果没有指定单位，默认为天
     
     let date = dayjs();
     
-    // 根据单位减去相应的时间
-    if (unit === 'd') {
-      date = date.subtract(amount, 'day');
-    } else if (unit === 'M') {
-      date = date.subtract(amount, 'month');
-    } else if (unit === 'y') {
-      date = date.subtract(amount, 'year');
+    // 根据操作符处理日期
+    if (operation === '+') {
+      // 加上相应的时间
+      if (unit === 'd') {
+        date = date.add(amount, 'day');
+      } else if (unit === 'M') {
+        date = date.add(amount, 'month');
+      } else if (unit === 'y') {
+        date = date.add(amount, 'year');
+      }
+    } else if (operation === '-') {
+      // 减去相应的时间
+      if (unit === 'd') {
+        date = date.subtract(amount, 'day');
+      } else if (unit === 'M') {
+        date = date.subtract(amount, 'month');
+      } else if (unit === 'y') {
+        date = date.subtract(amount, 'year');
+      }
     }
     
     // 根据格式返回日期
@@ -39,7 +56,7 @@ const parseDynamicDate = (value) => {
   return value;
 };
 
-const ParameterControls = ({ parameters, form, onParamChange, paramValues, readOnly = false, preserveDynamicDate = false }) => {
+const ParameterControls = ({ parameters, form, onParamChange, paramValues, readOnly = false }) => {
   // 当 paramValues 提供时，更新表单值
   useEffect(() => {
     if (paramValues && Object.keys(paramValues).length > 0) {
@@ -51,21 +68,6 @@ const ParameterControls = ({ parameters, form, onParamChange, paramValues, readO
     return null;
   }
   
-  // 解析参数中的动态日期
-  const processParamValue = (param, value) => {
-    // 如果需要保留动态日期字符串（例如在编辑模式下），则不进行解析
-    if (preserveDynamicDate) {
-      return value;
-    }
-    
-    // 处理不同类型的参数值
-    if (typeof value === 'string') {
-      return parseDynamicDate(value);
-    } else if (Array.isArray(value)) {
-      return value.map(item => parseDynamicDate(item));
-    }
-    return value;
-  };
   
   return (
     <Form
@@ -78,19 +80,14 @@ const ParameterControls = ({ parameters, form, onParamChange, paramValues, readO
         
         // 处理选项中的动态日期
         let processedChoices = choices;
-        if (!preserveDynamicDate && choices && Array.isArray(choices)) {
+        if (choices && Array.isArray(choices)) {
           processedChoices = choices.map(choice => parseDynamicDate(choice));
         }
         
         // 处理默认值中的动态日期
         let processedDefault = defaultValue;
-        if (!preserveDynamicDate && defaultValue) {
-          processedDefault = processParamValue(param, defaultValue);
-          
-          // 如果是日期选择器，将日期字符串转换为 dayjs 对象
-          if (type === 'date_picker' && processedDefault) {
-            processedDefault = dayjs(processedDefault);
-          }
+        if (defaultValue) {
+          processedDefault = parseDynamicDate(defaultValue);
         }
         
         switch (type) {
@@ -136,6 +133,7 @@ const ParameterControls = ({ parameters, form, onParamChange, paramValues, readO
               <Col span={4} key={name} style={{ marginBottom: '8px' }}>
                 <Form.Item label={name} name={name} style={{ marginBottom: '8px' }}>
                   <DatePicker 
+                    defaultValue={dayjs(processedDefault)}
                     style={{ width: '100%' }}
                     onChange={(value) => !readOnly && onParamChange(name, value)}
                     disabled={readOnly}
