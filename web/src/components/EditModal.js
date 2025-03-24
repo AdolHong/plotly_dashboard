@@ -1,5 +1,5 @@
 import  { useState, useEffect, useRef } from 'react';
-import { Modal, Button, Tabs, Form, message, Select, Input } from 'antd';
+import { Modal, Button, Tabs, message, Select, Input } from 'antd';
 import { FilterOutlined, BarChartOutlined, CodeOutlined } from '@ant-design/icons';
 import ParamEditView from './ParamEditView';
 import VisualizationEditView from './VisualizationEditView';

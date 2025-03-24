@@ -10,8 +10,8 @@ const parseDynamicDate = (value) => {
     return value;
   }
   
-  // 匹配动态日期格式 ${yyyy-MM-dd-Nd}
-  const dateMatch = value.match(/\$\{(yyyy-MM-dd)-(\d+)([dMy])\}/);
+  // 匹配动态日期格式 ${yyyy-MM-dd} 或 ${yyyyMMdd}
+  const dateMatch = value.match(/\$\{(yyyy-MM-dd|yyyyMMdd)-(\d+)([dMy])\}/);
   if (dateMatch) {
     const format = dateMatch[1];
     const amount = parseInt(dateMatch[2]);
@@ -28,7 +28,12 @@ const parseDynamicDate = (value) => {
       date = date.subtract(amount, 'year');
     }
     
-    return date.format('YYYY-MM-DD');
+    // 根据格式返回日期
+    if (format === 'yyyy-MM-dd') {
+      return date.format('YYYY-MM-DD');
+    } else if (format === 'yyyyMMdd') {
+      return date.format('YYYYMMDD');
+    }
   }
   
   return value;
