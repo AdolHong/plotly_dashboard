@@ -13,6 +13,7 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
   
   // 选项编辑相关状态
   const [optionModalVisible, setOptionModalVisible] = useState(false);
+  const [currentOptionIndex, setCurrentOptionIndex] = useState(null);
   const [currentOptions, setCurrentOptions] = useState([]);
   const [optionForm] = Form.useForm();
 
@@ -223,67 +224,8 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
       choices: option.choices ? option.choices.join(',') : ''
     });
     
-    Modal.confirm({
-      title: '编辑选项',
-      content: (
-        <Form form={optionForm} layout="vertical">
-          <Form.Item name="name" label="选项名称" rules={[{ required: true }]}>
-            <Input placeholder="请输入选项名称" />
-          </Form.Item>
-          <Form.Item name="type" label="选项类型">
-            <Select>
-              <Option value="str">字符串</Option>
-              <Option value="int">整数</Option>
-              <Option value="double">浮点数</Option>
-              <Option value="bool">布尔值</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="multiple" label="是否多选" valuePropName="checked">
-            <Select>
-              <Option value={true}>是</Option>
-              <Option value={false}>否</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="infer" label="推断来源">
-            <Select>
-              <Option value="">无</Option>
-              <Option value="column">数据列</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="inferColumn" label="推断列名">
-            <Input placeholder="请输入推断列名" />
-          </Form.Item>
-          <Form.Item name="choices" label="选项列表" help="多个选项用逗号分隔">
-            <Input.TextArea placeholder="选项1,选项2,选项3" />
-          </Form.Item>
-        </Form>
-      ),
-      onOk: () => {
-        optionForm.validateFields().then(values => {
-          const { name, type, multiple, infer, inferColumn, choices } = values;
-          
-          // 处理选项列表
-          const choicesList = choices ? choices.split(',').map(item => item.trim()).filter(item => item) : [];
-          
-          const updatedOption = {
-            name,
-            type,
-            multiple: !!multiple,
-            ...(infer ? { infer, inferColumn } : {}),
-            ...(choicesList.length > 0 ? { choices: choicesList } : {})
-          };
-          
-          const newOptions = [...currentOptions];
-          newOptions[index] = updatedOption;
-          setCurrentOptions(newOptions);
-          
-          // 更新表单中的options字段
-          visualizationEditForm.setFieldsValue({
-            options: JSON.stringify(newOptions, null, 2)
-          });
-        });
-      }
-    });
+    setCurrentOptionIndex(index);
+    setOptionModalVisible(true);
   };
 
   // 修改 JSON 编辑相关函数
@@ -378,6 +320,50 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
       </div>
     </Form.Item>
   );
+
+  const showOptionModal = (option, index) => {
+    setCurrentOptionIndex(index);
+    
+    // 设置表单初始值
+    optionForm.setFieldsValue({
+      name: option?.name || '',
+      type: option?.type || 'str',
+      multiple: option?.multiple || false,
+      infer: option?.infer || '',
+      inferColumn: option?.inferColumn || '',
+      choices: option?.choices?.join(',') || ''
+    });
+    
+    setOptionModalVisible(true);
+  };
+
+  const handleOptionModalSave = () => {
+    optionForm.validateFields().then(values => {
+      // 处理表单数据
+      const { name, type, multiple, infer, inferColumn, choices } = values;
+      const choicesList = choices ? choices.split(',').map(item => item.trim()) : [];
+      
+      const newOption = {
+        name,
+        type,
+        multiple,
+        infer,
+        inferColumn: infer === 'column' ? inferColumn : '',
+        choices: choicesList
+      };
+      
+      // 更新选项列表
+      const newOptions = [...currentOptions];
+      if (currentOptionIndex !== null) {
+        newOptions[currentOptionIndex] = newOption;
+      } else {
+        newOptions.push(newOption);
+      }
+      
+      setCurrentOptions(newOptions);
+      setOptionModalVisible(false);
+    });
+  };
 
   return (
     <div>
@@ -597,6 +583,53 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
                 </>
               );
             }}
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="编辑选项"
+        open={optionModalVisible}
+        onCancel={() => setOptionModalVisible(false)}
+        width={600}
+        footer={[
+          <Button key="cancel" onClick={() => setOptionModalVisible(false)}>
+            取消
+          </Button>,
+          <Button key="save" type="primary" onClick={handleOptionModalSave}>
+            保存
+          </Button>
+        ]}
+      >
+        <Form form={optionForm} layout="vertical">
+          <Form.Item name="name" label="选项名称" rules={[{ required: true }]}>
+            <Input placeholder="请输入选项名称" />
+          </Form.Item>
+          <Form.Item name="type" label="选项类型">
+            <Select>
+              <Option value="str">字符串</Option>
+              <Option value="int">整数</Option>
+              <Option value="double">浮点数</Option>
+              <Option value="bool">布尔值</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name="multiple" label="是否多选" valuePropName="checked">
+            <Select>
+              <Option value={true}>是</Option>
+              <Option value={false}>否</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name="infer" label="推断来源">
+            <Select>
+              <Option value="">无</Option>
+              <Option value="column">数据列</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name="inferColumn" label="推断列名">
+            <Input placeholder="请输入推断列名" />
+          </Form.Item>
+          <Form.Item name="choices" label="选项列表" help="多个选项用逗号分隔">
+            <Input.TextArea placeholder="选项1,选项2,选项3" />
           </Form.Item>
         </Form>
       </Modal>
