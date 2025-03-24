@@ -11,6 +11,8 @@ fastapi = "^0.110.0"
 uvicorn = "^0.27.0"
 duckdb = "^0.10.0"
 plotly = "^5.18.0"
+pygcj = "^0.0.2"
+geopandas = "^1.0.1"
 pydantic = "^2.6.1"
 python-multipart = "^0.0.9"
 
