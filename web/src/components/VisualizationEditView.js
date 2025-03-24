@@ -462,17 +462,7 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
           >
             <Input.TextArea placeholder="请输入图表描述" autoSize={{ minRows: 2, maxRows: 4 }} />
           </Form.Item>
-          
-          <Form.Item
-            name="type"
-            label="图表类型"
-            rules={[{ required: true, message: '请选择图表类型' }]}
-          >
-            <Select placeholder="请选择图表类型">
-              <Option value="python">Python</Option>
-            </Select>
-          </Form.Item>
-          
+                    
           <Form.Item
             name="code"
             label="Python代码"

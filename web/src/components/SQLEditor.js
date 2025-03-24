@@ -2,6 +2,11 @@ import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'rea
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-sql';
 import 'ace-builds/src-noconflict/theme-github';
+// 导入搜索扩展
+import 'ace-builds/src-noconflict/ext-searchbox';
+import 'ace-builds/src-noconflict/ext-language_tools';
+
+
 import { Button, Card, message } from 'antd';
 import PrintModal from './PrintModal';
 import { useParameters } from '../hooks/useParameters';

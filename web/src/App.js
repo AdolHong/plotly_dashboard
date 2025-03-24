@@ -9,6 +9,7 @@ import DashboardView from './components/DashboardView';
 import axios from 'axios';
 import {decamelizeKeys, camelizeKeys } from 'humps';
 import { VisualizerContextProvider } from './hooks/useVisualizerContext';
+import 'ace-builds/webpack-resolver'; // 如果使用 webpack
 
 // 请求拦截器
 axios.interceptors.request.use(config => {

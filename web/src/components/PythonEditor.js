@@ -2,6 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/theme-github';
+// 导入搜索扩展
+import 'ace-builds/src-noconflict/ext-searchbox';
+import 'ace-builds/src-noconflict/ext-language_tools';
+
 import { Button, Space, Tooltip } from 'antd';
 import PrintModal from './PrintModal';
 
@@ -90,7 +94,7 @@ const PythonEditor = ({
             name="python-editor"
             editorProps={{ $blockScrolling: true }}
             width="100%"
-            height="200px"
+            height="300px"
             setOptions={{
               showLineNumbers: true,
               tabSize: 2,
