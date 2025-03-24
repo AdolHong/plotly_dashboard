@@ -76,18 +76,12 @@ const ParameterControls = ({ parameters, form, onParamChange, paramValues, readO
     >
       <Row gutter={12}>
       {parameters.map(param => {
-        const { name, type, choices, default: defaultValue } = param;
-        
+        const { name, type, choices } = param;
+
         // 处理选项中的动态日期
         let processedChoices = choices;
         if (choices && Array.isArray(choices)) {
           processedChoices = choices.map(choice => parseDynamicDate(choice));
-        }
-        
-        // 处理默认值中的动态日期
-        let processedDefault = defaultValue;
-        if (defaultValue) {
-          processedDefault = parseDynamicDate(defaultValue);
         }
         
         switch (type) {
@@ -133,7 +127,6 @@ const ParameterControls = ({ parameters, form, onParamChange, paramValues, readO
               <Col span={4} key={name} style={{ marginBottom: '8px' }}>
                 <Form.Item label={name} name={name} style={{ marginBottom: '8px' }}>
                   <DatePicker 
-                    defaultValue={dayjs(processedDefault)}
                     style={{ width: '100%' }}
                     onChange={(value) => !readOnly && onParamChange(name, value)}
                     disabled={readOnly}
@@ -178,6 +171,8 @@ const ParameterControls = ({ parameters, form, onParamChange, paramValues, readO
   );
 };
 
-// 修改导出方式，使用命名导出
-export { parseDynamicDate };
+// 方法1：命名导出和默认导出
 export default ParameterControls;
+
+// 方法2：如果需要在其他地方导入
+export { parseDynamicDate };

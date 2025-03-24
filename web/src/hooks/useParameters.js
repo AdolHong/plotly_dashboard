@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Form } from 'antd';
 import dayjs from 'dayjs';
 import { useParamValues } from '../hooks/useVisualizerContext';
+import { parseDynamicDate } from '../components/ParameterControls';
 
 export const useParameters = (configLoaded, configParameters) => {
   const [parameters, setParameters] = useState([]);
@@ -19,10 +20,15 @@ export const useParameters = (configLoaded, configParameters) => {
     params.forEach(param => {
       if (param.type === 'single_select' || param.type === 'single_input') {
         defaultValues[param.name] = param.default !== undefined ? param.default : '';
+        // 处理动态日期
+        defaultValues[param.name] = parseDynamicDate(defaultValues[param.name]);
       } else if (param.type === 'multi_select' || param.type === 'multi_input') {
         defaultValues[param.name] = param.default !== undefined ? param.default : [];
+        // 处理动态日期
+        defaultValues[param.name] = parseDynamicDate(defaultValues[param.name][0]);
       } else if (param.type === 'date_picker') {
-        defaultValues[param.name] = param.default ? dayjs(param.default) : null;
+        // 处理动态日期, 且转换成dayjs对象
+        defaultValues[param.name] = param.default ? dayjs(parseDynamicDate(param.default)) : null;
       }
     });
     

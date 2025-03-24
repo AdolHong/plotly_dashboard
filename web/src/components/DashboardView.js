@@ -45,9 +45,6 @@ const DashboardView = () => {
           const config = response.data.config;
           // 直接使用从服务器获取的配置，不解析动态参数
           setDashboardConfig(config);
-
-          message.info(JSON.stringify(config,null, 2))
-          
           // 设置初始SQL代码
           if (config.query && config.query.code) {
             setInitialSqlCode(config.query.code);
