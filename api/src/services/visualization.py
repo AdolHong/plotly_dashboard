@@ -85,6 +85,14 @@ def format_visualization_oupput(result: Optional[Union[pd.DataFrame, Any]]=None,
         }
     elif'plotly.graph_objs' in str(type(result)):
         raise ValueError("出现了未知的plotly对象:", type)
+    elif'pyecharts' in str(type(result)):
+        # 返回echarts图表对象
+        return {
+            "result_type": "echarts",
+            "data": [],
+            "plot_data": json.loads(result.dump_options()),
+            "print_output": print_output
+        }
     else:
         error_msg = "Python代码的result变量必须是DataFrame或Plotly图表对象"
         raise ValueError(error_msg)

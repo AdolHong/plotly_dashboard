@@ -114,6 +114,12 @@ const Visualizer = ({ index, sessionId, queryHash, configLoaded, initialPythonCo
           setVisualizationData(visualizeResponse.data.plotData);
           setResultType('figure');
           message.success('可视化生成成功');
+        } else if (visualizeResponse.data.resultType === 'echarts') {
+          // 如果结果是Echarts图表，显示图表
+          setTableData([]);
+          setVisualizationData(visualizeResponse.data.plotData);
+          setResultType('echarts');
+          message.success('可视化生成成功');
         }
       } else if (visualizeResponse.data.status === 'error') {
         // 抛出错误

@@ -1,10 +1,57 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Typography, Alert, message } from 'antd';
 import Plot from 'react-plotly.js';
+import * as echarts from 'echarts';
 
 const { Text } = Typography;
 
+
+
 const VisualizerDisplayView = ({ resultType, visualizationData, tableData }) => {
+  const chartRef = useRef(null);
+  const chartInstance = useRef(null);
+
+  useEffect(() => {
+    if (resultType !== 'echarts') {
+      return;
+    };
+
+    message.info("来了吗老弟?");
+
+    // 确保 DOM 元素已经渲染且有数据
+    if (chartRef.current && visualizationData) {
+      // 如果图表实例不存在，则创建
+      if (!chartInstance.current) {
+        chartInstance.current = echarts.init(chartRef.current);
+      }
+      
+      // 使用 requestAnimationFrame 确保在下一帧更新
+      requestAnimationFrame(() => {
+        chartInstance.current?.setOption(visualizationData);
+      });
+    }
+
+    // 清理函数
+    return () => {
+      if (chartInstance.current) {
+        chartInstance.current.dispose();
+        chartInstance.current = null;
+      }
+    };
+  }, [visualizationData]); // 当 visualizationData 变化时重新渲染
+
+  // 处理窗口大小变化
+  useEffect(() => {
+    const handleResize = () => {
+      if (chartInstance.current) {
+        chartInstance.current.resize();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (resultType === 'figure' && visualizationData) {
     // 从plotData中提取数据和布局
 
@@ -48,6 +95,19 @@ const VisualizerDisplayView = ({ resultType, visualizationData, tableData }) => 
           modeBarButtonsToRemove: ['lasso2d', 'select2d']
         }}
         style={{ width: '100%', height: '100%' }}
+      />
+    );
+  } else if (resultType === 'echarts' && visualizationData) {
+    console.info(JSON.stringify(visualizationData));
+    return (
+      <div 
+        ref={chartRef} 
+        style={{ 
+          width: '100%', 
+          height: '400px',
+          border: '1px solid #ddd',
+          borderRadius: '8px'
+        }}
       />
     );
   } else if (resultType === 'dataframe' && tableData && tableData.length > 0) {

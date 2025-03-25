@@ -1,70 +1,98 @@
 {
   "query": {
-      "type": "SQL",
-      "code": "SELECT *, '${region}' as region, '${a}' as a FROM sales"
+    "code": "SELECT *, '${region}' as region, '${a}' as a FROM sales",
+    "executor_type": "MySQL",
+    "data_frame_name": "df",
+    "update_mode": "手动更新"
   },
-  "parameters":[
-      {
-          "name": "region",
-          "type": "single_select",
-          "choices": ["华东","华南","华北","西北","西南"],
-          "default": "华东"
-      },
-      {
-          "name": "categories",
-          "type": "multi_select",
-          "choices": ["电子产品","服装","食品","家居","图书"],
-          "default": ["电子产品"],
-          "sep": ",",
-          "wrapper": "'"
-      },
-      {
-          "name": "order_date",
-          "type": "date_picker",
-          "format": "yyyy-MM-dd",
-          "default": "${yyyy-MM-dd}"
-      },
-      {
-          "name": "min_price",
-          "type": "single_input",
-          "default": "100"
-      },
-      {
-          "name": "product_ids",
-          "type": "multi_input",
-          "sep": ",",
-          "wrapper": "'"
-      }
+  "parameters": [
+    {
+      "name": "region",
+      "type": "single_select",
+      "choices": [
+        "华东",
+        "华南",
+        "华北",
+        "西北",
+        "西南"
+      ],
+      "default": "华东"
+    },
+    {
+      "name": "categories",
+      "type": "multi_select",
+      "choices": [
+        "电子产品",
+        "服装",
+        "食品",
+        "家居",
+        "图书"
+      ],
+      "default": [
+        "电子产品"
+      ],
+      "sep": ",",
+      "wrapper": "'"
+    },
+    {
+      "name": "order_date",
+      "type": "date_picker",
+      "format": "yyyy-MM-dd",
+      "default": "${yyyy-MM-dd}"
+    },
+    {
+      "name": "min_price",
+      "type": "single_input",
+      "default": "100"
+    },
+    {
+      "name": "product_ids",
+      "type": "multi_input",
+      "sep": ",",
+      "wrapper": "'"
+    }
   ],
   "visualization": [
-      {
-          "type": "python",
-          "title": "数据表格1",
-          "options": [
-              {
-                  "name": "region",
-                  "infer": "column",
-                  "infer_column": "region",
-                  "type": "str",
-                  "multiple": true
-              }
-          ],
-          "description": "显示查询结果的原始数据表格1",
-          "code": "# 返回表格\nif region: df = df.query(f\"region in {region}\")\nresult = df"
-      },
-      {
-          "type": "python",
-          "title": "区域销量柱状图2",
-          "options": [
-              {
-                  "name": "region",
-                  "infer": "column",
-                  "infer_column": "region",
-                  "type": "str"
-              }
-          ],
-          "description": "按区域统计销量并以柱状图展示2",
-          "code": "# 返回图\nimport plotly.express as px\nif region: df = df.query(f\"region == '{region}'\")\nresult = px.bar(df.groupby(\"category\").sum().reset_index(), x=\"category\", y=\"quantity\")"
-      }
+    {
+      "type": "python",
+      "title": "数据表格1",
+      "options": [
+        {
+          "name": "region",
+          "infer": "column",
+          "infer_column": "region",
+          "type": "str",
+          "multiple": true
+        }
+      ],
+      "description": "显示查询结果的原始数据表格1",
+      "code": "# 返回表格\nif region: df = df.query(f\"region in {region}\")\nresult = df"
+    },
+    {
+      "type": "python",
+      "title": "区域销量柱状图2",
+      "options": [
+        {
+          "name": "region",
+          "infer": "column",
+          "infer_column": "region",
+          "type": "str"
+        }
+      ],
+      "description": "按区域统计销量并以柱状图展示2",
+      "code": "# 返回图\nimport plotly.express as px\nif region: df = df.query(f\"region == '{region}'\")\nresult = px.bar(df.groupby(\"category\").sum().reset_index(), x=\"category\", y=\"quantity\")"
+    },
+    {
+      "title": "3",
+      "description": "33",
+      "code": "# 返回表格\nfrom pyecharts.charts import Bar\nfrom pyecharts import options as opts\n# 创建一个简单的柱状图\nbar = (\n    Bar()\n    .add_xaxis([\"衬衫\", \"羊毛衫\", \"雪纺衫\", \"裤子\", \"高跟鞋\", \"袜子\"])\n    .add_yaxis(\"商家A\", [5, 20, 36, 10, 75, 90])\n    .add_yaxis(\"商家B\", [15, 25, 16, 55, 48, 8])\n    .set_global_opts(\n        title_opts=opts.TitleOpts(title=\"销售数据\"),\n        xaxis_opts=opts.AxisOpts(axislabel_opts=opts.LabelOpts(rotate=-15)),\n        yaxis_opts=opts.AxisOpts(name=\"销量\"),\n        legend_opts=opts.LegendOpts(pos_top=\"5%\"),\n    )\n\n)\nresult = bar",
+      "options": []
+    },
+    {
+      "title": "4",
+      "description": "4",
+      "code": "from pyecharts import options as opts\nfrom pyecharts.charts import Graph\n\nnodes = [\n    opts.GraphNode(name=\"结点1\", symbol_size=10),\n    opts.GraphNode(name=\"结点2\", symbol_size=20),\n    opts.GraphNode(name=\"结点3\", symbol_size=30),\n    opts.GraphNode(name=\"结点4\", symbol_size=40),\n    opts.GraphNode(name=\"结点5\", symbol_size=50),\n]\nlinks = [\n    opts.GraphLink(source=\"结点1\", target=\"结点2\"),\n    opts.GraphLink(source=\"结点2\", target=\"结点3\"),\n    opts.GraphLink(source=\"结点3\", target=\"结点4\"),\n    opts.GraphLink(source=\"结点4\", target=\"结点5\"),\n    opts.GraphLink(source=\"结点5\", target=\"结点1\"),\n]\nresult = (\n    Graph()\n    .add(\"\", nodes, links, repulsion=4000)\n    .set_global_opts(title_opts=opts.TitleOpts(title=\"Graph-GraphNode-GraphLink\"))\n)",
+      "options": []
+    }
   ]
 }
