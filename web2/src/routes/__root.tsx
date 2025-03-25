@@ -4,6 +4,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import appCss from "@/styles/app.css?url"
 
 export const Route = createRootRoute({
+  head: () => ({
     meta: [
       {
         charSet: "utf-8",
@@ -22,6 +23,7 @@ export const Route = createRootRoute({
         href: appCss,
       },
     ],
+  }),
   component: () => (
     <>
       <Outlet />
