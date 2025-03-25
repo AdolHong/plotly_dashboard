@@ -2,7 +2,9 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import EditModal from '@/components/EditModal';
 import { useStore } from '@/lib/store';
-import axios from 'axios';
+import { dashboardApi } from '@/api/dashboard';
+// import type { DashboardConfig } from '@/api/dashboard';  // Use type-only import
+
 
 export const Route = createFileRoute('/edit')({
   component: EditPage,
@@ -17,10 +19,8 @@ function EditPage() {
       if (!dashboardId) return;
       
       try {
-        const response = await axios.get(`http://localhost:8000/api/dashboard/${dashboardId}`);
-        if (response.data.status === 'success') {
-          setConfig(response.data.data);
-        }
+        const response = await dashboardApi.getDashboardConfig(dashboardId);
+        setConfig(response);
       } catch (error) {
         console.error('获取仪表板配置失败:', error);
       } 
