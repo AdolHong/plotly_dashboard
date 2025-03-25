@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { Typography, Alert, message } from 'antd';
 import Plot from 'react-plotly.js';
 import * as echarts from 'echarts';
+import 'echarts-gl';
 
 const { Text } = Typography;
 
