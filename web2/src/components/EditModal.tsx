@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Filter, BarChart, Code } from 'lucide-react';
 import axios from 'axios';
 
+
 interface EditModalProps {
   open: boolean;
   onClose: () => void;
@@ -34,7 +35,6 @@ const EditModal = ({
   const [dataFrameName, setDataFrameName] = useState('df');
   const [updateMode, setUpdateMode] = useState('手动更新');
   const sqlEditorRef = useRef<any>(null);
-  // const { toast } = useToast();
 
   // 当modal显示或dashboardConfig变化时初始化SQL相关配置
   useEffect(() => {

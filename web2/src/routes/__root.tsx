@@ -1,5 +1,6 @@
 import { Outlet, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { Toaster } from "@/components/ui/sonner"
 
 import appCss from "@/styles/app.css?url"
 
@@ -27,6 +28,7 @@ export const Route = createRootRoute({
   component: () => (
     <>
       <Outlet />
+      <Toaster />
       <TanStackRouterDevtools />
     </>
   ),

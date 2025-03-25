@@ -15,6 +15,8 @@ axiosInstance.interceptors.request.use(
   (config) => {
     // 可以在这里添加 token
     const token = localStorage.getItem('token');
+
+    
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
