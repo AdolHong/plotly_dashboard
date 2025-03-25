@@ -1,33 +1,3 @@
-// 参数类型的联合类型
-export type ParameterType =
-  | "single_select"
-  | "multi_select"
-  | "single_input"
-  | "multi_input"
-  | "date_picker";
-
-// 参数接口
-export interface Parameter {
-  name: string;
-  description?: string;
-  type: ParameterType;
-  default?: string;
-  choices?: string[];
-  format?: {
-    dateFormat?: string;
-    timeFormat?: string;
-    datetimeFormat?: string;
-    sep?: string;
-    wrapper?: string;
-  };
-}
-
-// 更新模式接口
-export interface UpdateMode {
-  type: "auto" | "manual";
-  interval?: number;
-}
-
 // 数据源接口
 export interface Source {
   name: string;
@@ -38,7 +8,31 @@ export interface Source {
   };
   code: string;
   dfName?: string;
-  updateMode?: UpdateMode;
+  updateMode?: {
+    type: "auto" | "manual";
+    interval?: number;
+  };
+}
+
+// 参数接口
+export interface Parameter {
+  name: string;
+  description?: string;
+  type:
+    | "single_select"
+    | "multi_select"
+    | "single_input"
+    | "multi_input"
+    | "date_picker";
+  default?: string;
+  choices?: string[];
+  format?: {
+    dateFormat?: string;
+    timeFormat?: string;
+    datetimeFormat?: string;
+    sep?: string;
+    wrapper?: string;
+  };
 }
 
 // 可视化参数接口
