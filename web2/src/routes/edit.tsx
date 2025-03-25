@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import EditModal from '@/components/EditModal';
 import { useStore } from '@/lib/store';
 import { dashboardApi } from '@/api/dashboard';
-import type { DashboardConfig } from '@/api/dashboard';  // Use type-only import
+import type { DashboardResponse as DashboardConfig } from '@/types';  // Use type-only import
 import { toast } from "sonner"
 
 export const Route = createFileRoute('/edit')({
