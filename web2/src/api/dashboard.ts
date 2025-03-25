@@ -1,16 +1,6 @@
 import { axiosInstance } from '@/lib/axios';
+import type { DashboardResponse as DashboardConfig } from '@/types';
 
-export interface DashboardConfig {
-  id?: string;
-  parameters?: any[];
-  visualization?: any[];
-  query?: {
-    code?: string;
-    executorType?: string;
-    dataFrameName?: string;
-    updateMode?: string;
-  };
-}
 
 export const dashboardApi = {
   async getDashboardConfig(dashboardId: string): Promise<DashboardConfig> {

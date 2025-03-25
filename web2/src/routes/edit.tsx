@@ -16,9 +16,9 @@ function EditPage() {
   
   useEffect(() => {
     async function fetchDashboardConfig() {
-      toast.success('获取仪表板配置成功');
-      toast.success('获取仪表板配置成功');
-      toast.success('获取仪表板配置成功');
+      toast.success('获取仪表板配置成功1');
+      toast.success('获取仪表板配置成功2');
+      toast.success('获取仪表板配置成功3');
 
       if (!dashboardId) return;
       

@@ -1,0 +1,1 @@
+export type { DashboardResponse } from './api/dashboard';

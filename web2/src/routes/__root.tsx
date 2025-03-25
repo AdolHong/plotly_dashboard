@@ -28,7 +28,7 @@ export const Route = createRootRoute({
   component: () => (
     <>
       <Outlet />
-      <Toaster />
+      <Toaster expand={true} position="top-right" closeButton />
       <TanStackRouterDevtools />
     </>
   ),
