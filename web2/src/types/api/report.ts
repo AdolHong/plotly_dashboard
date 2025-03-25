@@ -1,16 +1,3 @@
-// 日期时间格式接口
-export interface DateTimeFormat {
-  dateFormat?: string;
-  timeFormat?: string;
-  datetimeFormat?: string;
-}
-
-// 参数格式接口
-export interface ParameterFormat extends DateTimeFormat {
-  sep?: string;
-  wrapper?: string;
-}
-
 // 参数类型的联合类型
 export type ParameterType =
   | "single_select"
@@ -26,7 +13,19 @@ export interface Parameter {
   type: ParameterType;
   default?: string;
   choices?: string[];
-  format?: ParameterFormat;
+  format?: {
+    dateFormat?: string;
+    timeFormat?: string;
+    datetimeFormat?: string;
+    sep?: string;
+    wrapper?: string;
+  };
+}
+
+// 更新模式接口
+export interface UpdateMode {
+  type: "auto" | "manual";
+  interval?: number;
 }
 
 // 数据源接口
@@ -39,26 +38,14 @@ export interface Source {
   };
   code: string;
   dfName?: string;
-  updateMode?: {
-    type: "auto" | "manual";
-    interval?: number;
-  };
-}
-
-// 参数格式接口
-export interface VizParamFormat {
-  sep?: string;
-  wrapper?: string;
-  dateFormat?: string;
-  timeFormat?: string;
-  datetimeFormat?: string;
+  updateMode?: UpdateMode;
 }
 
 // 可视化参数接口
 export interface VizParam {
   name: string;
   description?: string;
-  type: "str" | "int" | "float" | "bool" | "date" | "datetime";
+  type: "str" | "int" | "float" | "bool";
   selectionMode: "single" | "multiple";
   default?: string | number | boolean | string[] | number[];
   choices?: string[] | number[];
@@ -67,7 +54,6 @@ export interface VizParam {
     column: string;
     level: number;
   };
-  format?: VizParamFormat;
 }
 
 // 可视化接口
