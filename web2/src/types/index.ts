@@ -1,1 +1,1 @@
-export type { DashboardResponse } from './api/dashboard';
+export type { DashboardResponse, ReportResponse } from './api/dashboard';
