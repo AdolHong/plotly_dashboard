@@ -1,10 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import EditModal from '@/components/EditModal';
-import { useStore } from '@/lib/store';
-import { dashboardApi } from '@/api/dashboard';
-import type { DashboardResponse as DashboardConfig } from '@/types';  // Use type-only import
+
+import { reportApi } from  '@/api/report';
+import type { ReportResponse  } from '@/types';  // Use type-only import
 import { toast } from "sonner"
+
+import { useStore } from '@/lib/store';
 
 export const Route = createFileRoute('/edit')({
   component: EditPage,
@@ -23,7 +25,7 @@ function EditPage() {
       if (!dashboardId) return;
       
       try {
-        const response = await dashboardApi.getDashboardConfig(dashboardId);
+        const response = await reportApi.getReportConfig(dashboardId);
         setConfig(response);
       } catch (error) {
         console.error('获取仪表板配置失败:', error);
@@ -37,7 +39,7 @@ function EditPage() {
     if (!config) return;
 
     try {
-      const updatedConfig: DashboardConfig = { 
+      const updatedConfig: ReportResponse = { 
         ...config, 
         parameters,
         visualization: visualizations,
@@ -47,7 +49,7 @@ function EditPage() {
         }
       };
 
-      await dashboardApi.updateDashboardConfig(updatedConfig);
+      await reportApi.updateReportConfig(updatedConfig);
 
       // 更新本地状态
       useStore.setState({ 
