@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Filter, Database, BarChart2, Layout } from 'lucide-react';
+import { Filter, Database, BarChart2, Layout, Pencil, Trash2, Plus } from 'lucide-react';
 import axios from 'axios';
 import { toast } from "sonner"
 
@@ -143,17 +143,75 @@ const EditModal = ({
             {/* 筛选条件标签页 */}
             <TabsContent value="filters" className="p-4 h-full">
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium">筛选条件管理</h3>
-                  <Button onClick={() => {}}>添加筛选条件</Button>
-                </div>
-                <div className="border rounded-lg p-4">
-                  {/* 这里放筛选条件列表组件 */}
-                  <div className="space-y-2">
-                    <div>时间范围</div>
-                    <div>区域</div>
-                    <div>产品类别</div>
+                <h3 className="text-lg font-medium">筛选条件管理</h3>
+                
+                {/* 筛选条件卡片列表 */}
+                <div className="space-y-3">
+                  {/* 时间范围卡片 */}
+                  <div className="border rounded-lg p-4 bg-white shadow-sm">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-medium">时间范围</h4>
+                        <p className="text-sm text-gray-500">日期选择器</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* 区域卡片 */}
+                  <div className="border rounded-lg p-4 bg-white shadow-sm">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-medium">区域</h4>
+                        <p className="text-sm text-gray-500">下拉选择器</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 产品类别卡片 */}
+                  <div className="border rounded-lg p-4 bg-white shadow-sm">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-medium">产品类别</h4>
+                        <p className="text-sm text-gray-500">下拉选择器</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 添加筛选条件按钮 */}
+                <div className="mt-6">
+                  <Button 
+                    variant="outline" 
+                    className="w-full border-dashed"
+                    onClick={() => {}}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    添加筛选条件
+                  </Button>
                 </div>
               </div>
             </TabsContent>
