@@ -3,11 +3,11 @@ import type { ReportResponse } from '@/types';
 
 
 export const dashboardApi = {
-  async getDashboardConfig(dashboardId: string): Promise<DashboardConfig> {
+  async getDashboardConfig(dashboardId: string): Promise<ReportResponse> {
     return axiosInstance.get(`/dashboard/${dashboardId}`);
   },
 
-  async updateDashboardConfig(config: DashboardConfig): Promise<DashboardConfig> {
+  async updateDashboardConfig(config: ReportResponse): Promise<ReportResponse> {
     return axiosInstance.post('/update_config', { config });
   },
 
@@ -16,7 +16,7 @@ export const dashboardApi = {
     return axiosInstance.get('/dashboards');
   },
 
-  async createDashboard(dashboardData: Partial<DashboardConfig>) {
+  async createDashboard(dashboardData: Partial<ReportResponse>) {
     return axiosInstance.post('/dashboard', dashboardData);
   },
 }; 
