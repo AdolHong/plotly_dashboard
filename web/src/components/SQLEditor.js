@@ -46,7 +46,7 @@ const SQLEditor = forwardRef(({ sessionId, onQuerySuccess, initialSqlCode, confi
   const handleParameterChange = (name, value) => {
     const newValues = handleParamChange(name, value);
     if (sqlQuery) {
-      fetchParsedSQL(sqlQuery, newValues);
+      fetchParsedSQL(sqlQuery, newValues,parameters);
     }
   };
 

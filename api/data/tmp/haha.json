@@ -1,11 +1,23 @@
 {
   "query": {
-    "code": "SELECT * FROM data",
+    "code": "SELECT '${a}'",
     "executor_type": "MySQL",
     "data_frame_name": "df",
     "update_mode": "手动更新"
   },
-  "parameters": [],
+  "parameters": [
+    {
+      "name": "a",
+      "type": "single_select",
+      "default": "1",
+      "choices": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ]
+    }
+  ],
   "visualization": [
     {
       "type": "python",

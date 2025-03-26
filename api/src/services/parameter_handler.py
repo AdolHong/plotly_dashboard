@@ -5,29 +5,6 @@ from typing import Dict, List, Any, Optional, Union
 from datetime import datetime
 
 
-def load_dashboard_config() -> Dict[str, Any]:
-    """加载仪表盘配置文件"""
-    config_path = Path(__file__).parent.parent.parent / "data" / "dashboard_config.json"
-    
-    if not config_path.exists():
-        raise FileNotFoundError(f"配置文件不存在: {config_path}")
-    
-    with open(config_path, 'r', encoding='utf-8') as f:
-        config = json.load(f)
-    
-    return config
-
-
-#  todo : 删除这里的读写
-def get_parameters() -> List[Dict[str, Any]]:
-    """获取参数配置列表"""
-    try:
-        config = load_dashboard_config()
-        return config.get("parameters", [])
-    except Exception as e:
-        print(f"获取参数配置失败: {str(e)}")
-        return []
-
 
 def process_parameter_value(param: Dict[str, Any], value: Any) -> Any:
     """根据参数类型处理参数值"""
@@ -139,19 +116,22 @@ def _parse_date_parameter(pattern: str) -> str:
 
     return current_date.strftime(py_format)
 
-def replace_parameters_in_sql(sql: str, param_values: Dict[str, Any]) -> str:
+
+
+def replace_parameters_in_sql(sql: str, param_values: Dict[str, Any], parameters: List[Dict[str, Any]]) -> str:
     """替换SQL中的参数占位符"""
     if not sql or not param_values:
         return sql
     
-    # 获取参数配置
-    parameters = get_parameters()
-    
-    # 处理每个参数值并替换SQL中的占位符
+        print(type(parameters), parameters)
+
+   # 处理每个参数值并替换SQL中的占位符
     for param in parameters:
         param_name = param.get("name")
         if not param_name or param_name not in param_values:
             continue
+        
+        print(param_name, 2)
         
         # 获取参数值并根据类型处理
         raw_value = param_values.get(param_name)

@@ -562,11 +562,6 @@ const DashboardView = () => {
             </Space>
           </div>
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', padding: '0 10px' }}>
-            <div style={{ flex: '1 1 auto', minWidth: '200px', marginRight: '20px' }}>
-              <Divider orientation="left" style={{ margin: '10px 0' }}>SQL 查询区域</Divider>
-            </div>
-          </div>
           
           {/* SQL查询区域 - 只读模式但参数可交互 */}
           <SQLEditor 

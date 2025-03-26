@@ -72,11 +72,13 @@ async def parse_sql_query(request: dict):
     try:
         sql_query = request.get("sql_query", "")
         param_values = request.get("param_values", {})
+        parameters = request.get("parameters", [])
+
         if not sql_query:
             raise HTTPException(status_code=400, detail="SQL query is required")
         
         # 替换SQL查询中的参数占位符
-        processed_sql = replace_parameters_in_sql(sql_query, param_values)
+        processed_sql = replace_parameters_in_sql(sql_query, param_values, parameters)
 
         return {
             "status": "success",
@@ -104,7 +106,7 @@ async def execute_sql_query(request: dict):
             raise HTTPException(status_code=400, detail="SQL query and session ID are required")
         
         # 替换SQL查询中的参数占位符
-        processed_sql = replace_parameters_in_sql(sql_query, param_values)
+        processed_sql = replace_parameters_in_sql(sql_query, param_values, dashboard_config.get("parameters", {}))
 
         # Execute query and get DataFrame
         df = execute_query(processed_sql)

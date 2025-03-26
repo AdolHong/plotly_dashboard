@@ -8,17 +8,19 @@ export const useSQLQuery = (sessionId, onQuerySuccess, dashboardConfig) => {
   const [processedSql, setProcessedSql] = useState('');
 
   // 获取解析后的SQL
-  const fetchParsedSQL = async (sql, params) => {
+  const fetchParsedSQL = async (sql, params_values, parameters) => {
     try {
       const response = await axios.post('http://localhost:8000/api/parse_sql', {
         sql_query: sql,
-        param_values: params
+        param_values: params_values,
+        parameters: parameters
       });
       
       if (response.data.status === 'success' && response.data.processedSql) {
         setProcessedSql(response.data.processedSql);
       }
     } catch (error) {
+      message.error('获取解析后的SQL失败:' + error);
       console.error('获取解析后的SQL失败:', error);
     }
   };
