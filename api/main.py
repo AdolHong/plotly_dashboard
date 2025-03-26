@@ -499,7 +499,8 @@ async def delete_folder(request: dict):
         if not folder_path:
             raise HTTPException(status_code=400, detail="文件夹路径不能为空")
         
-        full_path = Path(__file__).parent / "data" / folder_path
+        full_path = Path(__file__).parent.parent / "data" / folder_path
+        print(full_path)
         
         if not full_path.exists():
             return {
