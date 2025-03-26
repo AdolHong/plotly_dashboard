@@ -154,19 +154,8 @@ const EditModal = ({ visible, onCancel, onSave, parameters, visualizations = [],
         }
       };
       
-      console.log('保存配置到服务器:', newConfig);
-      
-      // 保存到后端
-      const response = await axios.post('http://localhost:8000/api/update_config', {
-          config: newConfig
-      });
-
-      if (response.data.status === 'success') {
-        message.success('配置已保存');
-        onSave(paramList, visualizationList, currentSqlCode);
-      } else {
-        message.error('保存失败：' + response.data.message);
-      }
+      // 直接调用父组件的保存方法，不再自行发送请求
+      onSave(paramList, visualizationList, currentSqlCode);
     } catch (error) {
       console.error('保存失败:', error);
       message.error('保存失败：' + error.message);

@@ -6,6 +6,7 @@ import io
 import pandas as pd
 import json
 from pathlib import Path
+import os
 
 from src.services.visualization import process_analysis_request
 from src.services.session_manager import SessionManager
@@ -40,15 +41,16 @@ async def root():
     return {"message": "数据可视化API已启动!"}
 
 @app.get("/api/config")
-async def get_dashboard_config():
+async def get_dashboard_config(filepath: str = "dashboard_config.json"):
     """获取仪表盘配置"""
     try:
-        config_path = Path(__file__).parent / "data" / "dashboard_config.json"
+        # 支持路径参数
+        config_path = Path(__file__).parent / "data" / filepath
         
         if not config_path.exists():
             return {
                 "status": "error",
-                "message": "配置文件不存在"
+                "message": f"配置文件不存在: {filepath}"
             }
         
         with open(config_path, 'r', encoding='utf-8') as f:
@@ -303,15 +305,18 @@ async def update_dashboard_config(request: dict):
     """更新仪表盘配置"""
     try:
         # 获取配置文件路径
-        config_path = Path(__file__).parent / "data" / "dashboard_config.json"
+        filepath = request.get("filepath", "dashboard_config.json")
+
+        print(filepath)
+        config_path = Path(__file__).parent / "data" / filepath
         
-        
+        # 检查目录是否存在，不存在则创建
+        config_dir = config_path.parent
+        if not config_dir.exists():
+            config_dir.mkdir(parents=True, exist_ok=True)
 
         # 获取请求中的配置数据
-        updated_config = request.get("config", [])
-
-
-        
+        updated_config = request.get("config", {})
 
         # 保存更新后的配置
         with open(config_path, 'w', encoding='utf-8') as f:
@@ -325,4 +330,161 @@ async def update_dashboard_config(request: dict):
         return {
             "status": "error",
             "message": f"更新配置失败: {str(e)}"
+        }
+
+@app.get("/api/folder_structure")
+async def get_folder_structure():
+    """获取数据文件夹结构"""
+    try:
+        data_dir = Path(__file__).parent / "data"
+        
+        if not data_dir.exists():
+            return {
+                "status": "error",
+                "message": "数据目录不存在"
+            }
+        
+        def scan_dir(directory):
+            result = []
+            for item in directory.iterdir():
+                if item.is_file() and item.suffix == '.json':
+                    result.append({
+                        "type": "file",
+                        "name": item.name,
+                        "path": str(item.relative_to(data_dir))
+                    })
+                elif item.is_dir():
+                    children = scan_dir(item)
+                    result.append({
+                        "type": "directory",
+                        "name": item.name,
+                        "path": str(item.relative_to(data_dir)),
+                        "children": children
+                    })
+            return result
+        
+        structure = scan_dir(data_dir)
+        
+        return {
+            "status": "success",
+            "data": structure
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"获取文件夹结构失败: {str(e)}"
+        }
+
+@app.post("/api/create_folder")
+async def create_folder(request: dict):
+    """创建新文件夹"""
+    try:
+        folder_path = request.get("path", "")
+        if not folder_path:
+            raise HTTPException(status_code=400, detail="文件夹路径不能为空")
+        
+        new_folder = Path(__file__).parent / "data" / folder_path
+        new_folder.mkdir(parents=True, exist_ok=True)
+        
+        return {
+            "status": "success",
+            "message": f"文件夹 {folder_path} 创建成功"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"创建文件夹失败: {str(e)}"
+        }
+
+@app.post("/api/delete_file")
+async def delete_dashboard_file(request: dict):
+    """删除仪表盘配置文件"""
+    try:
+        filepath = request.get("filepath", "")
+        if not filepath:
+            raise HTTPException(status_code=400, detail="文件路径不能为空")
+        
+        file_path = Path(__file__).parent / "data" / filepath
+        
+        if not file_path.exists():
+            return {
+                "status": "error",
+                "message": f"文件不存在: {filepath}"
+            }
+        
+        if file_path.is_file():
+            file_path.unlink()
+            return {
+                "status": "success",
+                "message": f"文件 {filepath} 删除成功"
+            }
+        else:
+            return {
+                "status": "error",
+                "message": f"无法删除非文件: {filepath}"
+            }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"删除文件失败: {str(e)}"
+        }
+
+@app.post("/api/create_dashboard")
+async def create_dashboard(request: dict):
+    """创建新的仪表盘配置文件"""
+    try:
+        filepath = request.get("filepath", "")
+        template = request.get("template", {})
+        
+        if not filepath:
+            raise HTTPException(status_code=400, detail="文件路径不能为空")
+        
+        file_path = Path(__file__).parent / "data" / filepath
+        
+        # 检查目录是否存在，不存在则创建
+        file_dir = file_path.parent
+        if not file_dir.exists():
+            file_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 检查文件是否已存在
+        if file_path.exists():
+            return {
+                "status": "error",
+                "message": f"文件已存在: {filepath}"
+            }
+        
+        # 如果未提供模板，使用默认模板
+        if not template:
+            template = {
+                "query": {
+                    "code": "SELECT * FROM data",
+                    "executor_type": "MySQL",
+                    "data_frame_name": "df",
+                    "update_mode": "手动更新"
+                },
+                "parameters": [],
+                "visualization": [
+                    {
+                        "type": "python",
+                        "title": "数据表格",
+                        "options": [],
+                        "description": "显示查询结果的原始数据表格",
+                        "code": "# 返回表格\nresult = df"
+                    }
+                ]
+            }
+        
+        # 保存配置文件
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(template, f, ensure_ascii=False, indent=2)
+        
+        return {
+            "status": "success",
+            "message": f"仪表盘配置文件 {filepath} 创建成功",
+            "config": template
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"创建仪表盘配置文件失败: {str(e)}"
         }
