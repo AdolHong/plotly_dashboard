@@ -1,5 +1,5 @@
 # coding=utf-8
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 import traceback
 import io
@@ -539,3 +539,55 @@ async def delete_folder(request: dict):
             "status": "error",
             "message": f"删除文件夹失败: {str(e)}"
         }
+
+@app.post("/api/rename_file")
+async def rename_file(request: dict):
+    """重命名文件"""
+    try:
+        old_path = request.get("old_path", "")
+        new_path = request.get("new_path", "")
+        if not old_path or not new_path:
+            print("文件路径不能为空")
+            return {"status": "error", "message": "文件路径不能为空"}
+        
+        old_file_path = os.path.join(Path(__file__).parent.parent, 'data', old_path)
+        new_file_path = os.path.join(Path(__file__).parent.parent, 'data', new_path)
+        
+        print(old_file_path)
+        if not os.path.exists(old_file_path):
+            return {"status": "error", "message": f"文件 {old_path} 不存在"}
+            
+        if os.path.exists(new_file_path):
+            return {"status": "error", "message": f"文件 {new_path} 已存在"}
+            
+        # 重命名文件
+        os.rename(old_file_path, new_file_path)
+        
+        return {"status": "success", "message": "文件重命名成功"}
+    except Exception as e:
+        return {"status": "error", "message": f"重命名文件失败: {str(e)}"}
+
+@app.post("/api/rename_folder")
+async def rename_folder(request: dict):
+    """重命名文件夹"""
+    try:
+        old_path = request.get("old_path", "")
+        new_path = request.get("new_path", "")
+        if not old_path or not new_path:
+            return {"status": "error", "message": "文件夹路径不能为空"}
+        
+        old_folder_path = os.path.join(Path(__file__).parent.parent,'data', old_path)
+        new_folder_path = os.path.join(Path(__file__).parent.parent,'data', new_path)
+        
+        if not os.path.exists(old_folder_path) or not os.path.isdir(old_folder_path):
+            return {"status": "error", "message": f"文件夹 {old_path} 不存在"}
+            
+        if os.path.exists(new_folder_path):
+            return {"status": "error", "message": f"文件夹 {new_path} 已存在"}
+            
+        # 重命名文件夹
+        os.rename(old_folder_path, new_folder_path)
+        
+        return {"status": "success", "message": "文件夹重命名成功"}
+    except Exception as e:
+        return {"status": "error", "message": f"重命名文件夹失败: {str(e)}"}
