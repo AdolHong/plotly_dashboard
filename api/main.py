@@ -136,9 +136,6 @@ async def execute_sql_query(request: dict):
                         "choices": option.get("choices", []),
                         "default": option.get("default")
                     }
-
-        print("inferred_options", inferred_options)
-        print("inferred_option_choices", inferred_option_choices)
         
         # Convert DataFrame to dict for caching
         result = {
@@ -552,8 +549,6 @@ async def rename_file(request: dict):
         
         old_file_path = os.path.join(Path(__file__).parent.parent, 'data', old_path)
         new_file_path = os.path.join(Path(__file__).parent.parent, 'data', new_path)
-        
-        print(old_file_path)
         if not os.path.exists(old_file_path):
             return {"status": "error", "message": f"文件 {old_path} 不存在"}
             
