@@ -1,6 +1,6 @@
 {
   "query": {
-    "code": "SELECT * FROM data",
+    "code": "select 1 as id, '2025-02-12' as category",
     "executor_type": "MySQL",
     "data_frame_name": "df",
     "update_mode": "手动更新"
@@ -8,11 +8,18 @@
   "parameters": [],
   "visualization": [
     {
-      "type": "python",
       "title": "数据表格",
-      "options": [],
       "description": "显示查询结果的原始数据表格",
-      "code": "# 返回表格\nresult = df"
+      "code": "# 返回表格\nassert 1 == 2\nprint(cate)\nresult = df",
+      "options": [
+        {
+          "name": "cate",
+          "type": "str",
+          "multiple": false,
+          "infer": "column",
+          "infer_column": "category"
+        }
+      ]
     }
   ]
 }

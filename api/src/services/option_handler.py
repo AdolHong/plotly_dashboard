@@ -109,12 +109,11 @@ def infer_options_from_dataframe(options: List[Dict[str, Any]], df: pd.DataFrame
         # 检查是否需要从DataFrame列中推断选项
         if option.get("infer") == "column" and "infer_column" in option:
             column_name = option.get("infer_column")
-            
             # 检查列是否存在于DataFrame中
             if column_name in df.columns:
                 # 获取列中的唯一值
                 unique_values = df[column_name].dropna().unique().tolist()
-                
+                print("unique_values", unique_values)
                 # 转换为字符串列表
                 unique_values = [str(val) for val in unique_values]
                 
@@ -128,6 +127,7 @@ def infer_options_from_dataframe(options: List[Dict[str, Any]], df: pd.DataFrame
                 elif option.get("multiple", False) and "default" not in option:
                     option_copy["default"] = []
         
+        print(updated_options)
         updated_options.append(option_copy)
     
     return updated_options

@@ -120,8 +120,11 @@ async def execute_sql_query(request: dict):
                 if "options" in vis and isinstance(vis["options"], list):
                     visualization_options.extend(vis["options"])
         
+        
         # 从DataFrame中推断选项
         inferred_options = infer_options_from_dataframe(visualization_options, df)
+        
+
         
         # 提取需要从DataFrame中推断的选项
         inferred_option_choices = {}
@@ -133,6 +136,9 @@ async def execute_sql_query(request: dict):
                         "choices": option.get("choices", []),
                         "default": option.get("default")
                     }
+
+        print("inferred_options", inferred_options)
+        print("inferred_option_choices", inferred_option_choices)
         
         # Convert DataFrame to dict for caching
         result = {

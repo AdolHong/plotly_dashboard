@@ -167,10 +167,11 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
   };
 
   // 添加保存选项函数
-  const handleSaveOption = () => {
+  const handleOptionAddSave = () => {
     optionForm.validateFields().then(values => {
       const { name, type, multiple, infer, inferColumn, choices } = values;
-      
+      message.info(1)
+
       // 处理选项列表
       const choicesList = choices ? choices.split(',').map(item => item.trim()).filter(item => item) : [];
       
@@ -181,6 +182,8 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
         ...(infer ? { infer, inferColumn } : {}),
         ...(choicesList.length > 0 ? { choices: choicesList } : {})
       };
+
+      
       
       const newOptions = [...currentOptions, newOption];
       setCurrentOptions(newOptions);
@@ -193,6 +196,7 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
       setAddOptionModalVisible(false);
     });
   };
+
 
   // 删除选项
   const handleDeleteOption = (index) => {
@@ -343,6 +347,7 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
       const { name, type, multiple, infer, inferColumn, choices } = values;
       const choicesList = choices ? choices.split(',').map(item => item.trim()) : [];
       
+      
       const newOption = {
         name,
         type,
@@ -351,6 +356,9 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
         inferColumn: infer === 'column' ? inferColumn : '',
         choices: choicesList
       };
+
+
+      
       
       // 更新选项列表
       const newOptions = [...currentOptions];
@@ -359,8 +367,15 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
       } else {
         newOptions.push(newOption);
       }
-      
+
+
       setCurrentOptions(newOptions);
+      
+      // 更新表单中的options字段
+      visualizationEditForm.setFieldsValue({
+        options: JSON.stringify(newOptions, null, 2)
+      });
+      
       setOptionModalVisible(false);
     });
   };
@@ -498,7 +513,7 @@ const VisualizationEditView = ({ visualizationList, setVisualizationList }) => {
         title="添加选项"
         open={addOptionModalVisible}
         onCancel={() => setAddOptionModalVisible(false)}
-        onOk={handleSaveOption}
+        onOk={handleOptionAddSave}
         width={600}
       >
         <Form 
