@@ -54,25 +54,26 @@ const DashboardView = () => {
     }
   }, []);
   
-  // 添加获取可用目录的函数
+  // 完全重写获取可用目录的函数，避免重复
   const getAvailablePaths = (folderStructure, currentPath = '') => {
-    let paths = [currentPath];
+    // 使用Set来存储路径，自动去重
+    const pathSet = new Set([currentPath]);
     
     folderStructure.forEach(item => {
       if (item.type === 'directory') {
         const newPath = currentPath ? `${currentPath}/${item.name}` : item.name;
-        paths.push(newPath);
+        pathSet.add(newPath);
         
         if (item.children && item.children.length > 0) {
+          // 获取子路径并添加到Set中
           const childPaths = getAvailablePaths(item.children, newPath);
-          paths = [...paths, ...childPaths];
-
-          message.info(paths);
+          childPaths.forEach(path => pathSet.add(path));
         }
       }
     });
     
-    return paths;
+    // 转换回数组并返回
+    return Array.from(pathSet);
   };
   
   // 修改刷新文件夹结构函数，添加对可用路径的更新
