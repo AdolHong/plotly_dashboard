@@ -389,39 +389,36 @@ const DashboardView = () => {
     }
   };
   
-  // 修改文件树数据生成函数，增加自定义标题渲染和右键菜单
+  // 完全重写convertToTreeData函数
   const convertToTreeData = (data) => {
     return data.map(item => {
       const isEmptyFolder = item.type === 'directory' && (!item.children || item.children.length === 0);
       
-      // 创建标题组件，包含删除按钮（仅对空文件夹显示）
-      const titleNode = (
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center',     // 垂直居中
-          width: '100%',
-          gap: '4px',              // 使用gap替代margin，更容易控制间距
-          height: '24px',          // 固定高度
-        }}>
-          <Typography.Text 
-            ellipsis={{ tooltip: item.name }} 
-            style={{ 
-              flex: 1,
-              display: 'inline-block', // 确保文本和图标在同一行
-              verticalAlign: 'middle'  // 垂直对齐
-            }}
-          >
+      // 不使用复杂的标题结构
+      const node = {
+        title: item.name,
+        key: item.path,
+        type: item.type,
+        path: item.path,
+        icon: item.type === 'directory' ? <FolderOutlined /> : <FileOutlined />,
+        isLeaf: item.type === 'file'
+      };
+      
+      // 空文件夹添加删除操作
+      if (isEmptyFolder) {
+        node.title = (
+          <>
             {item.name}
-          </Typography.Text>
-          {isEmptyFolder && (
             <Button
               type="text"
               size="small"
+              className="folder-delete-btn"
               icon={<DeleteOutlined style={{ fontSize: '12px', color: '#ff4d4f' }} />}
               style={{ 
                 padding: 0,
-                minWidth: '24px',
-                height: '24px'
+                marginLeft: '4px',
+                height: '16px',
+                lineHeight: '16px'
               }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -429,18 +426,9 @@ const DashboardView = () => {
               }}
               title="删除空文件夹"
             />
-          )}
-        </div>
-      );
-      
-      const node = {
-        title: titleNode,
-        key: item.path,
-        type: item.type,
-        path: item.path,
-        icon: item.type === 'directory' ? <FolderOutlined /> : <FileOutlined />,
-        isLeaf: item.type === 'file'
-      };
+          </>
+        );
+      }
       
       if (item.type === 'directory') {
         node.children = item.children ? convertToTreeData(item.children) : [];
@@ -522,8 +510,7 @@ const DashboardView = () => {
           selectable
           autoExpandParent
           onRightClick={onRightClick}
-          className="custom-tree"
-          titleRender={(nodeData) => nodeData.title}  // 确保自定义标题正确渲染
+          className="custom-directory-tree"
         />
       </Sider>
       <Layout>
