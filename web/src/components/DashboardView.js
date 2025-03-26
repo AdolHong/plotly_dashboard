@@ -303,6 +303,42 @@ const DashboardView = () => {
     });
   };
   
+  // 添加删除文件夹的函数
+  const deleteFolder = async (folderPath) => {
+    if (!folderPath) {
+      message.error('请先选择文件夹');
+      return;
+    }
+    
+    Modal.confirm({
+      title: '确认删除',
+      content: `确认要删除文件夹 "${folderPath}" 吗？此操作不可撤销。`,
+      okText: '删除',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          message.info(folderPath);
+          const response = await axios.post('http://localhost:8000/api/delete_folder', {
+            folderPath: folderPath  // 确保参数名与后端API匹配
+          });
+          
+          if (response.data.status === 'success') {
+            message.success('文件夹删除成功');
+            
+            // 刷新文件夹结构
+            await refreshFolderStructure();
+          } else {
+            message.error('删除文件夹失败: ' + response.data.message);
+          }
+        } catch (error) {
+          console.error('删除文件夹失败:', error);
+          message.error('删除文件夹失败: ' + (error.response?.data?.message || error.message));
+        }
+      }
+    });
+  };
+  
   // 保存仪表盘配置
   const saveDashboardConfig = async (newParameters, newVisualizations, newSqlCode) => {
     try {
@@ -353,23 +389,60 @@ const DashboardView = () => {
     }
   };
   
-  // 将文件列表数据转换为Tree组件所需的格式
+  // 修改文件树数据生成函数，增加自定义标题渲染和右键菜单
   const convertToTreeData = (data) => {
     return data.map(item => {
-      const node = {
-        title: (
-          <Typography.Text ellipsis={{ tooltip: item.name }}>
+      const isEmptyFolder = item.type === 'directory' && (!item.children || item.children.length === 0);
+      
+      // 创建标题组件，包含删除按钮（仅对空文件夹显示）
+      const titleNode = (
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center',     // 垂直居中
+          width: '100%',
+          gap: '4px',              // 使用gap替代margin，更容易控制间距
+          height: '24px',          // 固定高度
+        }}>
+          <Typography.Text 
+            ellipsis={{ tooltip: item.name }} 
+            style={{ 
+              flex: 1,
+              display: 'inline-block', // 确保文本和图标在同一行
+              verticalAlign: 'middle'  // 垂直对齐
+            }}
+          >
             {item.name}
           </Typography.Text>
-        ),
+          {isEmptyFolder && (
+            <Button
+              type="text"
+              size="small"
+              icon={<DeleteOutlined style={{ fontSize: '12px', color: '#ff4d4f' }} />}
+              style={{ 
+                padding: 0,
+                minWidth: '24px',
+                height: '24px'
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteFolder(item.path);
+              }}
+              title="删除空文件夹"
+            />
+          )}
+        </div>
+      );
+      
+      const node = {
+        title: titleNode,
         key: item.path,
         type: item.type,
         path: item.path,
-        icon: item.type === 'directory' ? <FolderOutlined /> : <FileOutlined />
+        icon: item.type === 'directory' ? <FolderOutlined /> : <FileOutlined />,
+        isLeaf: item.type === 'file'
       };
       
       if (item.type === 'directory') {
-        // 确保目录节点始终有children属性，即使是空数组
         node.children = item.children ? convertToTreeData(item.children) : [];
       }
       
@@ -379,6 +452,27 @@ const DashboardView = () => {
   
   // Tree组件所需的数据格式
   const treeData = convertToTreeData(folderStructure);
+  
+  // 在树节点上添加右键菜单
+  const onRightClick = ({ event, node }) => {
+    if (node.type === 'directory') {
+      // 检查是否为空文件夹
+      const isEmptyFolder = !node.children || node.children.length === 0;
+      if (isEmptyFolder) {
+        // 显示右键菜单
+        Menu.open({
+          event, 
+          items: [
+            {
+              label: '删除文件夹',
+              icon: <DeleteOutlined />,
+              onClick: () => deleteFolder(node.path)
+            }
+          ]
+        });
+      }
+    }
+  };
   
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -419,11 +513,17 @@ const DashboardView = () => {
           defaultExpandAll
           onSelect={onTreeSelect}
           selectedKeys={[currentFilePath]}
-          style={{ padding: '0 8px', overflowX: 'hidden' }}
+          style={{ 
+            padding: '0 8px', 
+            overflowX: 'hidden'
+          }}
           showIcon
           blockNode
           selectable
           autoExpandParent
+          onRightClick={onRightClick}
+          className="custom-tree"
+          titleRender={(nodeData) => nodeData.title}  // 确保自定义标题正确渲染
         />
       </Sider>
       <Layout>

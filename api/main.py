@@ -488,3 +488,45 @@ async def create_dashboard(request: dict):
             "status": "error",
             "message": f"创建仪表盘配置文件失败: {str(e)}"
         }
+
+@app.post("/api/delete_folder")
+async def delete_folder(request: dict):
+    """删除文件夹（仅限空文件夹）"""
+    try:
+        folder_path = request.get("folder_path", "")
+        if not folder_path:
+            raise HTTPException(status_code=400, detail="文件夹路径不能为空")
+        
+        full_path = Path(__file__).parent / "data" / folder_path
+        
+        if not full_path.exists():
+            return {
+                "status": "error",
+                "message": f"文件夹不存在: {folder_path}"
+            }
+        
+        if not full_path.is_dir():
+            return {
+                "status": "error",
+                "message": f"路径不是文件夹: {folder_path}"
+            }
+        
+        # 检查文件夹是否为空
+        if any(full_path.iterdir()):
+            return {
+                "status": "error",
+                "message": f"只能删除空文件夹，{folder_path} 不为空"
+            }
+        
+        # 删除空文件夹
+        full_path.rmdir()
+        
+        return {
+            "status": "success",
+            "message": f"文件夹 {folder_path} 删除成功"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"删除文件夹失败: {str(e)}"
+        }
