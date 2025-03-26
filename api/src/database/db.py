@@ -9,22 +9,60 @@ DB_PATH = Path(__file__).parent.parent.parent / "data" / "dashboard.duckdb"
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
 def get_connection():
-    """获取DuckDB连接"""
-    return duckdb.connect(str(DB_PATH))
+    import socket
+    if socket.gethostname() == "Jiahaos-MacBook-Pro.local":
+        # 开发环境, 获取DuckDB连接
+        return duckdb.connect(str(DB_PATH))
+    else:
+        pass
+    
+    
 
-def execute_query(query: str, params=None):
+def execute_duckdb_query(query: str, params=None):
     """执行SQL查询并返回结果"""
     conn = get_connection()
     try:
-        if params:
-            result = conn.execute(query, params).fetchdf()
-        else:
-            result = conn.execute(query).fetchdf()
+        
+        result = conn.execute(query).fetchdf()
         return result
     except Exception as e:
         raise e
     finally:
         conn.close()
+
+def pd_read_sql(url, query, prepare_stmt=None):
+    from sqlalchemy import create_engine, text
+    import pandas as pd
+    engine = create_engine(url)
+    # with语句， 避免忘记close connection
+    with engine.connect() as con:
+        if prepare_stmt is not None:
+            con.exec_driver_sql(prepare_stmt)
+
+        # query = text(query).execution_options(no_parameters=True)
+        query = text(query)
+        df = pd.read_sql_query(query, con=con)
+    return df
+
+def execute_mysql_query(query, url, prepare_stmt=None):
+    import pandas as pd
+    engine = lambda query: pd_read_sql(url, query, prepare_stmt=prepare_stmt)
+
+    try:
+        # print("type:", type(query))
+        df = engine(query)
+    except Exception as e:
+        df = pd.DataFrame([{"error": str(e)}])
+    return df
+
+def execute_query(query: str, params=None):
+    import socket
+    if socket.gethostname() == "Jiahaos-MacBook-Pro.local":
+        return execute_duckdb_query(query,params)
+    else:
+        url = ""
+        return execute_mysql_query(query,url, prepare_stmt='set query_mem_limit = 68719476736')
+
 
 def init_db():
     """初始化数据库，创建示例表和数据"""

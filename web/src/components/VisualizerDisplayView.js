@@ -17,8 +17,6 @@ const VisualizerDisplayView = ({ resultType, visualizationData, tableData }) => 
       return;
     };
 
-    message.info("来了吗老弟?");
-
     // 确保 DOM 元素已经渲染且有数据
     if (chartRef.current && visualizationData) {
       // 如果图表实例不存在，则创建

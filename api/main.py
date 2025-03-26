@@ -45,7 +45,7 @@ async def get_dashboard_config(filepath: str = "dashboard_config.json"):
     """获取仪表盘配置"""
     try:
         # 支持路径参数
-        config_path = Path(__file__).parent / "data" / filepath
+        config_path = Path(__file__).parent.parent / "data" / filepath
         
         if not config_path.exists():
             return {
@@ -310,7 +310,7 @@ async def update_dashboard_config(request: dict):
         filepath = request.get("filepath", "dashboard_config.json")
 
         print(filepath)
-        config_path = Path(__file__).parent / "data" / filepath
+        config_path = Path(__file__).parent.parent / "data" / filepath
         
         # 检查目录是否存在，不存在则创建
         config_dir = config_path.parent
@@ -338,7 +338,7 @@ async def update_dashboard_config(request: dict):
 async def get_folder_structure():
     """获取数据文件夹结构"""
     try:
-        data_dir = Path(__file__).parent / "data"
+        data_dir = Path(__file__).parent.parent / "data"
         
         if not data_dir.exists():
             return {
@@ -385,7 +385,7 @@ async def create_folder(request: dict):
         if not folder_path:
             raise HTTPException(status_code=400, detail="文件夹路径不能为空")
         
-        new_folder = Path(__file__).parent / "data" / folder_path
+        new_folder = Path(__file__).parent.parent / "data" / folder_path
         new_folder.mkdir(parents=True, exist_ok=True)
         
         return {
@@ -406,7 +406,7 @@ async def delete_dashboard_file(request: dict):
         if not filepath:
             raise HTTPException(status_code=400, detail="文件路径不能为空")
         
-        file_path = Path(__file__).parent / "data" / filepath
+        file_path = Path(__file__).parent.parent / "data" / filepath
         
         if not file_path.exists():
             return {
