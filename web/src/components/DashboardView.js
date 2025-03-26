@@ -66,6 +66,8 @@ const DashboardView = () => {
         if (item.children && item.children.length > 0) {
           const childPaths = getAvailablePaths(item.children, newPath);
           paths = [...paths, ...childPaths];
+
+          message.info(paths);
         }
       }
     });
@@ -357,7 +359,6 @@ const DashboardView = () => {
       cancelText: '取消',
       onOk: async () => {
         try {
-          message.info(folderPath);
           const response = await axios.post('http://localhost:8000/api/delete_folder', {
             folderPath: folderPath  // 确保参数名与后端API匹配
           });
@@ -459,9 +460,6 @@ const DashboardView = () => {
     
     const newPath = parentPath ? `${parentPath}/${newName}` : newName;
     
-    message.info(originalPath);
-    message.info(newPath);
-    message.info(fileToRename.type);
     try {
       let endpoint = fileToRename.type === 'file' ? 'rename_file' : 'rename_folder';
       const response = await axios.post(`http://localhost:8000/api/${endpoint}`, {
@@ -500,54 +498,66 @@ const DashboardView = () => {
         displayName = displayName.slice(0, -5); // 去掉.json后缀
       }
       
-      // 添加重命名按钮
-      const titleNode = (
-        <span style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-          <span style={{ 
-            flex: 1, 
-            overflow: 'hidden', 
-            textOverflow: 'ellipsis', 
-            whiteSpace: 'nowrap' 
-          }}>
-            {displayName}
-          </span>
-          <Space>
-            <Button
-              type="text"
-              size="small"
-              icon={<EditOutlined style={{ fontSize: '12px' }} />}
-              style={{ padding: 0, height: '16px', lineHeight: '16px' }}
-              onClick={(e) => {
-                e.stopPropagation();
-                showRenameModal(item);
-              }}
-              title="重命名"
-            />
-            {isEmptyFolder && (
-              <Button
-                type="text"
-                size="small"
-                icon={<DeleteOutlined style={{ fontSize: '12px', color: '#ff4d4f' }} />}
-                style={{ padding: 0, height: '16px', lineHeight: '16px' }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteFolder(item.path);
-                }}
-                title="删除空文件夹"
-              />
-            )}
-          </Space>
-        </span>
-      );
-      
       const node = {
-        title: titleNode,
         key: item.path,
         type: item.type,
         path: item.path,
         name: item.name,
-        icon: item.type === 'directory' ? <FolderOutlined /> : <FileOutlined />,
-        isLeaf: item.type === 'file'
+        isLeaf: item.type === 'file',
+        title: (
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            width: '100%',
+            height: '24px'
+          }}>
+            {item.type === 'directory' ? <FolderOutlined style={{marginRight: '8px'}} /> : <FileOutlined style={{marginRight: '8px'}} />}
+            <span style={{ 
+              flex: 1, 
+              overflow: 'hidden', 
+              textOverflow: 'ellipsis', 
+              whiteSpace: 'nowrap' 
+            }}>
+              {displayName}
+            </span>
+            <Space>
+              <Button
+                type="text"
+                size="small"
+                icon={<EditOutlined style={{ fontSize: '12px' }} />}
+                style={{ 
+                  padding: 0, 
+                  height: '16px', 
+                  lineHeight: '16px',
+                  minWidth: 'auto'
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  showRenameModal(item);
+                }}
+                title="重命名"
+              />
+              {isEmptyFolder && (
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<DeleteOutlined style={{ fontSize: '12px', color: '#ff4d4f' }} />}
+                  style={{ 
+                    padding: 0, 
+                    height: '16px', 
+                    lineHeight: '16px',
+                    minWidth: 'auto'
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteFolder(item.path);
+                  }}
+                  title="删除空文件夹"
+                />
+              )}
+            </Space>
+          </div>
+        )
       };
       
       if (item.type === 'directory') {
@@ -813,6 +823,27 @@ const DashboardView = () => {
           onChange={(e) => setNewFilePath(e.target.value)}
         />
       </Modal>
+      
+      {/* 添加全局样式 */}
+      <style jsx global>{`
+        .custom-directory-tree .ant-tree-node-content-wrapper {
+          display: flex !important;
+          align-items: center !important;
+          padding: 0 4px !important;
+        }
+        
+        .custom-directory-tree .ant-tree-node-content-wrapper .ant-tree-title {
+          display: flex !important;
+          align-items: center !important;
+          width: 100% !important;
+        }
+        
+        .custom-directory-tree .ant-tree-icon__customize,
+        .custom-directory-tree .ant-tree-icon__open,
+        .custom-directory-tree .ant-tree-icon__close {
+          display: none !important;
+        }
+      `}</style>
     </Layout>
   );
 };
