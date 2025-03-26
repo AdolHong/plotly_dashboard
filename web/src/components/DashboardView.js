@@ -101,6 +101,9 @@ const DashboardView = () => {
           }
           
           setConfigLoaded(true);
+          
+          // 切换文件时，清除查询结果，以便需要手动点击查询按钮
+          setQueryHash('');
         } else {
           console.error('获取仪表盘配置失败:', response.data.message);
           message.error(`获取仪表盘配置失败: ${response.data.message}`);
@@ -354,7 +357,11 @@ const DashboardView = () => {
   const convertToTreeData = (data) => {
     return data.map(item => {
       const node = {
-        title: item.name,
+        title: (
+          <Typography.Text ellipsis={{ tooltip: item.name }}>
+            {item.name}
+          </Typography.Text>
+        ),
         key: item.path,
         type: item.type,
         path: item.path,
@@ -412,7 +419,7 @@ const DashboardView = () => {
           defaultExpandAll
           onSelect={onTreeSelect}
           selectedKeys={[currentFilePath]}
-          style={{ padding: '0 8px' }}
+          style={{ padding: '0 8px', overflowX: 'hidden' }}
           showIcon
           blockNode
           selectable
@@ -422,7 +429,9 @@ const DashboardView = () => {
       <Layout>
         <Content style={{ padding: '16px', overflow: 'auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <Title level={4} style={{ margin: '0' }}>{currentFilePath}</Title>
+            <Title level={4} style={{ margin: '0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }} title={currentFilePath}>
+              {currentFilePath}
+            </Title>
             <Space>
               <Button 
                 icon={<DeleteOutlined />} 
